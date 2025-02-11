@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import PersonalInfo from './Onboarding/PersonalInfo';
-import EducationBackground from './Onboarding/EducationBackground';
-import PreparationJourney from './Onboarding/PreparationJourney';
-import CurrentPreparation from './Onboarding/CurrentPreparation';
-import Expectations from './Onboarding/Expectations';
+import PersonalInfo from '@/components/Onboarding/PersonalInfo';
+import EducationBackground from '@/components/Onboarding/EducationBackground';
+import PreparationJourney from '@/components/Onboarding/PreparationJourney';
+import CurrentPreparation from '@/components/Onboarding/CurrentPreparation';
+import Expectations from '@/components/Onboarding/Expectations';
 
 export interface FormData {
   // Personal Information

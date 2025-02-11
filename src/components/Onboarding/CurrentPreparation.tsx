@@ -1,6 +1,6 @@
 'use client';
 
-import { FormData } from '../MultiStepForm';
+import { FormData } from '@/components/MultiStepForm';
 
 interface CurrentPreparationProps {
   formData: FormData;
