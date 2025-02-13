@@ -1,22 +1,23 @@
 'use client';
-import MultiStepForm from '@/components/MultiStepForm';
 
-export default function Home() {
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function RootPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push('/login');
+  }, [router]);
+
+  // Return a loading state or nothing while redirecting
   return (
-    <main className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Saarthi IAS Mentorship Program
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Welcome to the Saarthi IAS Mentorship Program. Please complete this form to help us understand
-            your preparation journey and how we can best support you.
-          </p>
-        </div>
-        
-        <MultiStepForm />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <h2 className="text-2xl font-semibold text-gray-900">
+          Redirecting...
+        </h2>
       </div>
-    </main>
+    </div>
   );
 }

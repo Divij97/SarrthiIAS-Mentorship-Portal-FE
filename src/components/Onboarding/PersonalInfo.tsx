@@ -7,9 +7,11 @@ interface PersonalInfoProps {
   handleChange: (field: keyof FormData) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => void;
+  region: string[];
+  errors?: Record<string, string>;
 }
 
-const PersonalInfo = ({ formData, handleChange }: PersonalInfoProps) => {
+const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoProps) => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Personal Information</h2>
@@ -76,18 +78,27 @@ const PersonalInfo = ({ formData, handleChange }: PersonalInfoProps) => {
           </select>
         </div>
 
-        <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-            Current Location
+        <div className="mb-4">
+          <label htmlFor="region" className="block text-sm font-medium text-gray-700">
+            Region
           </label>
-          <input
-            type="text"
-            id="location"
-            value={formData.location}
-            onChange={handleChange('location')}
+          <select
+            id="region"
+            name="region"
+            value={formData.region}
+            onChange={handleChange('region')}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-            required
-          />
+          >
+            <option value="">Select a region</option>
+            {region.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          {errors?.region && (
+            <p className="mt-1 text-sm text-gray-700">{errors.region}</p>
+          )}
         </div>
       </div>
     </div>

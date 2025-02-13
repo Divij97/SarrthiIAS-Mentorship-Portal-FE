@@ -7,57 +7,70 @@ import PreparationJourney from '@/components/Onboarding/PreparationJourney';
 import CurrentPreparation from '@/components/Onboarding/CurrentPreparation';
 import Expectations from '@/components/Onboarding/Expectations';
 
+interface FormErrors {
+  [key: string]: string;
+}
+
+// Add the Region type
+export type Region = 'North' | 'South' | 'East' | 'West';
+
 export interface FormData {
   // Personal Information
   name: string;
   email: string;
   phoneNumber: string;
   gender: string;
-  location: string;
+  region: Region | '';
   
-  // Educational Background
+  // Additional Information
+  reservationCategory: string;
+  optionalSubject: string;
   isWorkingProfessional: boolean;
-  collegeName: string;
-  graduationSubject: string;
   
   // UPSC Preparation Journey
   preliminaryAttempts: number;
   mainExamAttempts: number;
-  isVajiramStudent: boolean;
+  isSaarthiStudent: boolean;
   vajiramCourse?: string;
   
   // Current Preparation Details
-  previousScores: string;
-  currentAffairsSource: string;
-  answerWritingSkills: string;
+  preferredSlotsOnWeekdays: string[];
+  answerWritingLevel: string;
   weakSubjects: string[];
   strongSubjects: string[];
   
   // Expectations
+  previouslyEnrolledCourses: string;
+  currentAffairsSource: string;
   expectations: string;
 }
 
 const MultiStepForm = () => {
   const [step, setStep] = useState(1);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     phoneNumber: '',
     gender: '',
-    location: '',
+    region: '',
+    reservationCategory: '',
+    optionalSubject: '',
     isWorkingProfessional: false,
-    collegeName: '',
-    graduationSubject: '',
     preliminaryAttempts: 0,
     mainExamAttempts: 0,
-    isVajiramStudent: false,
-    previousScores: '',
-    currentAffairsSource: '',
-    answerWritingSkills: '',
+    isSaarthiStudent: false,
+    preferredSlotsOnWeekdays: [],
+    answerWritingLevel: '',
     weakSubjects: [],
     strongSubjects: [],
+    previouslyEnrolledCourses: '',
+    currentAffairsSource: '',
     expectations: ''
   });
+
+  // Update region options to be of type Region[]
+  const regionOptions: Region[] = ['North', 'South', 'East', 'West'];
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step > 1 ? step - 1 : step);
@@ -69,7 +82,7 @@ const MultiStepForm = () => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handleArrayChange = (field: 'weakSubjects' | 'strongSubjects') => (
+  const handleArrayChange = (field: 'weakSubjects' | 'strongSubjects' | 'preferredSlotsOnWeekdays') => (
     value: string[]
   ) => {
     setFormData({ ...formData, [field]: value });
@@ -78,13 +91,19 @@ const MultiStepForm = () => {
   const renderStep = () => {
     switch (step) {
       case 1:
-        return <PersonalInfo formData={formData} handleChange={handleChange} />;
+        return <PersonalInfo formData={formData} region={regionOptions} handleChange={handleChange} />;
       case 2:
         return <EducationBackground formData={formData} handleChange={handleChange} />;
       case 3:
         return <PreparationJourney formData={formData} handleChange={handleChange} />;
       case 4:
-        return <CurrentPreparation formData={formData} handleChange={handleChange} handleArrayChange={handleArrayChange} />;
+        return (
+          <CurrentPreparation
+            formData={formData}
+            handleChange={handleChange}
+            handleArrayChange={handleArrayChange}
+          />
+        );
       case 5:
         return <Expectations formData={formData} handleChange={handleChange} />;
       default:
@@ -99,6 +118,21 @@ const MultiStepForm = () => {
     } catch (error) {
       console.error('Error submitting form:', error);
     }
+  };
+
+  const validateStep = (currentStep: number): boolean => {
+    const newErrors: FormErrors = {};
+
+    switch (currentStep) {
+      case 1:
+        // ... existing validations ...
+        if (!formData.region) newErrors.region = 'Please select a region';
+        break;
+      // ... rest of the validation cases ...
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   return (

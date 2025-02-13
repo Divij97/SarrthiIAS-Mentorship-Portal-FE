@@ -28,7 +28,7 @@ const PreparationJourney = ({ formData, handleChange }: PreparationJourneyProps)
             required
           >
             <option value="0">None</option>
-            {[1, 2, 3, 4, 5, 6].map((num) => (
+            {[1, 2, 3, 4, 5].map((num) => (
               <option key={num} value={num}>
                 {num}
               </option>
@@ -48,7 +48,7 @@ const PreparationJourney = ({ formData, handleChange }: PreparationJourneyProps)
             required
           >
             <option value="0">None</option>
-            {[1, 2, 3, 4, 5, 6].map((num) => (
+            {[1, 2, 3, 4, 5].map((num) => (
               <option key={num} value={num}>
                 {num}
               </option>
@@ -57,26 +57,23 @@ const PreparationJourney = ({ formData, handleChange }: PreparationJourneyProps)
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Vajiram and Ravi Student Status
-          </label>
           <div className="mt-2">
             <div className="flex items-center">
               <input
                 type="checkbox"
                 id="isVajiramStudent"
-                checked={formData.isVajiramStudent}
-                onChange={handleChange('isVajiramStudent')}
+                checked={formData.isSaarthiStudent}
+                onChange={handleChange('isSaarthiStudent')}
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <label htmlFor="isVajiramStudent" className="ml-2 block text-sm text-gray-700">
-                I am an ex-student of Vajiram and Ravi
+              <label className="ml-2 block text-sm text-gray-700">
+                I am an ex-student of Saarthi IAS
               </label>
             </div>
           </div>
         </div>
 
-        {formData.isVajiramStudent && (
+        {formData.isSaarthiStudent && (
           <div>
             <label htmlFor="vajiramCourse" className="block text-sm font-medium text-gray-700">
               Course Enrolled

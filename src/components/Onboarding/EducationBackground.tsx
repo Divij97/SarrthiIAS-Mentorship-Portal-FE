@@ -9,24 +9,49 @@ interface EducationBackgroundProps {
   ) => void;
 }
 
-const graduationSubjects = [
-  'Computer Science',
-  'Engineering',
-  'Arts',
-  'Commerce',
-  'Science',
-  'Law',
-  'Medicine',
-  'Other'
-];
+const reservationCategories = ['General', 'OBC', 'SC/ST'];
 
 const EducationBackground = ({ formData, handleChange }: EducationBackgroundProps) => {
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Educational Background</h2>
-      <p className="text-gray-600">Tell us about your educational journey</p>
+      <h2 className="text-2xl font-bold text-gray-900">Additional Information</h2>
+      <p className="text-gray-600">Please provide these additional details</p>
 
       <div className="space-y-4">
+        <div>
+          <label htmlFor="reservationCategory" className="block text-sm font-medium text-gray-700">
+            Reservation Category
+          </label>
+          <select
+            id="reservationCategory"
+            value={formData.reservationCategory}
+            onChange={handleChange('reservationCategory')}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
+            required
+          >
+            <option value="">Select Category</option>
+            {reservationCategories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="optionalSubject" className="block text-sm font-medium text-gray-700">
+            Optional Subject
+          </label>
+          <input
+            type="text"
+            id="optionalSubject"
+            value={formData.optionalSubject}
+            onChange={handleChange('optionalSubject')}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
+            required
+          />
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700">
             Professional Status
@@ -45,40 +70,6 @@ const EducationBackground = ({ formData, handleChange }: EducationBackgroundProp
               </label>
             </div>
           </div>
-        </div>
-
-        <div>
-          <label htmlFor="collegeName" className="block text-sm font-medium text-gray-700">
-            Name of College
-          </label>
-          <input
-            type="text"
-            id="collegeName"
-            value={formData.collegeName}
-            onChange={handleChange('collegeName')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="graduationSubject" className="block text-sm font-medium text-gray-700">
-            Subject of Graduation
-          </label>
-          <select
-            id="graduationSubject"
-            value={formData.graduationSubject}
-            onChange={handleChange('graduationSubject')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-            required
-          >
-            <option value="">Select Subject</option>
-            {graduationSubjects.map((subject) => (
-              <option key={subject} value={subject.toLowerCase()}>
-                {subject}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
     </div>
