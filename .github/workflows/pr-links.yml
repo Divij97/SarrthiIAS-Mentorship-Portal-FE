@@ -7,7 +7,7 @@ on:
 jobs:
   pr-links:
     runs-on: ubuntu-latest
-    if: github.actor != 'github-actions[bot]'
+    if: ${{ contains(github.head_ref, 'issue-') && !contains(github.event.pull_request.labels.*.name, 'from-pr') }}
     steps:
       - uses: actions/checkout@v4
       
