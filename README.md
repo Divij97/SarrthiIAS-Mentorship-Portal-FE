@@ -1,47 +1,26 @@
-# Saarthi IAS Mentorship Program
+# Saarthi IAS Mentorship Portal
 
-A Next.js application for onboarding students into the Saarthi IAS Mentorship Program. This application provides a multi-step form to collect information about students' UPSC preparation journey and their mentorship needs.
+A web application for managing mentorship programs at Saarthi IAS, built with Next.js, TypeScript, and Tailwind CSS.
 
 ## Features
 
-- Multi-step form with progress tracking
-- Responsive design using Tailwind CSS
-- Form validation
-- TypeScript support
-- Modern UI with smooth transitions
-- Comprehensive data collection across multiple sections:
-  - Personal Information
-  - Educational Background
-  - UPSC Preparation Journey
-  - Current Preparation Details
-  - Program Expectations
+### Authentication
+- Phone number and password-based authentication
+- Secure password hashing using SHA-256 with salt
+- Automatic redirection to signup for new users
+- Session management using Zustand store
 
-## Getting Started
+### User Profile
+- Comprehensive mentee profile management
+- Display of personal information
+- Academic details tracking
+- Study preferences
+- Progress monitoring
 
-### Prerequisites
-
-- Node.js 18.17 or later
-- npm (comes with Node.js)
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd mentorship-app
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Run the development server:
-```bash
-npm run dev
-```
-
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Dashboard Sections
+- Profile Overview
+- Session Details
+- Ask Mentor Interface
 
 ## Project Structure
 
