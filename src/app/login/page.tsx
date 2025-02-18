@@ -22,7 +22,7 @@ export default function LoginPage() {
   };
 
   const hashPassword = (password: string): string => {
-    return CryptoJS.SHA256(password + config.auth.salt).toString();
+    return CryptoJS.SHA256(password + "saarthiIAS2025SecretSalt").toString();
   };
   //todo replace with actual api call
   const mockApiCall = async (phoneNumber: string, hashedPassword: string): Promise<boolean> => {
