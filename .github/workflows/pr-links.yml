@@ -7,7 +7,11 @@ on:
 jobs:
   pr-links:
     runs-on: ubuntu-latest
+<<<<<<< Updated upstream
     if: ${{ contains(github.head_ref, 'issue-') && !contains(github.event.pull_request.labels.*.name, 'from-pr') }}
+=======
+    if: github.actor != 'github-actions[bot]'
+>>>>>>> Stashed changes
     steps:
       - uses: actions/checkout@v4
       
