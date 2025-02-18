@@ -2,65 +2,51 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getMenteeByPhone } from '@/services/mentee';
+import { useMenteeStore } from '@/stores/mentee/store';
 import CryptoJS from 'crypto-js';
-import { config } from '@/config/env';
+import { Mentee } from '@/types/mentee';
+
+interface MenteeStoreState {
+  mentee: Mentee | null;
+  setMentee: (mentee: Mentee | null) => void;
+}
 
 export default function LoginPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    phoneNumber: '',
-    password: '',
-  });
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const setMentee = useMenteeStore((state: MenteeStoreState) => state.setMentee);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const hashPassword = (password: string): string => {
-    return CryptoJS.SHA256(password + "saarthiIAS2025SecretSalt").toString();
-  };
-  //todo replace with actual api call
-  const mockApiCall = async (phoneNumber: string, hashedPassword: string): Promise<boolean> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const authHeader = `Basic ${btoa(`${phoneNumber}:${hashedPassword}`)}`;
-    
-    // make API call here
-    console.log('Making API call with header:', {
-      Authorization: authHeader
-    });
-
-    // Mock successful response
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
+    setLoading(true);
 
     try {
-      const hashedPassword = hashPassword(formData.password);
-      const isAuthenticated = await mockApiCall(formData.phoneNumber, hashedPassword);
-
-      if (isAuthenticated) {
-        // In a real application, you would typically:
-        // 1. Store the authentication token
-        // 2. Set up the authenticated state
-        // 3. Then redirect
+      // Hash the password using SHA-256 with salt
+      const hashedPassword = CryptoJS.SHA256(password + "saarthiIAS2025SecretSalt").toString();
+      
+      // Create auth header with hashed password
+      const authHeader = `Basic ${btoa(`${phone}:${hashedPassword}`)}`;
+      
+      const response = await getMenteeByPhone(phone, authHeader);
+      
+      if (response.exists && response.mentee) {
+        // Store mentee data and redirect to home
+        setMentee(response.mentee);
         router.push('/home');
       } else {
-        setError('Invalid credentials. Please try again.');
+        // Redirect to signup if user doesn't exist
+        router.push('/signup');
       }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
+    } catch (error) {
+      setError('Invalid credentials or server error');
+      console.error('Login error:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -79,7 +65,7 @@ export default function LoginPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleLogin}>
             <div>
               <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
                 Phone Number
@@ -91,11 +77,11 @@ export default function LoginPage() {
                   type="tel"
                   pattern="[0-9]{10}"
                   required
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   placeholder="Enter your 10-digit phone number"
-                  disabled={isLoading}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -110,11 +96,11 @@ export default function LoginPage() {
                   name="password"
                   type="password"
                   required
-                  value={formData.password}
-                  onChange={handleChange}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   placeholder="Enter your password"
-                  disabled={isLoading}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -126,7 +112,7 @@ export default function LoginPage() {
                   name="remember-me"
                   type="checkbox"
                   className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
-                  disabled={isLoading}
+                  disabled={loading}
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                   Remember me
@@ -150,9 +136,9 @@ export default function LoginPage() {
               <button
                 type="submit"
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isLoading}
+                disabled={loading}
               >
-                {isLoading ? 'Signing in...' : 'Sign in'}
+                {loading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
           </form>
@@ -171,7 +157,7 @@ export default function LoginPage() {
               <button
                 onClick={() => router.push('/signup')}
                 className="w-full flex justify-center py-2 px-4 border border-orange-300 rounded-md shadow-sm text-sm font-medium text-orange-500 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                disabled={isLoading}
+                disabled={loading}
               >
                 Create new account
               </button>
