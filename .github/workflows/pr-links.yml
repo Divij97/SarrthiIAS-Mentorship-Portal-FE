@@ -1,0 +1,18 @@
+name: Pull Request Links
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  pr-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Link Pull Request to Issue
+        uses: tkt-actions/add-issue-links@v1.8.1
+        with:
+          repo-token: ${{ secrets.PAT }}
+          branch-prefix: 'issue-'
+          resolve: 'true'
