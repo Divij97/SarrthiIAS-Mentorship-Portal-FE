@@ -1,6 +1,7 @@
 'use client';
 
 import { FormData } from '@/components/MultiStepForm';
+import { RadioGroup } from '@/components/ui/RadioGroup';
 
 interface PreparationJourneyProps {
   formData: FormData;
@@ -8,6 +9,12 @@ interface PreparationJourneyProps {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => void;
 }
+
+const answerWritingLevelOptions = [
+  { value: 'BEGINNER', label: 'Beginner - Just starting with answer writing' },
+  { value: 'INTERMEDIATE', label: 'Intermediate - Written some answers before' },
+  { value: 'ADVANCED', label: 'Advanced - Regular practice with feedback' }
+];
 
 const PreparationJourney = ({ formData, handleChange }: PreparationJourneyProps) => {
   return (
@@ -64,7 +71,7 @@ const PreparationJourney = ({ formData, handleChange }: PreparationJourneyProps)
                 id="isVajiramStudent"
                 checked={formData.isSaarthiStudent}
                 onChange={handleChange('isSaarthiStudent')}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
               />
               <label className="ml-2 block text-sm text-gray-700">
                 I am an ex-student of Saarthi IAS
@@ -88,6 +95,16 @@ const PreparationJourney = ({ formData, handleChange }: PreparationJourneyProps)
             />
           </div>
         )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Answer Writing Level</label>
+          <RadioGroup
+            value={formData.answerWritingLevel}
+            onChange={(value) => handleChange('answerWritingLevel')({ target: { value } } as any)}
+            options={answerWritingLevelOptions}
+            name="answerWritingLevel"
+          />
+        </div>
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import EducationBackground from '@/components/Onboarding/EducationBackground';
 import PreparationJourney from '@/components/Onboarding/PreparationJourney';
 import CurrentPreparation from '@/components/Onboarding/CurrentPreparation';
 import Expectations from '@/components/Onboarding/Expectations';
+import { Button } from '@/components/ui/Button';
 
 interface FormErrors {
   [key: string]: string;
@@ -140,7 +141,7 @@ const MultiStepForm = () => {
       <div className="mb-8">
         <div className="h-2 bg-gray-200 rounded-full">
           <div
-            className="h-full bg-blue-600 rounded-full transition-all duration-300"
+            className="h-full bg-orange-500 rounded-full transition-all duration-300"
             style={{ width: `${(step / 5) * 100}%` }}
           ></div>
         </div>
@@ -154,27 +155,18 @@ const MultiStepForm = () => {
         
         <div className="mt-6 flex justify-between">
           {step > 1 && (
-            <button
-              onClick={prevStep}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-            >
+            <Button variant="secondary" onClick={prevStep}>
               Back
-            </button>
+            </Button>
           )}
           {step < 5 ? (
-            <button
-              onClick={nextStep}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ml-auto"
-            >
+            <Button onClick={nextStep} className="ml-auto">
               Next
-            </button>
+            </Button>
           ) : (
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 ml-auto"
-            >
+            <Button onClick={handleSubmit} className="ml-auto">
               Submit
-            </button>
+            </Button>
           )}
         </div>
       </div>

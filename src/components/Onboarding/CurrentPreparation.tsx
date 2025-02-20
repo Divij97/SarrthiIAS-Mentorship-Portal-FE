@@ -90,7 +90,7 @@ const CurrentPreparation = ({
                 id="uniform-slot"
                 checked={useUniformSlot}
                 onChange={() => handleSlotTypeChange(true)}
-                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
               />
               <label htmlFor="uniform-slot" className="text-sm text-gray-700">
                 Same time slot for all weekdays
@@ -102,7 +102,7 @@ const CurrentPreparation = ({
                 id="day-wise-slot"
                 checked={!useUniformSlot}
                 onChange={() => handleSlotTypeChange(false)}
-                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
               />
               <label htmlFor="day-wise-slot" className="text-sm text-gray-700">
                 Different time slots for each day
@@ -118,7 +118,7 @@ const CurrentPreparation = ({
                   id="morning-slot"
                   checked={uniformSlot === timeSlots.MORNING}
                   onChange={() => handleUniformSlotChange(timeSlots.MORNING)}
-                  className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
                 />
                 <label htmlFor="morning-slot" className="text-sm text-gray-700">
                   {formatTimeSlot(timeSlots.MORNING)}
@@ -130,7 +130,7 @@ const CurrentPreparation = ({
                   id="evening-slot"
                   checked={uniformSlot === timeSlots.EVENING}
                   onChange={() => handleUniformSlotChange(timeSlots.EVENING)}
-                  className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
                 />
                 <label htmlFor="evening-slot" className="text-sm text-gray-700">
                   {formatTimeSlot(timeSlots.EVENING)}
@@ -148,7 +148,7 @@ const CurrentPreparation = ({
                       id={`${day}-morning`}
                       checked={formData.preferredSlotsOnWeekdays[index] === timeSlots.MORNING}
                       onChange={() => handleDayWiseSlotChange(index, timeSlots.MORNING)}
-                      className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
                     />
                     <label htmlFor={`${day}-morning`} className="text-sm text-gray-700">
                       {formatTimeSlot(timeSlots.MORNING)}
@@ -158,7 +158,7 @@ const CurrentPreparation = ({
                       id={`${day}-evening`}
                       checked={formData.preferredSlotsOnWeekdays[index] === timeSlots.EVENING}
                       onChange={() => handleDayWiseSlotChange(index, timeSlots.EVENING)}
-                      className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
                     />
                     <label htmlFor={`${day}-evening`} className="text-sm text-gray-700">
                       {formatTimeSlot(timeSlots.EVENING)}

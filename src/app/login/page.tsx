@@ -6,6 +6,7 @@ import { getMenteeByPhone } from '@/services/mentee';
 import { useMenteeStore } from '@/stores/mentee/store';
 import CryptoJS from 'crypto-js';
 import { Mentee } from '@/types/mentee';
+import { config } from '@/config/env';
 
 interface MenteeStoreState {
   mentee: Mentee | null;
@@ -27,7 +28,7 @@ export default function LoginPage() {
 
     try {
       // Hash the password using SHA-256 with salt
-      const hashedPassword = CryptoJS.SHA256(password + "saarthiIAS2025SecretSalt").toString();
+      const hashedPassword = CryptoJS.SHA256(password + config.auth.salt).toString();
       
       // Create auth header with hashed password
       const authHeader = `Basic ${btoa(`${phone}:${hashedPassword}`)}`;

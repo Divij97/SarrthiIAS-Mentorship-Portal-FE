@@ -1,6 +1,7 @@
 'use client';
 
 import { FormData } from '../MultiStepForm';
+import { RadioGroup } from '@/components/ui/RadioGroup';
 
 interface PersonalInfoProps {
   formData: FormData;
@@ -10,6 +11,12 @@ interface PersonalInfoProps {
   region: string[];
   errors?: Record<string, string>;
 }
+
+const genderOptions = [
+  { value: 'MALE', label: 'Male' },
+  { value: 'FEMALE', label: 'Female' },
+  { value: 'OTHER', label: 'Other' }
+];
 
 const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoProps) => {
   return (
@@ -61,21 +68,13 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
         </div>
 
         <div>
-          <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
-            Gender
-          </label>
-          <select
-            id="gender"
+          <label className="block text-sm font-medium text-gray-700">Gender</label>
+          <RadioGroup
             value={formData.gender}
-            onChange={handleChange('gender')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-            required
-          >
-            <option value="">Select Gender</option>
-            <option value="female">Female</option>
-            <option value="male">Male</option>
-            <option value="other">Other</option>
-          </select>
+            onChange={(value) => handleChange('gender')({ target: { value } } as any)}
+            options={genderOptions}
+            name="gender"
+          />
         </div>
 
         <div className="mb-4">

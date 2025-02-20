@@ -161,7 +161,7 @@ const EducationBackground = ({ formData, handleChange }: EducationBackgroundProp
                 id="isWorkingProfessional"
                 checked={formData.isWorkingProfessional}
                 onChange={handleChange('isWorkingProfessional')}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
               />
               <label htmlFor="isWorkingProfessional" className="ml-2 block text-sm text-gray-700">
                 I am a working professional
