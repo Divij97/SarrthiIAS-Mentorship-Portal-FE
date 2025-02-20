@@ -14,7 +14,7 @@ interface EducationBackgroundProps {
 const reservationCategories = ['General', 'OBC', 'SC/ST'];
 
 // Get all valid optional subjects from the enum
-const optionalSubjects = Object.values(OptionalSubject);
+const optionalSubjects: string[] = Object.values(OptionalSubject);
 
 const EducationBackground = ({ formData, handleChange }: EducationBackgroundProps) => {
   const [subjectInput, setSubjectInput] = useState(formData.optionalSubject || '');
