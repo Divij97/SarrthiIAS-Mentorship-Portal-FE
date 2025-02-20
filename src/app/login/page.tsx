@@ -1,53 +1,36 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getMenteeByPhone } from '@/services/mentee';
+import { useLoginStore } from '@/stores/auth/store';
 import { useMenteeStore } from '@/stores/mentee/store';
-import CryptoJS from 'crypto-js';
-import { Mentee } from '@/types/mentee';
-import { config } from '@/config/env';
-
-interface MenteeStoreState {
-  mentee: Mentee | null;
-  setMentee: (mentee: Mentee | null) => void;
-}
 
 export default function LoginPage() {
   const router = useRouter();
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const setMentee = useMenteeStore((state: MenteeStoreState) => state.setMentee);
+  const {
+    phone,
+    password,
+    error,
+    loading,
+    setPhone,
+    setPassword,
+    handleLogin
+  } = useLoginStore();
+  
+  const setMentee = useMenteeStore((state) => state.setMentee);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-
+    
     try {
-      // Hash the password using SHA-256 with salt
-      const hashedPassword = CryptoJS.SHA256(password + config.auth.salt).toString();
-      
-      // Create auth header with hashed password
-      const authHeader = `Basic ${btoa(`${phone}:${hashedPassword}`)}`;
-      
-      const response = await getMenteeByPhone(phone, authHeader);
-      
-      if (response.exists && response.mentee) {
-        // Store mentee data and redirect to home
-        setMentee(response.mentee);
+      const mentee = await handleLogin();
+      if (mentee) {
+        setMentee(mentee);
         router.push('/home');
       } else {
-        // Redirect to signup if user doesn't exist
         router.push('/signup');
       }
     } catch (error) {
-      setError('Invalid credentials or server error');
-      console.error('Login error:', error);
-    } finally {
-      setLoading(false);
+      // Error is handled in the store
     }
   };
 
@@ -66,7 +49,7 @@ export default function LoginPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             <div>
               <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
                 Phone Number

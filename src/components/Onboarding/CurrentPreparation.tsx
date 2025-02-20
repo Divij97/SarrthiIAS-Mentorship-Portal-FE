@@ -20,17 +20,6 @@ const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as con
 
 const answerWritingLevels = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
 
-const commonSubjects = [
-  'History',
-  'Geography',
-  'Polity',
-  'Economics',
-  'Science & Technology',
-  'Environment',
-  'Current Affairs',
-  'Ethics'
-];
-
 const formatTimeSlot = (slot: string): string => {
   return slot === timeSlots.MORNING ? '9:00 AM - 6:00 PM' : '6:00 PM - 9:00 PM';
 };
