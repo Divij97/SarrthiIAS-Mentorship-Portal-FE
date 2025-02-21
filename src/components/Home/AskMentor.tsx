@@ -32,13 +32,16 @@ const AskMentor = () => {
             </label>
             <select
               id="category"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              defaultValue=""
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-gray-900"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
             >
               <option value="" disabled>Select an option</option>
-              <option value="subject">Subject Related</option>
-              <option value="exam">Exam Strategy</option>
-              <option value="other">Other</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat} className="text-gray-900">
+                  {cat}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -49,7 +52,9 @@ const AskMentor = () => {
             <textarea
               id="question"
               rows={6}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-gray-900"
               placeholder="Type your question here..."
             />
           </div>
@@ -57,7 +62,8 @@ const AskMentor = () => {
           <div>
             <button
               type="submit"
-              className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              onClick={handleSubmit}
+              className="inline-flex justify-center rounded-md border border-transparent bg-orange-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
             >
               Submit
             </button>

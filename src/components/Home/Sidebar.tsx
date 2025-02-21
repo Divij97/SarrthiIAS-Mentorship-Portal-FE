@@ -16,6 +16,7 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
 
   const navigation = [
     { name: 'Profile', section: 'profile' },
+    { name: 'Courses', section: 'courses' },
     { name: 'Session Details', section: 'session-details' },
     { name: 'Ask Mentor', section: 'ask-mentor' },
   ];
