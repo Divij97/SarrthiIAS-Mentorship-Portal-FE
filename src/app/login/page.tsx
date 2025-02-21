@@ -6,31 +6,29 @@ import { useMenteeStore } from '@/stores/mentee/store';
 
 export default function LoginPage() {
   const router = useRouter();
-  const {
-    phone,
-    password,
-    error,
+  const { 
+    phone, 
+    password, 
+    error, 
     loading,
-    setPhone,
-    setPassword,
-    handleLogin
+    setPhone, 
+    setPassword, 
+    handleLogin 
   } = useLoginStore();
-  
   const setMentee = useMenteeStore((state) => state.setMentee);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
       const mentee = await handleLogin();
       if (mentee) {
         setMentee(mentee);
-        router.push('/home');
+        router.replace('/home');
       } else {
         router.push('/signup');
       }
     } catch (error) {
-      // Error is handled in the store
+      console.error('Login error:', error);
     }
   };
 
@@ -49,7 +47,7 @@ export default function LoginPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={onSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
                 Phone Number

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMenteeStore } from '@/stores/mentee/store';
+import { useLoginStore } from '@/stores/auth/store';
 import Sidebar from '@/components/Home/Sidebar';
 import SessionDetails from '@/components/Home/SessionDetails';
 import AskMentor from '@/components/Home/AskMentor';
@@ -13,17 +14,17 @@ import { Mentee } from '@/types/mentee';
 export default function HomePage() {
   const router = useRouter();
   const mentee = useMenteeStore((state: { mentee: Mentee | null }) => state.mentee);
+  const { logout } = useLoginStore();
   const [activeSection, setActiveSection] = useState('profile');
 
-  useEffect(() => {
-    if (!mentee) {
-      router.push('/login');
-    }
-  }, [mentee, router]);
+  const handleLogout = () => {
+    logout();
+    router.replace('/login');
+  };
+
+  if (!mentee) return null;
 
   const renderContent = () => {
-    if (!mentee) return null;
-
     switch (activeSection) {
       case 'profile':
         return <Profile mentee={mentee} />;
@@ -38,13 +39,13 @@ export default function HomePage() {
     }
   };
 
-  if (!mentee) {
-    return null;
-  }
-
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      <Sidebar 
+        activeSection={activeSection} 
+        onSectionChange={setActiveSection}
+        onLogout={handleLogout}
+      />
       <main className="flex-1 p-8 md:ml-64">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
