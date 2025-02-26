@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMenteeStore } from '@/stores/mentee/store';
+import { UserType } from '@/types/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,20 +12,36 @@ export default function LoginPage() {
     phone, 
     password, 
     error, 
-    loading,
+    loading, 
+    isAuthenticated,
     setPhone, 
     setPassword, 
+    setError,
+    setUserType,
     handleLogin 
   } = useLoginStore();
-  const setMentee = useMenteeStore((state) => state.setMentee);
+  const { setMentee, mentee } = useMenteeStore();
+  const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (mentee) {
+        router.push('/home');
+      } else {
+        router.push('/signup');
+      }
+    }
+  }, [isAuthenticated, mentee, router]);
+
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const mentee = await handleLogin();
       if (mentee) {
         setMentee(mentee);
-        router.replace('/home');
+        router.push('/home');
+      } else if (isAuthenticated) {
+        router.push('/signup');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -45,7 +63,7 @@ export default function LoginPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             <div>
               <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
                 Phone Number
@@ -88,34 +106,46 @@ export default function LoginPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
+                  id="is-mentor"
+                  name="is-mentor"
+                  type="checkbox"
+                  onChange={(e) => setUserType(e.target.checked ? UserType.MENTOR : UserType.MENTEE)}
+                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                />
+                <label htmlFor="is-mentor" className="ml-2 block text-sm text-gray-900">
+                  I am a mentor
+                </label>
+              </div>
+
+              <div className="flex items-center">
+                <input
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
-                  disabled={loading}
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                   Remember me
                 </label>
               </div>
+            </div>
 
-              <div className="text-sm">
-                <a href="#" className="font-medium text-orange-600 hover:text-orange-500">
-                  Forgot your password?
-                </a>
-              </div>
+            <div className="text-sm text-right">
+              <a href="#" className="font-medium text-orange-600 hover:text-orange-500">
+                Forgot your password?
+              </a>
             </div>
 
             {error && (
-              <div className="text-red-600 text-sm text-center">
-                {error}
-              </div>
+              <div className="text-red-600 text-sm">{error}</div>
             )}
 
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                 disabled={loading}
               >
                 {loading ? 'Signing in...' : 'Sign in'}

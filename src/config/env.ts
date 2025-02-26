@@ -11,6 +11,6 @@ export const config = {
     salt: process.env.NEXT_PUBLIC_AUTH_SALT,
   },
   api: {
-    url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+    url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
   },
 } as const; 

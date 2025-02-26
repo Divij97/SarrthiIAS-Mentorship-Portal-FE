@@ -1,7 +1,8 @@
 import { MenteeResponse, Mentee, Region, Gender, ReservationCategory, OptionalSubject, PreferredSlot, AnswerWritingLevel } from '@/types/mentee';
 import { config } from '@/config/env';
+import { UserType } from '@/types/auth';
 
-export const getMenteeByPhone = async (phone: string, authHeader: string): Promise<MenteeResponse> => {
+export const getUserByPhone = async (phone: string, authHeader: string, userType: UserType): Promise<MenteeResponse> => {
   try {
     // Mock response for testing
     if (phone === '1111122222') {
@@ -42,21 +43,41 @@ export const getMenteeByPhone = async (phone: string, authHeader: string): Promi
       };
     }
 
-    const response = await fetch(`${config.api.url}/v1/mentee/${phone}`, {
+    // Clean up the API URL to prevent double slashes
+    let apiUrl = config.api.url;
+    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+    
+    const baseUrl = userType === UserType.MENTOR 
+      ? `${apiUrl}/v1/mentors`
+      : `${apiUrl}/v1/mentees`;
+
+    console.log('Request URL:', baseUrl);
+    console.log('Auth Header:', authHeader);
+
+    const response = await fetch(baseUrl, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
+      // Change from 'include' to 'same-origin' since we're sending auth header manually
+      credentials: 'same-origin'
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch mentee data');
+      console.error('API Error:', {
+        status: response.status,
+        statusText: response.statusText
+      });
+      throw new Error(`Failed to fetch user data: ${response.statusText}`);
     }
+
+    // console.log('Response:', await response.json());
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching mentee:', error);
+    console.error('Error fetching user:', error);
     throw error;
   }
 }; 

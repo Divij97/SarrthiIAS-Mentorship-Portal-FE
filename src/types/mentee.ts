@@ -120,6 +120,10 @@ export interface Mentee {
   previouslyEnrolledCourses: string[];
   primarySourceOfCurrentAffairs: string;
   expectationFromMentorshipCourse: string;
+
+  // Additional fields
+  interests: string[];
+  skills: string[];
 }
 
 export interface MenteeResponse {
