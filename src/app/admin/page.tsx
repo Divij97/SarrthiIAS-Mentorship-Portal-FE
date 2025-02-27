@@ -1,16 +1,39 @@
 'use client';
 
 import { useState } from 'react';
+import AdminSidebar from '@/components/Admin/Sidebar';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [activeSection, setActiveSection] = useState('courses');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implement actual admin authentication
     if (credentials.username === 'admin' && credentials.password === 'admin') {
       setIsAuthenticated(true);
+    }
+  };
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'courses':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900">Courses Management</h2>
+            {/* Add courses management content here */}
+          </div>
+        );
+      case 'mentors':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900">Mentors Management</h2>
+            {/* Add mentors management content here */}
+          </div>
+        );
+      default:
+        return null;
     }
   };
 
@@ -69,17 +92,15 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <button
-            onClick={() => setIsAuthenticated(false)}
-            className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-          >
-            Logout
-          </button>
+      <AdminSidebar
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        onLogout={() => setIsAuthenticated(false)}
+      />
+      <div className="md:pl-64">
+        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+          {renderContent()}
         </div>
-        {/* Add your admin dashboard content here */}
       </div>
     </div>
   );
