@@ -2,11 +2,14 @@
 
 import { useState } from 'react';
 import AdminSidebar from '@/components/Admin/Sidebar';
+import CourseForm from '@/components/Admin/CourseForm';
+import ActiveCourses from '@/components/Admin/ActiveCourses';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [activeSection, setActiveSection] = useState('courses');
+  const [showActiveCourses, setShowActiveCourses] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,9 +23,24 @@ export default function AdminPage() {
     switch (activeSection) {
       case 'courses':
         return (
-          <div>
+          <div className="space-y-6">
             <h2 className="text-2xl font-semibold text-gray-900">Courses Management</h2>
-            {/* Add courses management content here */}
+            {showActiveCourses ? (
+              <div>
+                <button
+                  onClick={() => setShowActiveCourses(false)}
+                  className="mb-6 text-orange-600 hover:text-orange-700 font-medium flex items-center"
+                >
+                  ← Back to Course Creation
+                </button>
+                <ActiveCourses />
+              </div>
+            ) : (
+              <div className="bg-white shadow rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-6">Create New Course</h3>
+                <CourseForm onViewActiveCourses={() => setShowActiveCourses(true)} />
+              </div>
+            )}
           </div>
         );
       case 'mentors':
@@ -55,7 +73,7 @@ export default function AdminPage() {
                   name="username"
                   type="text"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-black rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                   placeholder="Username"
                   value={credentials.username}
                   onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
@@ -68,7 +86,7 @@ export default function AdminPage() {
                   name="password"
                   type="password"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-black rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                   placeholder="Password"
                   value={credentials.password}
                   onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
