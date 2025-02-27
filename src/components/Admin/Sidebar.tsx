@@ -3,17 +3,14 @@
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 
-interface SidebarProps {
-  onLogout: () => void;
-}
-
 interface NavigationItem {
   name: string;
   path: string;
   subsections?: { name: string; path: string }[];
 }
 
-export default function AdminSidebar({ onLogout }: SidebarProps) {
+export default function AdminSidebar() {
+  const router = useRouter();
   const pathname = usePathname();
   
   const navigation: NavigationItem[] = [
@@ -27,6 +24,14 @@ export default function AdminSidebar({ onLogout }: SidebarProps) {
     },
     { name: 'Mentors', path: '/admin/dashboard/mentors' },
   ];
+
+  const handleLogout = () => {
+    const confirmLogout = window.confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      localStorage.removeItem('adminAuthenticated');
+      router.push('/admin');
+    }
+  };
 
   return (
     <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg">
@@ -73,7 +78,7 @@ export default function AdminSidebar({ onLogout }: SidebarProps) {
         </div>
         <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
           <button
-            onClick={onLogout}
+            onClick={handleLogout}
             className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md"
           >
             Logout
