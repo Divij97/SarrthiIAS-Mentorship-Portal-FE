@@ -1,15 +1,18 @@
 'use client';
 
+import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
+
 interface SidebarProps {
-  activeSection: string;
-  onSectionChange: (section: string) => void;
   onLogout: () => void;
 }
 
-export default function AdminSidebar({ activeSection, onSectionChange, onLogout }: SidebarProps) {
+export default function AdminSidebar({ onLogout }: SidebarProps) {
+  const pathname = usePathname();
+  
   const navigation = [
-    { name: 'Courses', section: 'courses' },
-    { name: 'Mentors', section: 'mentors' },
+    { name: 'Courses', path: '/admin/dashboard/courses' },
+    { name: 'Mentors', path: '/admin/dashboard/mentors' },
   ];
 
   return (
@@ -21,17 +24,17 @@ export default function AdminSidebar({ activeSection, onSectionChange, onLogout 
           </div>
           <nav className="mt-5 flex-1 px-2 space-y-1">
             {navigation.map((item) => (
-              <button
-                key={item.section}
-                onClick={() => onSectionChange(item.section)}
+              <Link
+                key={item.path}
+                href={item.path}
                 className={`${
-                  activeSection === item.section
+                  pathname === item.path
                     ? 'bg-orange-100 text-orange-900'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 } group flex items-center px-2 py-2 text-sm font-medium rounded-md w-full`}
               >
                 {item.name}
-              </button>
+              </Link>
             ))}
           </nav>
         </div>
