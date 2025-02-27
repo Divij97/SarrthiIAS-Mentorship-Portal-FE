@@ -21,6 +21,12 @@ export default function RootLayoutClient({
 
   useEffect(() => {
     const checkAuthAndRedirect = () => {
+      // Ignore authentication check for admin route
+      if (pathname.startsWith('/admin')) {
+        setIsLoading(false);
+        return;
+      }
+
       const publicRoutes = ['/login', '/signup'];
       const isPublicRoute = publicRoutes.includes(pathname);
 
