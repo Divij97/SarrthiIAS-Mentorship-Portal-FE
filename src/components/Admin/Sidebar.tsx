@@ -7,11 +7,24 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
+interface NavigationItem {
+  name: string;
+  path: string;
+  subsections?: { name: string; path: string }[];
+}
+
 export default function AdminSidebar({ onLogout }: SidebarProps) {
   const pathname = usePathname();
   
-  const navigation = [
-    { name: 'Courses', path: '/admin/dashboard/courses' },
+  const navigation: NavigationItem[] = [
+    {
+      name: 'Courses',
+      path: '/admin/dashboard/courses',
+      subsections: [
+        { name: 'Create New Course', path: '/admin/dashboard/courses/create' },
+        { name: 'Active Courses', path: '/admin/dashboard/courses/active' },
+      ]
+    },
     { name: 'Mentors', path: '/admin/dashboard/mentors' },
   ];
 
@@ -24,17 +37,37 @@ export default function AdminSidebar({ onLogout }: SidebarProps) {
           </div>
           <nav className="mt-5 flex-1 px-2 space-y-1">
             {navigation.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`${
-                  pathname === item.path
-                    ? 'bg-orange-100 text-orange-900'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                } group flex items-center px-2 py-2 text-sm font-medium rounded-md w-full`}
-              >
-                {item.name}
-              </Link>
+              <div key={item.path}>
+                <div className="mb-2">
+                  <Link
+                    href={item.path}
+                    className={`${
+                      pathname.startsWith(item.path)
+                        ? 'bg-orange-100 text-orange-900'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    } group flex items-center px-2 py-2 text-sm font-medium rounded-md w-full`}
+                  >
+                    {item.name}
+                  </Link>
+                </div>
+                {item.subsections && pathname.startsWith(item.path) && (
+                  <div className="ml-4 space-y-1">
+                    {item.subsections.map((subsection) => (
+                      <Link
+                        key={subsection.path}
+                        href={subsection.path}
+                        className={`${
+                          pathname === subsection.path
+                            ? 'text-orange-900 bg-orange-50'
+                            : 'text-gray-500 hover:text-gray-900'
+                        } group flex items-center px-2 py-1.5 text-sm rounded-md w-full`}
+                      >
+                        {subsection.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </nav>
         </div>
