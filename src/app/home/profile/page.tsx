@@ -1,17 +1,24 @@
 'use client';
 
+import { useLoginStore } from '@/stores/auth/store';
 import { useMenteeStore } from '@/stores/mentee/store';
-import Profile from '@/components/Home/Profile';
+import { useMentorStore } from '@/stores/mentor/store';
+import { UserType } from '@/types/auth';
+import MentorView from '@/components/Home/MentorView';
+import MenteeView from '@/components/Home/MenteeView';
 
 export default function ProfilePage() {
-  const mentee = useMenteeStore((state) => state.mentee);
+  const { userType } = useLoginStore();
+  const { mentee } = useMenteeStore();
+  const { mentor } = useMentorStore();
 
-  if (!mentee) return null;
+  if (userType === UserType.MENTOR && mentor) {
+    return <MentorView mentor={mentor} />;
+  }
 
-  return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Welcome, {mentee.name}!</h1>
-      <Profile mentee={mentee} />
-    </div>
-  );
+  if (userType === UserType.MENTEE && mentee) {
+    return <MenteeView mentee={mentee} />;
+  }
+
+  return null;
 } 

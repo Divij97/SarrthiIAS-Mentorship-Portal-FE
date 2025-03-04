@@ -4,13 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMenteeStore } from '@/stores/mentee/store';
+import { useMentorStore } from '@/stores/mentor/store';
 import { UserType } from '@/types/auth';
-import { RadioGroup } from '@/components/ui/RadioGroup';
-
-const userTypeOptions = [
-  { value: UserType.MENTOR, label: 'Mentor' },
-  { value: UserType.MENTEE, label: 'Mentee' }
-];
+import { Mentor } from '@/types/mentor';
+import { Mentee } from '@/types/mentee';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,6 +17,7 @@ export default function LoginPage() {
     error, 
     loading, 
     isAuthenticated,
+    userType,
     setPhone, 
     setPassword, 
     setError,
@@ -27,27 +25,33 @@ export default function LoginPage() {
     handleLogin 
   } = useLoginStore();
   const { setMentee, mentee } = useMenteeStore();
+  const { setMentor } = useMentorStore();
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (mentee) {
-        router.push('/home');
+      if (userType === UserType.MENTEE) {
+        router.push(mentee ? '/home' : '/signup');
       } else {
-        router.push('/signup');
+        router.push('/home');
       }
     }
-  }, [isAuthenticated, mentee, router]);
+  }, [isAuthenticated, mentee, userType, router]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const mentee = await handleLogin();
-      if (mentee) {
-        setMentee(mentee);
-        router.push('/home');
-      } else if (isAuthenticated) {
-        router.push('/signup');
+      const response = await handleLogin();
+      if (response) {
+        if (userType === UserType.MENTOR) {
+          const mentor = response as Mentor;
+          setMentor(mentor);
+          router.push('/home');
+        } else {
+          const mentee = response as Mentee;
+          setMentee(mentee);
+          // Mentee redirection will be handled by useEffect
+        }
       }
     } catch (error) {
       console.error('Login error:', error);

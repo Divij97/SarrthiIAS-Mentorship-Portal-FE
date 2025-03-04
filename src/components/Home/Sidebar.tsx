@@ -2,25 +2,40 @@
 
 import Link from 'next/link';
 import { useMenteeStore } from '@/stores/mentee/store';
+import { useMentorStore } from '@/stores/mentor/store';
+import { UserType } from '@/types/auth';
 import { Mentee } from '@/types/mentee';
+import { Mentor } from '@/types/mentor';
 
 interface SidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
   onLogout: () => void;
+  userType: UserType | null;
 }
 
-export default function Sidebar({ activeSection, onSectionChange, onLogout }: SidebarProps) {
-  const mentee = useMenteeStore((state: { mentee: Mentee | null }) => state.mentee);
+export default function Sidebar({ activeSection, onSectionChange, onLogout, userType }: SidebarProps) {
+  const mentee = useMenteeStore((state) => state.mentee);
+  const mentor = useMentorStore((state) => state.mentor);
 
-  const navigation = [
+  const currentUser = userType === UserType.MENTOR ? mentor : mentee;
+
+  const menteeNavigation = [
     { name: 'Profile', section: 'profile' },
     { name: 'Courses', section: 'courses' },
     { name: 'Session Details', section: 'session-details' },
     { name: 'Ask Mentor', section: 'ask-mentor' },
   ];
 
-  if (!mentee) return null;
+  const mentorNavigation = [
+    { name: 'Profile', section: 'profile' },
+    { name: 'Sessions', section: 'session-details' },
+    { name: 'Mentees', section: 'mentees' },
+  ];
+
+  const navigation = userType === UserType.MENTOR ? mentorNavigation : menteeNavigation;
+
+  if (!currentUser) return null;
 
   return (
     <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg">

@@ -1,8 +1,7 @@
 import { MenteeResponse, Mentee, Region, Gender, ReservationCategory, OptionalSubject, PreferredSlot, AnswerWritingLevel } from '@/types/mentee';
 import { config } from '@/config/env';
-import { UserType } from '@/types/auth';
 
-export const getUserByPhone = async (phone: string, authHeader: string, userType: UserType): Promise<MenteeResponse> => {
+export const getMenteeByPhone = async (phone: string, authHeader: string): Promise<MenteeResponse> => {
   try {
     // Mock response for testing
     if (phone === '1111122222') {
@@ -27,7 +26,10 @@ export const getUserByPhone = async (phone: string, authHeader: string, userType
         
         previouslyEnrolledCourses: ["UPSC Foundation Course"],
         primarySourceOfCurrentAffairs: "The Hindu Newspaper",
-        expectationFromMentorshipCourse: "Looking to improve answer writing skills and get structured guidance"
+        expectationFromMentorshipCourse: "Looking to improve answer writing skills and get structured guidance",
+        
+        interests: ["Current Affairs", "Public Policy", "International Relations"],
+        skills: ["Research", "Analysis", "Writing"]
       };
 
       return {
@@ -47,21 +49,13 @@ export const getUserByPhone = async (phone: string, authHeader: string, userType
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
     
-    const baseUrl = userType === UserType.MENTOR 
-      ? `${apiUrl}/v1/mentors`
-      : `${apiUrl}/v1/mentees`;
-
-    console.log('Request URL:', baseUrl);
-    console.log('Auth Header:', authHeader);
-
-    const response = await fetch(baseUrl, {
+    const response = await fetch(`${apiUrl}/v1/mentees/${phone}`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      // Change from 'include' to 'same-origin' since we're sending auth header manually
       credentials: 'same-origin'
     });
 
@@ -72,8 +66,6 @@ export const getUserByPhone = async (phone: string, authHeader: string, userType
       });
       throw new Error(`Failed to fetch user data: ${response.statusText}`);
     }
-
-    // console.log('Response:', await response.json());
 
     return await response.json();
   } catch (error) {
