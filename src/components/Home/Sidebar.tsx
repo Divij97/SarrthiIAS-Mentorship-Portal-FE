@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { Mentee } from '@/types/mentee';
 
@@ -11,9 +11,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeSection, onSectionChange, onLogout }: SidebarProps) {
-  const router = useRouter();
   const mentee = useMenteeStore((state: { mentee: Mentee | null }) => state.mentee);
-  const clearMentee = useMenteeStore((state: any) => state.clearMentee);
 
   const navigation = [
     { name: 'Profile', section: 'profile' },
@@ -21,11 +19,6 @@ export default function Sidebar({ activeSection, onSectionChange, onLogout }: Si
     { name: 'Session Details', section: 'session-details' },
     { name: 'Ask Mentor', section: 'ask-mentor' },
   ];
-
-  const handleLogout = () => {
-    clearMentee();
-    router.push('/login');
-  };
 
   if (!mentee) return null;
 

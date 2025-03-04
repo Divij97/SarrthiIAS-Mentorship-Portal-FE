@@ -5,6 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { UserType } from '@/types/auth';
+import { RadioGroup } from '@/components/ui/RadioGroup';
+
+const userTypeOptions = [
+  { value: UserType.MENTOR, label: 'Mentor' },
+  { value: UserType.MENTEE, label: 'Mentee' }
+];
 
 export default function LoginPage() {
   const router = useRouter();
@@ -68,16 +74,20 @@ export default function LoginPage() {
               <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
                 Phone Number
               </label>
-              <div className="mt-1">
+              <div className="mt-1 flex">
+                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                  +91
+                </span>
                 <input
                   id="phoneNumber"
                   name="phoneNumber"
                   type="tel"
                   pattern="[0-9]{10}"
+                  maxLength={10}
                   required
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-none rounded-r-md shadow-sm placeholder-gray-400 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   placeholder="Enter your 10-digit phone number"
                   disabled={loading}
                 />
