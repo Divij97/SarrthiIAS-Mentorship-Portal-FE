@@ -36,7 +36,7 @@ export const getMentorByPhone = async (phone: string, authHeader: string): Promi
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
     
-    const response = await fetch(`${apiUrl}/v1/mentors/${phone}`, {
+    const response = await fetch(`${apiUrl}/v1/mentors`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,

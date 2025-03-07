@@ -3,6 +3,7 @@ import { config } from '@/config/env';
 
 export const getMenteeByPhone = async (phone: string, authHeader: string): Promise<MenteeResponse> => {
   try {
+    console.log('Fetching mentee by phone:', phone);
     // Mock response for testing
     if (phone === '1111122222') {
       const mockMentee: Mentee = {
@@ -49,7 +50,7 @@ export const getMenteeByPhone = async (phone: string, authHeader: string): Promi
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
     
-    const response = await fetch(`${apiUrl}/v1/mentees/${phone}`, {
+    const response = await fetch(`${apiUrl}/v1/mentees`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,

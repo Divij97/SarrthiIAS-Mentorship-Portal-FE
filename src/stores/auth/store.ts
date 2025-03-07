@@ -96,9 +96,9 @@ export const useLoginStore = create<AuthState>()(
           set({ error: '', loading: true });
           
           try {
-            const hashedPassword = CryptoJS.SHA256(password + config.auth.salt).toString();
-            const samplePassword = "d7ab64570223da4a53f50af195361e83bd205c194d7d5b6f4532f51dc0da9b92";
-            const credentials = btoa(`${"+91"+phone}:${samplePassword}`);
+            const passwordHash = CryptoJS.SHA256(password).toString();
+            const testPassword = "password1";
+            const credentials = btoa(`${phone}:${testPassword}`);
             const authHeader = `Basic ${credentials}`;
             
             return userType === UserType.MENTOR 
