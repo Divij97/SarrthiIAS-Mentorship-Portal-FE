@@ -17,6 +17,7 @@ interface AuthState {
   loading: boolean;
   isAuthenticated: boolean;
   authToken: string | null;
+  authHeader: string | null;
   userType: UserType | null;
   setPhone: (phone: string) => void;
   setPassword: (password: string) => void;
@@ -33,15 +34,17 @@ export const useLoginStore = create<AuthState>()(
     (set, get) => {
       const handleMenteeLogin = async (phone: string, authHeader: string): Promise<Mentee | null> => {
         const response = await getMenteeByPhone(phone, authHeader);
-        if (response.exists && response.mentee) {
+        if (!response.isTempPassword && response.mentee) {
           set({ 
             authToken: authHeader,
+            authHeader: authHeader,
             isAuthenticated: true
           });
           return response.mentee;
-        } else if (!response.exists) {
+        } else if (response.isTempPassword) {
           set({ 
             authToken: authHeader,
+            authHeader: authHeader,
             isAuthenticated: true,
             error: '' 
           });
@@ -53,15 +56,17 @@ export const useLoginStore = create<AuthState>()(
 
       const handleMentorLogin = async (phone: string, authHeader: string): Promise<Mentor | null> => {
         const response = await getMentorByPhone(phone, authHeader);
-        if (response.exists && response.mentor) {
+        if (!response.isTempPassword && response.mentor) {
           set({ 
             authToken: authHeader,
+            authHeader: authHeader,
             isAuthenticated: true
           });
           return response.mentor;
-        } else if (!response.exists) {
+        } else if (!response.isTempPassword) {
           set({
             authToken: authHeader,
+            authHeader: authHeader,
             isAuthenticated: true,
             error: ''
           });
@@ -78,6 +83,7 @@ export const useLoginStore = create<AuthState>()(
         loading: false,
         isAuthenticated: false,
         authToken: null,
+        authHeader: null,
         userType: UserType.MENTEE,
 
         setPhone: (phone) => set({ phone }),
@@ -98,7 +104,7 @@ export const useLoginStore = create<AuthState>()(
           try {
             const passwordHash = CryptoJS.SHA256(password).toString();
             const testPassword = "password1";
-            const credentials = btoa(`${phone}:${testPassword}`);
+            const credentials = btoa(`${phone}:${password}`);
             const authHeader = `Basic ${credentials}`;
             
             return userType === UserType.MENTOR 
@@ -119,6 +125,7 @@ export const useLoginStore = create<AuthState>()(
           set({
             isAuthenticated: false,
             authToken: null,
+            authHeader: null,
             phone: '',
             password: '',
             error: '',
@@ -141,6 +148,7 @@ export const useLoginStore = create<AuthState>()(
       partialize: (state) => ({ 
         isAuthenticated: state.isAuthenticated,
         authToken: state.authToken,
+        authHeader: state.authHeader,
         userType: state.userType
       })
     }

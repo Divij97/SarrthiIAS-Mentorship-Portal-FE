@@ -120,13 +120,11 @@ export interface Mentee {
   previouslyEnrolledCourses: string[];
   primarySourceOfCurrentAffairs: string;
   expectationFromMentorshipCourse: string;
-
-  // Additional fields
-  interests: string[];
-  skills: string[];
 }
 
 export interface MenteeResponse {
-  exists: boolean;
+  isTempPassword: boolean;
   mentee: Mentee | null;
+  otp: string | null;
+  username: string | null;
 } 

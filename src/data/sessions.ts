@@ -28,7 +28,7 @@ export const sampleMenteeSessionsData: MentorshipSessionsInfo = {
         {
           id: `session-${date}-1`,
           menteeFullName: "Rahul Kumar", // Current mentee
-          menteeUsername: "+919876543210",
+          menteeUsername: "9876543210",
           isZoomLinkGenerated: true,
           zoomLink: "https://zoom.us/j/123456789",
           startTime: "10:00",
@@ -51,7 +51,7 @@ export const sampleMentorSessionsData: MentorshipSessionsInfo = {
         {
           id: `session-${date}-1`,
           menteeFullName: "Rahul Kumar",
-          menteeUsername: "+919876543210",
+          menteeUsername: "9876543210",
           isZoomLinkGenerated: index === 0, // Only today's sessions have zoom links
           zoomLink: index === 0 ? "https://zoom.us/j/123456789" : null,
           startTime: "10:00",
@@ -60,7 +60,7 @@ export const sampleMentorSessionsData: MentorshipSessionsInfo = {
         {
           id: `session-${date}-2`,
           menteeFullName: "Priya Sharma",
-          menteeUsername: "+919876543211",
+          menteeUsername: "9876543211",
           isZoomLinkGenerated: index === 0,
           zoomLink: index === 0 ? "https://zoom.us/j/987654321" : null,
           startTime: "14:30",
@@ -73,7 +73,7 @@ export const sampleMentorSessionsData: MentorshipSessionsInfo = {
         acc[date].push({
           id: `session-${date}-3`,
           menteeFullName: "Amit Patel",
-          menteeUsername: "+919876543212",
+          menteeUsername: "9876543212",
           isZoomLinkGenerated: index === 0,
           zoomLink: index === 0 ? "https://zoom.us/j/456789123" : null,
           startTime: "16:00",

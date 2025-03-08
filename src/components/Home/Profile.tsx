@@ -7,10 +7,6 @@ interface ProfileProps {
 }
 
 export default function Profile({ mentee }: ProfileProps) {
-  // Add type guard to handle potentially null values
-  const interests = mentee?.interests || [];
-  const skills = mentee?.skills || [];
-  
   return (
     <div className="bg-white shadow rounded-lg p-6 space-y-6">
       <div className="border-b pb-6">
@@ -108,42 +104,6 @@ export default function Profile({ mentee }: ProfileProps) {
             <p className="text-sm font-medium text-gray-500">Expectations from Mentorship</p>
             <p className="mt-1 text-sm text-gray-900">{mentee.expectationFromMentorshipCourse || 'Not provided'}</p>
           </div>
-        </div>
-      </div>
-
-      <div className="border-b pb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Interests</h2>
-        <div className="flex flex-wrap gap-2">
-          {interests.length > 0 ? (
-            interests.map((interest, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-              >
-                {interest}
-              </span>
-            ))
-          ) : (
-            <p className="text-gray-500">No interests added yet</p>
-          )}
-        </div>
-      </div>
-
-      <div className="border-b pb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Skills</h2>
-        <div className="flex flex-wrap gap-2">
-          {skills.length > 0 ? (
-            skills.map((skill, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
-              >
-                {skill}
-              </span>
-            ))
-          ) : (
-            <p className="text-gray-500">No skills added yet</p>
-          )}
         </div>
       </div>
     </div>

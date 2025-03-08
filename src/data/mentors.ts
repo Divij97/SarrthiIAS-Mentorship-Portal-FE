@@ -5,7 +5,7 @@ export const sampleMentors: Mentor[] = [
   {
     name: "Amit Sharma",
     email: "amit.sharma@example.com",
-    phone: "+91-9876543210",
+    phone: "9876543210",
     region: Region.NORTH,
     gender: Gender.MALE,
     optionalSubject: OptionalSubject.HISTORY,
@@ -17,7 +17,7 @@ export const sampleMentors: Mentor[] = [
   {
     name: "Priya Nair",
     email: "priya.nair@example.com",
-    phone: "+91-9876543211",
+    phone: "9876543211",
     region: Region.SOUTH,
     gender: Gender.FEMALE,
     optionalSubject: OptionalSubject.ECONOMICS,
@@ -29,7 +29,7 @@ export const sampleMentors: Mentor[] = [
   {
     name: "Ravi Kumar",
     email: "ravi.kumar@example.com",
-    phone: "+91-9876543212",
+    phone: "9876543212",
     region: Region.EAST,
     gender: Gender.MALE,
     optionalSubject: OptionalSubject.POLITICAL_SCIENCE_AND_INTERNATIONAL_RELATIONS,
@@ -41,7 +41,7 @@ export const sampleMentors: Mentor[] = [
   {
     name: "Anjali Singh",
     email: "anjali.singh@example.com",
-    phone: "+91-9876543213",
+    phone: "9876543213",
     region: Region.WEST,
     gender: Gender.FEMALE,
     optionalSubject: OptionalSubject.PUBLIC_ADMINISTRATION,
@@ -53,7 +53,7 @@ export const sampleMentors: Mentor[] = [
   {
     name: "Manish Gupta",
     email: "manish.gupta@example.com",
-    phone: "+91-9876543214",
+    phone: "9876543214",
     region: Region.NORTH,
     gender: Gender.MALE,
     optionalSubject: OptionalSubject.GEOGRAPHY,

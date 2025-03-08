@@ -21,4 +21,11 @@ export interface Mentor {
   numberOfAttemptsInUpsc: number;
   numberOfMainsAttempts: number;
   offDaysOfWeek: DayOfWeek[];
-} 
+}
+
+export interface MentorResponse {
+  mentor: Mentor | null;
+  username: string | null;
+  isTempPassword: boolean;
+  otp: string | null;
+}

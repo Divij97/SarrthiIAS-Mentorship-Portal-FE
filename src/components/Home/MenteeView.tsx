@@ -123,26 +123,6 @@ export default function MenteeView({ mentee }: MenteeViewProps) {
                 <p className="text-sm font-medium text-gray-500">Expectation from Mentorship</p>
                 <p className="text-gray-900">{mentee.expectationFromMentorshipCourse}</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Interests</p>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {mentee.interests.map((interest) => (
-                    <span key={interest} className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm">
-                      {interest}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Skills</p>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {mentee.skills.map((skill) => (
-                    <span key={skill} className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>

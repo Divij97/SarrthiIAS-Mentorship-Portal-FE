@@ -1,46 +1,41 @@
-interface MentorshipGroup {
-  id: string;
-  // Add other group properties as needed
-}
-
 export interface Course {
-  id: string;
   name: string;
   description: string;
-  groups: MentorshipGroup[];
+  isOneOnOneMentorshipCourse: boolean;
+  endDate: string;
 }
 
 // Sample course data for development
 export const sampleCourses: Course[] = [
   {
-    id: 'course-1',
     name: 'UPSC Foundation Course 2024',
     description: 'Comprehensive foundation course covering all UPSC CSE Prelims and Mains subjects with integrated answer writing practice.',
-    groups: []
+    isOneOnOneMentorshipCourse: false,
+    endDate: '2024-12-31'
   },
   {
-    id: 'course-2',
     name: 'Advanced Essay Writing Program',
     description: 'Specialized program focusing on essay paper preparation with detailed feedback and personalized mentoring.',
-    groups: []
+    isOneOnOneMentorshipCourse: true,
+    endDate: '2024-06-30'
   },
   {
-    id: 'course-3',
     name: 'Current Affairs Mastery',
     description: 'Daily current affairs analysis and weekly tests covering all relevant topics for UPSC preparation.',
-    groups: []
+    isOneOnOneMentorshipCourse: false,
+    endDate: '2024-09-30'
   },
   {
-    id: 'course-4',
     name: 'Optional Subject: Sociology',
     description: 'In-depth coverage of Sociology optional subject with focus on previous year questions and answer writing.',
-    groups: []
+    isOneOnOneMentorshipCourse: true,
+    endDate: '2024-08-31'
   },
   {
-    id: 'course-5',
     name: 'Interview Preparation Program',
     description: 'Comprehensive personality test preparation program with mock interviews and detailed feedback.',
-    groups: []
+    isOneOnOneMentorshipCourse: true,
+    endDate: '2024-10-31'
   }
 ];
 

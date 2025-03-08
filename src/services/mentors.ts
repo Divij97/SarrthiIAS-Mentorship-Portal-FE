@@ -1,12 +1,7 @@
-import { Mentor, DayOfWeek } from '@/types/mentor';
+import { Mentor, DayOfWeek, MentorResponse } from '@/types/mentor';
 import { Region, Gender, OptionalSubject } from '@/types/mentee';
 import { config } from '@/config/env';
-import { UserType } from '@/types/auth';
-
-export interface MentorResponse {
-  exists: boolean;
-  mentor: Mentor | null;
-}
+import { useLoginStore } from '@/stores/auth/store';
 
 export const getMentorByPhone = async (phone: string, authHeader: string): Promise<MentorResponse> => {
   try {
@@ -16,7 +11,7 @@ export const getMentorByPhone = async (phone: string, authHeader: string): Promi
       const mockMentor: Mentor = {
         name: "Amit Sharma",
         email: "amit.sharma@example.com",
-        phone: "+91-9876543210",
+        phone: "9876543210",
         region: Region.NORTH,
         gender: Gender.MALE,
         optionalSubject: OptionalSubject.HISTORY,
@@ -27,8 +22,10 @@ export const getMentorByPhone = async (phone: string, authHeader: string): Promi
       };
 
       return {
-        exists: false,
-        mentor: mockMentor
+        isTempPassword: false,
+        mentor: mockMentor,
+        username: "9876543210",
+        otp: null
       };
     }
 
@@ -53,10 +50,36 @@ export const getMentorByPhone = async (phone: string, authHeader: string): Promi
       });
       throw new Error(`Failed to fetch mentor data: ${response.statusText}`);
     }
-
+    console.log('Mentor data:', await response.json());
     return await response.json();
   } catch (error) {
     console.error('Error fetching mentor:', error);
     throw error;
   }
+};
+
+export const updateMentorPassword = async ({
+  phone,
+  newPassword,
+  otp
+}: {
+  phone: string;
+  newPassword: string;
+  otp: string;
+}) => {
+  const authHeader = useLoginStore((state) => state.authHeader);
+  const response = await fetch('/v1/mentors', {
+    method: 'PUT',
+    headers: {
+      'Authorization': authHeader || '',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      phone,
+      password: newPassword,
+      otp
+    }),
+  });
+  
+  return response;
 }; 

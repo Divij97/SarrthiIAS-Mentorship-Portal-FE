@@ -4,7 +4,7 @@ export const sampleMentees: Mentee[] = [
   {
     name: "Rahul Kumar",
     email: "rahul.kumar@example.com",
-    phone: "+91-9876543220",
+    phone: "9876543220",
     region: Region.NORTH,
     gender: Gender.MALE,
     
@@ -22,15 +22,12 @@ export const sampleMentees: Mentee[] = [
     
     previouslyEnrolledCourses: ["UPSC Foundation Course"],
     primarySourceOfCurrentAffairs: "The Hindu Newspaper",
-    expectationFromMentorshipCourse: "Looking to improve answer writing skills and get structured guidance",
-    
-    interests: ["Current Affairs", "Public Policy", "International Relations"],
-    skills: ["Research", "Analysis", "Writing"]
+    expectationFromMentorshipCourse: "Looking to improve answer writing skills and get structured guidance"
   },
   {
     name: "Priya Patel",
     email: "priya.patel@example.com",
-    phone: "+91-9876543221",
+    phone: "9876543221",
     region: Region.WEST,
     gender: Gender.FEMALE,
     
@@ -48,15 +45,12 @@ export const sampleMentees: Mentee[] = [
     
     previouslyEnrolledCourses: ["Answer Writing Program", "Interview Guidance"],
     primarySourceOfCurrentAffairs: "PIB, PRS",
-    expectationFromMentorshipCourse: "Need help with Mains answer writing and interview preparation",
-    
-    interests: ["Social Issues", "Environmental Studies", "Ethics"],
-    skills: ["Critical Thinking", "Time Management", "Communication"]
+    expectationFromMentorshipCourse: "Need help with Mains answer writing and interview preparation"
   },
   {
     name: "Mohammed Ali",
     email: "mohammed.ali@example.com",
-    phone: "+91-9876543222",
+    phone: "9876543222",
     region: Region.SOUTH,
     gender: Gender.MALE,
     
@@ -74,15 +68,12 @@ export const sampleMentees: Mentee[] = [
     
     previouslyEnrolledCourses: [],
     primarySourceOfCurrentAffairs: "Vision IAS Monthly Magazine",
-    expectationFromMentorshipCourse: "Complete guidance for first attempt preparation",
-    
-    interests: ["Geography", "Environmental Conservation", "Urban Planning"],
-    skills: ["GIS Mapping", "Data Analysis", "Project Management"]
+    expectationFromMentorshipCourse: "Complete guidance for first attempt preparation"
   },
   {
     name: "Anjali Verma",
     email: "anjali.verma@example.com",
-    phone: "+91-9876543223",
+    phone: "9876543223",
     region: Region.CENTRAL,
     gender: Gender.FEMALE,
     
@@ -100,15 +91,12 @@ export const sampleMentees: Mentee[] = [
     
     previouslyEnrolledCourses: ["Mains Test Series", "Interview Preparation"],
     primarySourceOfCurrentAffairs: "Multiple Sources",
-    expectationFromMentorshipCourse: "Focused preparation for Mains and personality test",
-    
-    interests: ["Administrative Reforms", "Social Justice", "Governance"],
-    skills: ["Leadership", "Problem Solving", "Administrative Skills"]
+    expectationFromMentorshipCourse: "Focused preparation for Mains and personality test"
   },
   {
     name: "Rajesh Singh",
     email: "rajesh.singh@example.com",
-    phone: "+91-9876543224",
+    phone: "9876543224",
     region: Region.EAST,
     gender: Gender.MALE,
     
@@ -126,9 +114,6 @@ export const sampleMentees: Mentee[] = [
     
     previouslyEnrolledCourses: ["Prelims Test Series"],
     primarySourceOfCurrentAffairs: "Newspapers and Online Portals",
-    expectationFromMentorshipCourse: "Guidance for optional subject and overall strategy",
-    
-    interests: ["Tribal Studies", "Cultural Anthropology", "Social Development"],
-    skills: ["Field Research", "Academic Writing", "Cultural Analysis"]
+    expectationFromMentorshipCourse: "Guidance for optional subject and overall strategy"
   }
 ]; 

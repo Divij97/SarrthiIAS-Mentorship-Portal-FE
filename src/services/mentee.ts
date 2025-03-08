@@ -1,10 +1,12 @@
 import { MenteeResponse, Mentee, Region, Gender, ReservationCategory, OptionalSubject, PreferredSlot, AnswerWritingLevel } from '@/types/mentee';
 import { config } from '@/config/env';
+import { sampleMentees } from '@/data/mentees';
 
 export const getMenteeByPhone = async (phone: string, authHeader: string): Promise<MenteeResponse> => {
   try {
     console.log('Fetching mentee by phone:', phone);
-    // Mock response for testing
+    
+    // First check if it's a test phone number
     if (phone === '1111122222') {
       const mockMentee: Mentee = {
         name: "Test Mentee",
@@ -28,21 +30,26 @@ export const getMenteeByPhone = async (phone: string, authHeader: string): Promi
         previouslyEnrolledCourses: ["UPSC Foundation Course"],
         primarySourceOfCurrentAffairs: "The Hindu Newspaper",
         expectationFromMentorshipCourse: "Looking to improve answer writing skills and get structured guidance",
-        
-        interests: ["Current Affairs", "Public Policy", "International Relations"],
-        skills: ["Research", "Analysis", "Writing"]
       };
-
       return {
-        exists: true,
-        mentee: mockMentee
+        isTempPassword: true,
+        mentee: mockMentee,
+        username: "1111122222",
+        otp: null
       };
     }
 
-    if (phone === '1234567890') {
+    // Check in sample mentees data
+    const sampleMentee = sampleMentees.find(mentee => 
+      mentee.phone === phone || mentee.phone === phone
+    );
+
+    if (sampleMentee) {
       return {
-        exists: false,
-        mentee: null
+        isTempPassword: true,
+        mentee: sampleMentee,
+        username: sampleMentee.phone,
+        otp: null
       };
     }
 
