@@ -1,19 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import PersonalInfo from '@/components/Onboarding/PersonalInfo';
 import EducationBackground from '@/components/Onboarding/EducationBackground';
 import PreparationJourney from '@/components/Onboarding/PreparationJourney';
 import CurrentPreparation from '@/components/Onboarding/CurrentPreparation';
 import Expectations from '@/components/Onboarding/Expectations';
 import { Button } from '@/components/ui/Button';
+import { Mentor } from '@/types/mentor';
+import { Region, Gender, OptionalSubject } from '@/types/mentee';
+import { signupMentor } from '@/services/mentors';
 
 interface FormErrors {
   [key: string]: string;
 }
-
-// Add the Region type
-export type Region = 'North' | 'South' | 'East' | 'West';
 
 export interface FormData {
   // Personal Information
@@ -21,7 +22,7 @@ export interface FormData {
   email: string;
   phoneNumber: string;
   gender: string;
-  region: Region | '';
+  region: string;
   
   // Additional Information
   reservationCategory: string;
@@ -70,8 +71,16 @@ const MultiStepForm = () => {
     expectations: ''
   });
 
-  // Update region options to be of type Region[]
-  const regionOptions: Region[] = ['North', 'South', 'East', 'West'];
+  const router = useRouter();
+
+  // Update region options to use enum values
+  const regionOptions = [
+    Region.NORTH,
+    Region.SOUTH,
+    Region.EAST,
+    Region.WEST,
+    Region.CENTRAL
+  ];
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step > 1 ? step - 1 : step);
@@ -114,10 +123,33 @@ const MultiStepForm = () => {
 
   const handleSubmit = async () => {
     try {
-      // Will implement API call here
-      console.log('Form submitted:', formData);
+      const tempPassword = localStorage.getItem('tempMentorPassword');
+      if (tempPassword) {
+        // This is a mentor signup with password update
+        const mentorData: Mentor = {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phoneNumber,
+          region: formData.region as Region,
+          gender: formData.gender as Gender,
+          optionalSubject: formData.optionalSubject as OptionalSubject,
+          givenInterview: formData.preliminaryAttempts > 0,
+          numberOfAttemptsInUpsc: formData.preliminaryAttempts,
+          numberOfMainsAttempts: formData.mainExamAttempts,
+          offDaysOfWeek: [], // This can be updated later
+        };
+
+        await signupMentor(mentorData, tempPassword);
+        localStorage.removeItem('tempMentorPassword'); // Clean up
+        router.push('/home');
+      } else {
+        // Regular form submission
+        console.log('Form submitted:', formData);
+        // Implement regular form submission here
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
+      setErrors({ submit: 'Failed to submit form. Please try again.' });
     }
   };
 

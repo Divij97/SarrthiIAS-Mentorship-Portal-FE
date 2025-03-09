@@ -1,15 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { fetchCourses } from '@/services/courses';
 import CourseTile from '@/components/Courses/CourseTile';
 
 export default function Courses() {
-  const [selectedCourseName, setSelectedCourseName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   
   const { authHeader, phone } = useLoginStore();
   const { courses, setCourses } = useMenteeStore();
@@ -43,43 +44,8 @@ export default function Courses() {
   }, [authHeader, phone, courses.length, setCourses]);
 
   const handleCourseClick = (courseName: string) => {
-    setSelectedCourseName(courseName);
-  };
-
-  const handleBackToCourses = () => {
-    setSelectedCourseName(null);
-  };
-
-  const renderCourseDetail = () => {
-    const course = courses.find(c => c.name === selectedCourseName);
-    if (!course) return null;
-
-    const endDate = new Date(course.endDate).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <button
-          onClick={handleBackToCourses}
-          className="mb-6 text-orange-600 hover:text-orange-700 font-medium flex items-center"
-        >
-          ← Back to Courses
-        </button>
-        <h1 className="text-3xl font-bold text-gray-900">{course.name}</h1>
-        <p className="mt-4 text-gray-600">{course.description}</p>
-        <div className="mt-6 space-y-2">
-          <p className="text-sm text-gray-500">
-            Course Type: {course.isOneOnOneMentorshipCourse ? 'One-on-One Mentorship' : 'Group Mentorship'}
-          </p>
-          <p className="text-sm text-gray-500">
-            End Date: {endDate}
-          </p>
-        </div>
-      </div>
-    );
+    // Navigate to course-specific route
+    router.push(`/home/courses/${encodeURIComponent(courseName)}`);
   };
 
   if (isLoading) {
@@ -96,10 +62,6 @@ export default function Courses() {
         <div className="text-red-600">{error}</div>
       </div>
     );
-  }
-
-  if (selectedCourseName) {
-    return renderCourseDetail();
   }
 
   return (

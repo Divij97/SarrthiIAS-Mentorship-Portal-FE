@@ -5,7 +5,7 @@ import { getMentorByPhone } from '@/services/mentors';
 import CryptoJS from 'crypto-js';
 import { config } from '@/config/env';
 import { Mentee } from '@/types/mentee';
-import { Mentor } from '@/types/mentor';
+import { Mentor, MentorResponse } from '@/types/mentor';
 import { UserType } from '@/types/auth';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { useMentorStore } from '@/stores/mentor/store';
@@ -23,7 +23,7 @@ interface AuthState {
   setPassword: (password: string) => void;
   setError: (error: string) => void;
   setUserType: (type: UserType) => void;
-  handleLogin: () => Promise<Mentee | Mentor | null>;
+  handleLogin: () => Promise<Mentee | MentorResponse | null>;
   setAuthToken: (token: string) => void;
   logout: () => void;
   reset: () => void;
@@ -54,23 +54,15 @@ export const useLoginStore = create<AuthState>()(
         return null;
       };
 
-      const handleMentorLogin = async (phone: string, authHeader: string): Promise<Mentor | null> => {
+      const handleMentorLogin = async (phone: string, authHeader: string): Promise<MentorResponse | null> => {
         const response = await getMentorByPhone(phone, authHeader);
-        if (!response.isTempPassword && response.mentor) {
+        if (response.mentor) {
           set({ 
             authToken: authHeader,
             authHeader: authHeader,
             isAuthenticated: true
           });
-          return response.mentor;
-        } else if (!response.isTempPassword) {
-          set({
-            authToken: authHeader,
-            authHeader: authHeader,
-            isAuthenticated: true,
-            error: ''
-          });
-          return response.mentor;
+          return response;
         }
         set({ error: 'Invalid credentials' });
         return null;

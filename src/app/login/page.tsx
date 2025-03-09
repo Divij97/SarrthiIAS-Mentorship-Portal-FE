@@ -6,7 +6,7 @@ import { useLoginStore } from '@/stores/auth/store';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { UserType } from '@/types/auth';
-import { Mentor } from '@/types/mentor';
+import { Mentor, MentorResponse } from '@/types/mentor';
 import { Mentee } from '@/types/mentee';
 
 export default function LoginPage() {
@@ -25,7 +25,7 @@ export default function LoginPage() {
     handleLogin 
   } = useLoginStore();
   const { setMentee, mentee } = useMenteeStore();
-  const { setMentor } = useMentorStore();
+  const { setMentor, setMentorResponse } = useMentorStore();
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
@@ -44,9 +44,15 @@ export default function LoginPage() {
       const response = await handleLogin();
       if (response) {
         if (userType === UserType.MENTOR) {
-          const mentor = response as Mentor;
-          setMentor(mentor);
-          router.push('/home');
+          const mentorResponse = response as MentorResponse;
+          setMentor(mentorResponse.mentor);
+          setMentorResponse(mentorResponse);
+          if (mentorResponse.otp) {
+            // Store OTP in login store and redirect to reset password
+            router.push(`/reset-password?phone=${phone}`);
+          } else {
+            router.push('/home');
+          }
         } else {
           const mentee = response as Mentee;
           setMentee(mentee);

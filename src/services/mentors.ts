@@ -6,28 +6,6 @@ import { useLoginStore } from '@/stores/auth/store';
 export const getMentorByPhone = async (phone: string, authHeader: string): Promise<MentorResponse> => {
   try {
     console.log('Fetching mentor by phone:', phone);
-    // Mock response for testing
-    if (phone === '9876543210') {
-      const mockMentor: Mentor = {
-        name: "Amit Sharma",
-        email: "amit.sharma@example.com",
-        phone: "9876543210",
-        region: Region.NORTH,
-        gender: Gender.MALE,
-        optionalSubject: OptionalSubject.HISTORY,
-        givenInterview: true,
-        numberOfAttemptsInUpsc: 3,
-        numberOfMainsAttempts: 2,
-        offDaysOfWeek: [DayOfWeek.SATURDAY, DayOfWeek.SUNDAY]
-      };
-
-      return {
-        isTempPassword: false,
-        mentor: mockMentor,
-        username: "9876543210",
-        otp: null
-      };
-    }
 
     // Clean up the API URL to prevent double slashes
     let apiUrl = config.api.url;
@@ -50,7 +28,6 @@ export const getMentorByPhone = async (phone: string, authHeader: string): Promi
       });
       throw new Error(`Failed to fetch mentor data: ${response.statusText}`);
     }
-    console.log('Mentor data:', await response.json());
     return await response.json();
   } catch (error) {
     console.error('Error fetching mentor:', error);
@@ -82,4 +59,36 @@ export const updateMentorPassword = async ({
   });
   
   return response;
+};
+
+export const signupMentor = async (mentorData: Mentor, newPassword: string) => {
+  try {
+    let apiUrl = config.api.url;
+    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+    
+    const response = await fetch(`${apiUrl}/v1/mentees`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...mentorData,
+        password: newPassword
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('API Error:', {
+        status: response.status,
+        statusText: response.statusText
+      });
+      throw new Error(`Failed to signup mentor: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error signing up mentor:', error);
+    throw error;
+  }
 }; 
