@@ -4,13 +4,17 @@ import { useState } from 'react';
 import { sampleMentors } from '@/data/mentors';
 import { Mentor } from '@/types/mentor';
 import MentorListItem from '@/components/Admin/MentorListItem';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 export default function MentorsPage() {
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedMentors, setSelectedMentors] = useState<Set<string>>(new Set());
   const [mentors, setMentors] = useState(sampleMentors);
 
   const handleMentorSelect = (mentor: Mentor) => {
+    if (!isSelectionMode) {
+      return;
+    }
     setSelectedMentors(prev => {
       const newSelected = new Set(prev);
       if (newSelected.has(mentor.phone)) {
@@ -23,6 +27,7 @@ export default function MentorsPage() {
   };
 
   const handleMentorEdit = (mentor: Mentor) => {
+    if (isSelectionMode) return; // Disable edit in selection mode
     // TODO: Implement edit functionality
     console.log('Edit mentor:', mentor);
   };
@@ -32,6 +37,12 @@ export default function MentorsPage() {
     const newMentors = mentors.filter(mentor => !selectedMentors.has(mentor.phone));
     setMentors(newMentors);
     setSelectedMentors(new Set());
+    setIsSelectionMode(false);
+  };
+
+  const exitSelectionMode = () => {
+    setIsSelectionMode(false);
+    setSelectedMentors(new Set());
   };
 
   return (
@@ -39,13 +50,38 @@ export default function MentorsPage() {
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <h2 className="text-2xl font-semibold text-gray-900">Mentors Management</h2>
-          {selectedMentors.size > 0 && (
+          {isSelectionMode ? (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-600">
+                Selected: {selectedMentors.size}
+              </span>
+              <button
+                onClick={handleDeleteSelected}
+                disabled={selectedMentors.size === 0}
+                className={`flex items-center px-3 py-1.5 rounded-md transition-colors duration-200 ${
+                  selectedMentors.size === 0 
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                    : 'bg-red-50 text-red-600 hover:bg-red-100'
+                }`}
+              >
+                <TrashIcon className="h-4 w-4 mr-1" />
+                Delete
+              </button>
+              <button
+                onClick={exitSelectionMode}
+                className="flex items-center px-3 py-1.5 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors duration-200"
+              >
+                <XMarkIcon className="h-4 w-4 mr-1" />
+                Cancel
+              </button>
+            </div>
+          ) : (
             <button
-              onClick={handleDeleteSelected}
-              className="flex items-center px-3 py-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors duration-200"
+              onClick={() => setIsSelectionMode(true)}
+              className="flex items-center px-3 py-1.5 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors duration-200"
             >
-              <TrashIcon className="h-4 w-4 mr-1" />
-              Delete Selected ({selectedMentors.size})
+              <CheckIcon className="h-4 w-4 mr-1" />
+              Select Mentors
             </button>
           )}
         </div>
@@ -72,7 +108,7 @@ export default function MentorsPage() {
               mentor={mentor}
               onSelect={handleMentorSelect}
               onEdit={handleMentorEdit}
-              isSelected={selectedMentors.has(mentor.phone)}
+              isSelected={isSelectionMode && selectedMentors.has(mentor.phone)}
             />
           ))}
         </div>
