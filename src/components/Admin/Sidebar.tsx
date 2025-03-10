@@ -9,7 +9,11 @@ interface NavigationItem {
   subsections?: { name: string; path: string }[];
 }
 
-export default function AdminSidebar() {
+interface AdminSidebarProps {
+  onLogout: () => void;
+}
+
+export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   

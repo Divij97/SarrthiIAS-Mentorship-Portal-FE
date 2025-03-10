@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
+import { useMenteeStore } from '@/stores/mentee/store';
 import { UserType } from '@/types/auth';
 import { updateMentorPassword } from '@/services/mentors';
 
@@ -13,66 +14,93 @@ export default function ResetPasswordPage() {
   const phone = searchParams.get('phone');
   const { error, setError, userType, authHeader } = useLoginStore();
   const { mentor, mentorResponse } = useMentorStore();
+  const { menteeResponse } = useMenteeStore();
   
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted', { otp, mentorResponse });
+  const validateInputs = () => {
+    if (!phone) {
+      setError('Phone number not found');
+      return false;
+    }
+
+    const expectedOtp = userType === UserType.MENTOR ? mentorResponse?.otp : menteeResponse?.otp;
     
+    if (!expectedOtp) {
+      setError('OTP not found. Please try logging in again.');
+      return false;
+    }
+
+    if (otp !== expectedOtp) {
+      setError('Invalid OTP. Please check and try again.');
+      return false;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return false;
+    }
+
+    if (newPassword.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleMentorPasswordReset = async () => {
+    if (!authHeader) {
+      setError('Authentication error. Please try logging in again.');
+      return;
+    }
+
     if (!mentor?.phone) {
       setError('Phone number not found');
       return;
     }
 
-    if (!mentorResponse?.otp) {
-      setError('OTP not found. Please try logging in again.');
-      return;
-    }
+    await updateMentorPassword({
+      phone: mentor.phone,
+      newPassword,
+      otp,
+      authHeader
+    });
+    router.replace('/home');
+  };
 
-    if (otp !== mentorResponse.otp) {
-      setError('Invalid OTP. Please check and try again.');
-      return;
-    }
+  const handleMenteeSignup = () => {
+    // Store necessary information for signup
+    localStorage.setItem('tempMenteeData', JSON.stringify({
+      phone,
+      password: newPassword,
+      verifiedOtp: otp
+    }));
+    router.replace('/signup');
+  };
 
-    if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return;
-    }
-
-    if (!authHeader) {
-      setError('Authentication error. Please try logging in again.');
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
+    if (!validateInputs()) {
+      return;
+    }
+
     try {
       setLoading(true);
+      setError('');
 
       if (userType === UserType.MENTOR) {
-        // For mentors, update password and redirect to home
-        await updateMentorPassword({
-          phone: mentor.phone,
-          newPassword,
-          otp,
-          authHeader
-        });
-        router.replace('/home');
+        await handleMentorPasswordReset();
       } else {
-        // For mentees, store password temporarily and redirect to signup
-        localStorage.setItem('tempMentorPassword', newPassword);
-        router.replace('/signup');
+        handleMenteeSignup();
       }
     } catch (error) {
       console.error('Password reset error:', error);
-      setError('Failed to reset password');
+      setError('Failed to process your request. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -82,8 +110,13 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          Reset your password
+          {userType === UserType.MENTOR ? 'Reset your password' : 'Create your account'}
         </h2>
+        {userType === UserType.MENTEE && (
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Set a password to continue with your registration
+          </p>
+        )}
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -113,7 +146,7 @@ export default function ResetPasswordPage() {
                   required
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900"
                   placeholder="Enter OTP"
                 />
               </div>
@@ -121,7 +154,7 @@ export default function ResetPasswordPage() {
 
             <div>
               <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
-                New Password
+                {userType === UserType.MENTOR ? 'New Password' : 'Create Password'}
               </label>
               <div className="mt-1">
                 <input
@@ -131,8 +164,8 @@ export default function ResetPasswordPage() {
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="Enter new password"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900"
+                  placeholder={userType === UserType.MENTOR ? 'Enter new password' : 'Create a strong password'}
                 />
               </div>
             </div>
@@ -149,8 +182,8 @@ export default function ResetPasswordPage() {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="Confirm new password"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900"
+                  placeholder="Confirm your password"
                 />
               </div>
             </div>
@@ -159,9 +192,9 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300"
               >
-                {loading ? 'Processing...' : userType === UserType.MENTOR ? 'Verify and Submit' : 'Proceed to Sign Up'}
+                {loading ? 'Processing...' : userType === UserType.MENTOR ? 'Reset Password' : 'Continue to Sign Up'}
               </button>
             </div>
           </form>
