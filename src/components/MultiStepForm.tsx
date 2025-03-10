@@ -110,7 +110,6 @@ const MultiStepForm = () => {
         return (
           <CurrentPreparation
             formData={formData}
-            handleChange={handleChange}
             handleArrayChange={handleArrayChange}
           />
         );

@@ -5,9 +5,6 @@ import { useState } from 'react';
 
 interface CurrentPreparationProps {
   formData: FormData;
-  handleChange: (field: keyof FormData) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => void;
   handleArrayChange: (field: 'weakSubjects' | 'strongSubjects' | 'preferredSlotsOnWeekdays') => (value: string[]) => void;
 }
 
@@ -25,8 +22,7 @@ const formatTimeSlot = (slot: string): string => {
 };
 
 const CurrentPreparation = ({ 
-  formData, 
-  handleChange,
+  formData,
   handleArrayChange 
 }: CurrentPreparationProps) => {
   const [useUniformSlot, setUseUniformSlot] = useState(true);
@@ -157,26 +153,6 @@ const CurrentPreparation = ({
               ))}
             </div>
           )}
-        </div>
-
-        <div>
-          <label htmlFor="answerWritingLevel" className="block text-sm font-medium text-gray-700">
-            Answer Writing Level
-          </label>
-          <select
-            id="answerWritingLevel"
-            value={formData.answerWritingLevel}
-            onChange={handleChange('answerWritingLevel')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-            required
-          >
-            <option value="">Select Level</option>
-            {answerWritingLevels.map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div>

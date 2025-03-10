@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
+import { UserType } from '@/types/auth';
+import { updateMentorPassword } from '@/services/mentors';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const phone = searchParams.get('phone');
-  const { error, setError } = useLoginStore();
+  const { error, setError, userType, authHeader } = useLoginStore();
   const { mentor, mentorResponse } = useMentorStore();
   
   const [otp, setOtp] = useState('');
@@ -45,13 +47,29 @@ export default function ResetPasswordPage() {
       setError('Password must be at least 8 characters long');
       return;
     }
+
+    if (!authHeader) {
+      setError('Authentication error. Please try logging in again.');
+      return;
+    }
     
     try {
       setLoading(true);
-      // Store the new password temporarily - it will be sent with mentor details during signup
-      localStorage.setItem('tempMentorPassword', newPassword);
-      console.log('Navigating to signup page...');
-      router.replace('/signup');
+
+      if (userType === UserType.MENTOR) {
+        // For mentors, update password and redirect to home
+        await updateMentorPassword({
+          phone: mentor.phone,
+          newPassword,
+          otp,
+          authHeader
+        });
+        router.replace('/home');
+      } else {
+        // For mentees, store password temporarily and redirect to signup
+        localStorage.setItem('tempMentorPassword', newPassword);
+        router.replace('/signup');
+      }
     } catch (error) {
       console.error('Password reset error:', error);
       setError('Failed to reset password');
@@ -143,7 +161,7 @@ export default function ResetPasswordPage() {
                 disabled={loading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
               >
-                {loading ? 'Processing...' : 'Proceed to Sign Up'}
+                {loading ? 'Processing...' : userType === UserType.MENTOR ? 'Verify and Submit' : 'Proceed to Sign Up'}
               </button>
             </div>
           </form>

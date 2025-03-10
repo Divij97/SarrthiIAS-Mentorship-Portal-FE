@@ -28,8 +28,7 @@ export default function Sidebar({ activeSection, onSectionChange, onLogout, user
 
   const mentorNavigation = [
     { name: 'Profile', section: 'profile' },
-    { name: 'Sessions', section: 'session-details' },
-    { name: 'Mentees', section: 'mentees' },
+    { name: 'Sessions', section: 'mentor-sessions' }
   ];
 
   const navigation = userType === UserType.MENTOR ? mentorNavigation : menteeNavigation;

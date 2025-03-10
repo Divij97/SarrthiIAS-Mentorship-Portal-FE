@@ -7,7 +7,7 @@ import { useMenteeStore } from '@/stores/mentee/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { UserType } from '@/types/auth';
 import { Mentor, MentorResponse } from '@/types/mentor';
-import { Mentee } from '@/types/mentee';
+import { Mentee, MenteeResponse } from '@/types/mentee';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,15 +28,15 @@ export default function LoginPage() {
   const { setMentor, setMentorResponse } = useMentorStore();
   const [rememberMe, setRememberMe] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (userType === UserType.MENTEE) {
-        router.push(mentee ? '/home' : '/signup');
-      } else {
-        router.push('/home');
-      }
-    }
-  }, [isAuthenticated, mentee, userType, router]);
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     if (userType === UserType.MENTEE) {
+  //       router.push(mentee ? '/home' : '/signup');
+  //     } else {
+  //       router.push('/home');
+  //     }
+  //   }
+  // }, [isAuthenticated, mentee, userType, router]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +54,13 @@ export default function LoginPage() {
             router.push('/home');
           }
         } else {
-          const mentee = response as Mentee;
-          setMentee(mentee);
+          const menteeResponse = response as MenteeResponse;
+          setMentee(menteeResponse.mentee);
+          if (menteeResponse.otp) {
+            router.push(`/reset-password?phone=${phone}`);
+          } else {
+            router.push('/home');
+          }
           // Mentee redirection will be handled by useEffect
         }
       }
