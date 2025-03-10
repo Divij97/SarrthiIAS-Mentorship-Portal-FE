@@ -1,13 +1,15 @@
 'use client';
 
-import { FormData } from '@/components/MultiStepForm';
+import { FormData } from '@/types/form';
 import { RadioGroup } from '@/components/ui/RadioGroup';
+import { FormErrors } from '@/utils/MultiStepFormValidator';
 
 interface PreparationJourneyProps {
   formData: FormData;
   handleChange: (field: keyof FormData) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
+  errors?: FormErrors;
 }
 
 const answerWritingLevelOptions = [
@@ -21,6 +23,7 @@ const PreparationJourney = ({ formData, handleChange }: PreparationJourneyProps)
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">UPSC Preparation Journey</h2>
       <p className="text-gray-600">Tell us about your UPSC preparation experience</p>
+      <p className="text-sm font-medium text-red-600">* All fields are required</p>
 
       <div className="space-y-4">
         <div>

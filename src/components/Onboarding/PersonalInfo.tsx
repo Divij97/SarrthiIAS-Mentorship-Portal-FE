@@ -1,12 +1,13 @@
 'use client';
 
-import { FormData } from '../MultiStepForm';
+import { FormData } from '@/types/form';
 import { RadioGroup } from '@/components/ui/RadioGroup';
+import { useMenteeStore } from '@/stores/mentee/store';
 
 interface PersonalInfoProps {
   formData: FormData;
   handleChange: (field: keyof FormData) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
   region: string[];
   errors?: Record<string, string>;
@@ -19,10 +20,13 @@ const genderOptions = [
 ];
 
 const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoProps) => {
+  const { menteeResponse } = useMenteeStore();
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Personal Information</h2>
       <p className="text-gray-600">Please provide your basic details</p>
+      <p className="text-sm font-medium text-red-600">* All fields are required</p>
 
       <div className="space-y-4">
         <div>
@@ -32,7 +36,7 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
           <input
             type="text"
             id="name"
-            value={formData.name}
+            value={menteeResponse?.mentee?.name || formData.name}
             onChange={handleChange('name')}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
             required
@@ -60,10 +64,11 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
           <input
             type="tel"
             id="phoneNumber"
-            value={formData.phoneNumber}
+            value={menteeResponse?.username || formData.phoneNumber}
             onChange={handleChange('phoneNumber')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 bg-gray-100"
             required
+            disabled
           />
         </div>
 

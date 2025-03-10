@@ -1,11 +1,13 @@
 'use client';
 
-import { FormData } from '../MultiStepForm';
 import { useState } from 'react';
+import { FormData } from '@/types/form';
+import { FormErrors } from '@/utils/MultiStepFormValidator';
 
 interface CurrentPreparationProps {
   formData: FormData;
   handleArrayChange: (field: 'weakSubjects' | 'strongSubjects' | 'preferredSlotsOnWeekdays') => (value: string[]) => void;
+  errors?: FormErrors;
 }
 
 const timeSlots = {
@@ -23,7 +25,8 @@ const formatTimeSlot = (slot: string): string => {
 
 const CurrentPreparation = ({ 
   formData,
-  handleArrayChange 
+  handleArrayChange,
+  errors
 }: CurrentPreparationProps) => {
   const [useUniformSlot, setUseUniformSlot] = useState(true);
   const [uniformSlot, setUniformSlot] = useState('');
@@ -61,6 +64,7 @@ const CurrentPreparation = ({
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Current Preparation Details</h2>
       <p className="text-gray-600">Tell us about your current preparation status and preferences</p>
+      <p className="text-sm font-medium text-red-600">* All fields are required</p>
 
       <div className="space-y-4">
         <div className="space-y-4">
@@ -167,7 +171,7 @@ const CurrentPreparation = ({
             id="weakSubjects"
             value={formData.weakSubjects.join(', ')}
             onChange={handleSubjectsChange('weakSubjects')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
             placeholder="e.g., History, Science & Technology, Economics"
           />
         </div>
@@ -184,7 +188,7 @@ const CurrentPreparation = ({
             id="strongSubjects"
             value={formData.strongSubjects.join(', ')}
             onChange={handleSubjectsChange('strongSubjects')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
             placeholder="e.g., Polity, Geography, Ethics"
           />
         </div>

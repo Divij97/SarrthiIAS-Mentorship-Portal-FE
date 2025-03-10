@@ -1,12 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Mentee } from '@/types/mentee';
+import { Mentee, MenteeResponse } from '@/types/mentee';
 import { Course } from '@/types/course';
-
-interface MenteeResponse {
-  otp: string;
-  // Add other response fields as needed
-}
 
 interface MenteeStore {
   mentee: any | null; // Replace 'any' with proper Mentee type when available

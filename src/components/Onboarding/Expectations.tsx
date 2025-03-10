@@ -1,12 +1,14 @@
 'use client';
 
-import { FormData } from '../MultiStepForm';
+import { FormData } from '@/types/form';
+import { FormErrors } from '@/utils/MultiStepFormValidator';
 
 interface ExpectationsProps {
   formData: FormData;
   handleChange: (field: keyof FormData) => (
-    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
+  errors?: FormErrors;
 }
 
 const currentAffairsSources = [
@@ -22,6 +24,7 @@ const Expectations = ({ formData, handleChange }: ExpectationsProps) => {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Program Expectations</h2>
       <p className="text-gray-600">Help us understand your background and expectations</p>
+      <p className="text-sm font-medium text-red-600">* Marked fields are required</p>
 
       <div className="space-y-6">
         <div>
@@ -43,7 +46,7 @@ const Expectations = ({ formData, handleChange }: ExpectationsProps) => {
 
         <div>
           <label htmlFor="currentAffairsSource" className="block text-sm font-medium text-gray-700">
-            Primary Source for Current Affairs
+            Primary Source for Current Affairs <span className="text-red-600">*</span>
           </label>
           <select
             id="currentAffairsSource"
@@ -72,7 +75,6 @@ const Expectations = ({ formData, handleChange }: ExpectationsProps) => {
             rows={6}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
             placeholder="Please share what you hope to achieve through this mentorship program..."
-            required
           />
         </div>
 

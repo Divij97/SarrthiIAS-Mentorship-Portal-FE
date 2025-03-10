@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { UserType } from '@/types/auth';
-import { Mentor, MentorResponse } from '@/types/mentor';
-import { Mentee, MenteeResponse } from '@/types/mentee';
+import { MentorResponse } from '@/types/mentor';
+import { MenteeResponse } from '@/types/mentee';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,19 +24,9 @@ export default function LoginPage() {
     setUserType,
     handleLogin 
   } = useLoginStore();
-  const { setMentee, mentee } = useMenteeStore();
+  const { setMentee, mentee, setMenteeResponse } = useMenteeStore();
   const { setMentor, setMentorResponse } = useMentorStore();
   const [rememberMe, setRememberMe] = useState(false);
-
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     if (userType === UserType.MENTEE) {
-  //       router.push(mentee ? '/home' : '/signup');
-  //     } else {
-  //       router.push('/home');
-  //     }
-  //   }
-  // }, [isAuthenticated, mentee, userType, router]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,12 +46,12 @@ export default function LoginPage() {
         } else {
           const menteeResponse = response as MenteeResponse;
           setMentee(menteeResponse.mentee);
+          setMenteeResponse(menteeResponse);
           if (menteeResponse.otp) {
             router.push(`/reset-password?phone=${phone}`);
           } else {
             router.push('/home');
           }
-          // Mentee redirection will be handled by useEffect
         }
       }
     } catch (error) {

@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FormData } from '../MultiStepForm';
+import { FormData } from '@/types/form';
 import { OptionalSubject } from '@/types/mentee';
+import { FormErrors } from '@/utils/MultiStepFormValidator';
 
 interface EducationBackgroundProps {
   formData: FormData;
   handleChange: (field: keyof FormData) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
+  errors?: FormErrors;
 }
 
 const reservationCategories = ['General', 'OBC', 'SC/ST'];
@@ -16,7 +18,7 @@ const reservationCategories = ['General', 'OBC', 'SC/ST'];
 // Get all valid optional subjects from the enum
 const optionalSubjects: string[] = Object.values(OptionalSubject);
 
-const EducationBackground = ({ formData, handleChange }: EducationBackgroundProps) => {
+const EducationBackground = ({ formData, handleChange, errors }: EducationBackgroundProps) => {
   const [subjectInput, setSubjectInput] = useState(formData.optionalSubject || '');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -89,6 +91,7 @@ const EducationBackground = ({ formData, handleChange }: EducationBackgroundProp
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Additional Information</h2>
       <p className="text-gray-600">Please provide these additional details</p>
+      <p className="text-sm font-medium text-red-600">* All fields are required</p>
 
       <div className="space-y-4">
         <div>
