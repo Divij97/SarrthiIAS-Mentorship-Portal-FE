@@ -127,4 +127,11 @@ export interface MenteeResponse {
   mentee: Mentee | null;
   otp: string | null;
   username: string | null;
-} 
+}
+
+export interface MenteeWithAuth {
+  mentee: Mentee;
+  username: string;
+  passwordSHA: string;
+  isTempPassword: boolean;
+}

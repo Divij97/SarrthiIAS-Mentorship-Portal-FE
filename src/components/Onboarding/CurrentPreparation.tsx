@@ -104,24 +104,24 @@ const CurrentPreparation = ({
               <div className="flex items-center space-x-4">
                 <input
                   type="radio"
-                  id="morning-slot"
+                  id="uniform-morning-slot"
                   checked={uniformSlot === timeSlots.MORNING}
                   onChange={() => handleUniformSlotChange(timeSlots.MORNING)}
                   className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
                 />
-                <label htmlFor="morning-slot" className="text-sm text-gray-700">
+                <label htmlFor="uniform-morning-slot" className="text-sm text-gray-700">
                   {formatTimeSlot(timeSlots.MORNING)}
                 </label>
               </div>
               <div className="flex items-center space-x-4">
                 <input
                   type="radio"
-                  id="evening-slot"
+                  id="uniform-evening-slot"
                   checked={uniformSlot === timeSlots.EVENING}
                   onChange={() => handleUniformSlotChange(timeSlots.EVENING)}
                   className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
                 />
-                <label htmlFor="evening-slot" className="text-sm text-gray-700">
+                <label htmlFor="uniform-evening-slot" className="text-sm text-gray-700">
                   {formatTimeSlot(timeSlots.EVENING)}
                 </label>
               </div>
@@ -129,27 +129,27 @@ const CurrentPreparation = ({
           ) : (
             <div className="mt-4 space-y-4">
               {weekDays.map((day, index) => (
-                <div key={day} className="space-y-2">
+                <div key={`${day}-container`} className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">{day}</label>
                   <div className="flex items-center space-x-4">
                     <input
                       type="radio"
-                      id={`${day}-morning`}
+                      id={`${day}-morning-slot`}
                       checked={formData.preferredSlotsOnWeekdays[index] === timeSlots.MORNING}
                       onChange={() => handleDayWiseSlotChange(index, timeSlots.MORNING)}
                       className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
                     />
-                    <label htmlFor={`${day}-morning`} className="text-sm text-gray-700">
+                    <label htmlFor={`${day}-morning-slot`} className="text-sm text-gray-700">
                       {formatTimeSlot(timeSlots.MORNING)}
                     </label>
                     <input
                       type="radio"
-                      id={`${day}-evening`}
+                      id={`${day}-evening-slot`}
                       checked={formData.preferredSlotsOnWeekdays[index] === timeSlots.EVENING}
                       onChange={() => handleDayWiseSlotChange(index, timeSlots.EVENING)}
                       className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
                     />
-                    <label htmlFor={`${day}-evening`} className="text-sm text-gray-700">
+                    <label htmlFor={`${day}-evening-slot`} className="text-sm text-gray-700">
                       {formatTimeSlot(timeSlots.EVENING)}
                     </label>
                   </div>

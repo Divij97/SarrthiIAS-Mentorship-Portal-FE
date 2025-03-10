@@ -16,7 +16,6 @@ interface AuthState {
   error: string;
   loading: boolean;
   isAuthenticated: boolean;
-  authToken: string | null;
   authHeader: string | null;
   userType: UserType | null;
   setPhone: (phone: string) => void;
@@ -24,7 +23,7 @@ interface AuthState {
   setError: (error: string) => void;
   setUserType: (type: UserType) => void;
   handleLogin: () => Promise<MenteeResponse | MentorResponse | null>;
-  setAuthToken: (token: string) => void;
+  setAuthHeader: (header: string) => void;
   logout: () => void;
   reset: () => void;
 }
@@ -36,7 +35,6 @@ export const useLoginStore = create<AuthState>()(
         const response = await getMenteeByPhone(phone, authHeader);
         if (response.mentee || response.isTempPassword) {
           set({ 
-            authToken: authHeader,
             authHeader: authHeader,
             isAuthenticated: true
           });
@@ -50,7 +48,6 @@ export const useLoginStore = create<AuthState>()(
         const response = await getMentorByPhone(phone, authHeader);
         if (response.mentor) {
           set({ 
-            authToken: authHeader,
             authHeader: authHeader,
             isAuthenticated: true
           });
@@ -66,7 +63,6 @@ export const useLoginStore = create<AuthState>()(
         error: '',
         loading: false,
         isAuthenticated: false,
-        authToken: null,
         authHeader: null,
         userType: UserType.MENTEE,
 
@@ -74,7 +70,7 @@ export const useLoginStore = create<AuthState>()(
         setPassword: (password) => set({ password }),
         setError: (error) => set({ error }),
         setUserType: (type) => set({ userType: type }),
-        setAuthToken: (token) => set({ authToken: token, isAuthenticated: true }),
+        setAuthHeader: (header) => set({ authHeader: header, isAuthenticated: true }),
 
         handleLogin: async () => {
           const { phone, password, userType } = get();
@@ -108,7 +104,6 @@ export const useLoginStore = create<AuthState>()(
           useMentorStore.getState().clearMentor();
           set({
             isAuthenticated: false,
-            authToken: null,
             authHeader: null,
             phone: '',
             password: '',
@@ -131,7 +126,6 @@ export const useLoginStore = create<AuthState>()(
       name: 'auth-storage',
       partialize: (state) => ({ 
         isAuthenticated: state.isAuthenticated,
-        authToken: state.authToken,
         authHeader: state.authHeader,
         userType: state.userType
       })

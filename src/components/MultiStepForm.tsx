@@ -9,10 +9,12 @@ import PreparationJourney from '@/components/Onboarding/PreparationJourney';
 import CurrentPreparation from '@/components/Onboarding/CurrentPreparation';
 import Expectations from '@/components/Onboarding/Expectations';
 import { Button } from '@/components/ui/Button';
-import { Mentor } from '@/types/mentor';
-import { Region, Gender, OptionalSubject } from '@/types/mentee';
-import { signupMentor } from '@/services/mentors';
+import { Region, Gender, OptionalSubject, Mentee, MenteeWithAuth, ReservationCategory, PreferredSlot, AnswerWritingLevel } from '@/types/mentee';
+import { signupMentee } from '@/services/mentee';
 import { validateStep, FormErrors } from '@/utils/MultiStepFormValidator';
+import { useMenteeStore } from '@/stores/mentee/store';
+import { useLoginStore } from '@/stores/auth/store';
+import { TempMenteeData } from '@/types/auth';
 
 const MultiStepForm = () => {
   const [step, setStep] = useState(1);
@@ -39,6 +41,8 @@ const MultiStepForm = () => {
   });
 
   const router = useRouter();
+  const { setAuthHeader } = useLoginStore();
+  const { setMentee } = useMenteeStore();
 
   // Update region options to use enum values
   const regionOptions = [
@@ -50,13 +54,7 @@ const MultiStepForm = () => {
   ];
 
   const nextStep = () => {
-    const stepErrors = validateStep(step, formData);
-    if (Object.keys(stepErrors).length === 0) {
-      setStep(step + 1);
-      setErrors({});
-    } else {
-      setErrors(stepErrors);
-    }
+    setStep(step + 1);
   };
 
   const prevStep = () => {
@@ -120,30 +118,54 @@ const MultiStepForm = () => {
     }
 
     try {
-      const tempPassword = localStorage.getItem('tempMentorPassword');
-      if (tempPassword) {
-        // This is a mentor signup with password update
-        const mentorData: Mentor = {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phoneNumber,
-          region: formData.region as Region,
-          gender: formData.gender as Gender,
-          optionalSubject: formData.optionalSubject as OptionalSubject,
-          givenInterview: formData.preliminaryAttempts > 0,
-          numberOfAttemptsInUpsc: formData.preliminaryAttempts,
-          numberOfMainsAttempts: formData.mainExamAttempts,
-          offDaysOfWeek: [], // This can be updated later
-        };
-
-        await signupMentor(mentorData, tempPassword);
-        localStorage.removeItem('tempMentorPassword'); // Clean up
-        router.push('/home');
-      } else {
-        // Regular form submission
-        console.log('Form submitted:', formData);
-        // Implement regular form submission here
+      const tempMenteeDataStr = localStorage.getItem('tempMenteeData');
+      if (!tempMenteeDataStr) {
+        setErrors({ submit: 'No temporary data found. Please start from login.' });
+        return;
       }
+
+      const tempMenteeData: TempMenteeData = JSON.parse(tempMenteeDataStr);
+      
+      // This is a mentee signup with password update
+      const menteeObj: Mentee = {
+        name: formData.name,
+        email: formData.email,
+        phone: tempMenteeData.phone,
+        region: formData.region as Region,
+        gender: formData.gender as Gender,
+        category: formData.reservationCategory as ReservationCategory,
+        optionalSubject: formData.optionalSubject as OptionalSubject,
+        isWorkingProfessional: formData.isWorkingProfessional,
+        givenInterview: formData.preliminaryAttempts > 0,
+        numberOfAttemptsInUpsc: formData.preliminaryAttempts,
+        numberOfMainsAttempts: formData.mainExamAttempts,
+        preferredSlots: formData.preferredSlotsOnWeekdays as PreferredSlot[],
+        answerWritingLevel: formData.answerWritingLevel as AnswerWritingLevel,
+        weakSubjects: formData.weakSubjects,
+        strongSubjects: formData.strongSubjects,
+        previouslyEnrolledCourses: formData.previouslyEnrolledCourses ? [formData.previouslyEnrolledCourses] : [],
+        primarySourceOfCurrentAffairs: formData.currentAffairsSource,
+        expectationFromMentorshipCourse: formData.expectations || ''
+      };
+
+      const menteeWithAuth: MenteeWithAuth = {
+        mentee: menteeObj,
+        username: tempMenteeData.phone,
+        passwordSHA: tempMenteeData.password,
+        isTempPassword: false
+      };
+
+      await signupMentee(menteeWithAuth);
+      
+      // After successful signup, create new auth header with the updated password
+      const newAuthHeader = `Basic ${btoa(`${tempMenteeData.phone}:${tempMenteeData.password}`)}`;
+      setAuthHeader(newAuthHeader);
+      
+      // Set the mentee data in the store
+      setMentee(menteeObj);
+      
+      localStorage.removeItem('tempMenteeData'); // Clean up
+      router.push('/home');
     } catch (error) {
       console.error('Error submitting form:', error);
       setErrors({ submit: 'Failed to submit form. Please try again.' });
