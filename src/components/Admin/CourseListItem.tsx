@@ -1,8 +1,6 @@
 'use client';
 
-import { useState } from 'react';
 import { Course } from '@/types/course';
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 
 interface CourseListItemProps {
   course: Course;
@@ -10,46 +8,34 @@ interface CourseListItemProps {
 }
 
 export default function CourseListItem({ course, onSelect }: CourseListItemProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const toggleExpand = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsExpanded(!isExpanded);
-  };
+  const endDate = new Date(course.endDate).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 
   return (
     <div 
-      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer border border-gray-200"
+      className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
       onClick={() => onSelect?.(course)}
     >
-      <div className="p-4">
-        <div className="flex justify-between items-start">
-          <h3 className="text-lg font-semibold text-gray-900 flex-grow">
+      <div className="p-6">
+        <div className="space-y-2">
+          <h3 className="text-xl font-bold text-gray-900">
             {course.name}
           </h3>
-          <button
-            onClick={toggleExpand}
-            className="ml-2 p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
-          >
-            {isExpanded ? (
-              <ChevronUpIcon className="h-5 w-5" />
-            ) : (
-              <ChevronDownIcon className="h-5 w-5" />
-            )}
-          </button>
-        </div>
-        
-        {isExpanded && (
-          <div className="mt-2">
-            <div className="text-sm text-gray-600">
-              {course.description || 'No description available'}
-            </div>
-            <div className="mt-2 text-xs text-gray-500">
-              {course.groups.length} group(s)
-            </div>
+          <p className="text-gray-600 line-clamp-2">
+            {course.description || 'No description available'}
+          </p>
+          <div className="mt-4 space-y-2">
+            <p className="text-sm text-gray-500">
+              Course Type: {course.isOneOnOneMentorshipCourse ? 'One-on-One Mentorship' : 'Group Mentorship'}
+            </p>
+            <p className="text-sm text-gray-500">
+              End Date: {endDate}
+            </p>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

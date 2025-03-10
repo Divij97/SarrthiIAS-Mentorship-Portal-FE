@@ -1,97 +1,88 @@
 'use client';
 
-import { useState } from 'react';
 import { Mentor } from '@/types/mentor';
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { PencilIcon } from '@heroicons/react/24/outline';
 
 interface MentorListItemProps {
   mentor: Mentor;
   onSelect?: (mentor: Mentor) => void;
+  onEdit?: (mentor: Mentor) => void;
+  isSelected?: boolean;
 }
 
-export default function MentorListItem({ mentor, onSelect }: MentorListItemProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const toggleExpand = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsExpanded(!isExpanded);
-  };
-
+export default function MentorListItem({ mentor, onSelect, onEdit, isSelected }: MentorListItemProps) {
   const formatOptionalSubject = (subject: string) => {
     return subject.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
     ).join(' ');
   };
 
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit?.(mentor);
+  };
+
   return (
     <div 
-      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer border border-gray-200"
+      className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer border ${isSelected ? 'border-orange-500' : 'border-gray-200'} h-full relative`}
       onClick={() => onSelect?.(mentor)}
     >
+      <button
+        onClick={handleEditClick}
+        className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors duration-200"
+      >
+        <PencilIcon className="h-4 w-4" />
+      </button>
+
       <div className="p-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              {mentor.name}
-            </h3>
-            <p className="text-sm text-gray-500">{mentor.email}</p>
-          </div>
-          <button
-            onClick={toggleExpand}
-            className="ml-2 p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
-          >
-            {isExpanded ? (
-              <ChevronUpIcon className="h-5 w-5" />
-            ) : (
-              <ChevronDownIcon className="h-5 w-5" />
-            )}
-          </button>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 pr-8">
+            {mentor.name}
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">{mentor.email}</p>
         </div>
         
-        {isExpanded && (
-          <div className="mt-4 space-y-3">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Phone</p>
-                <p className="text-sm text-gray-900">{mentor.phone}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Region</p>
-                <p className="text-sm text-gray-900">{mentor.region}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Optional Subject</p>
-                <p className="text-sm text-gray-900">{formatOptionalSubject(mentor.optionalSubject)}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Interview Experience</p>
-                <p className="text-sm text-gray-900">{mentor.givenInterview ? 'Yes' : 'No'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">UPSC Attempts</p>
-                <p className="text-sm text-gray-900">{mentor.numberOfAttemptsInUpsc}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Mains Attempts</p>
-                <p className="text-sm text-gray-900">{mentor.numberOfMainsAttempts}</p>
-              </div>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Phone</p>
+              <p className="text-sm text-gray-900">{mentor.phone}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Off Days</p>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {mentor.offDaysOfWeek.map((day) => (
-                  <span
-                    key={day}
-                    className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
-                  >
-                    {day}
-                  </span>
-                ))}
-              </div>
+              <p className="text-sm font-medium text-gray-500">Region</p>
+              <p className="text-sm text-gray-900">{mentor.region}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Optional Subject</p>
+              <p className="text-sm text-gray-900">{formatOptionalSubject(mentor.optionalSubject)}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Interview</p>
+              <p className="text-sm text-gray-900">{mentor.givenInterview ? 'Yes' : 'No'}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">UPSC Attempts</p>
+              <p className="text-sm text-gray-900">{mentor.numberOfAttemptsInUpsc}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Mains</p>
+              <p className="text-sm text-gray-900">{mentor.numberOfMainsAttempts}</p>
             </div>
           </div>
-        )}
+          <div>
+            <p className="text-sm font-medium text-gray-500">Off Days</p>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {mentor.offDaysOfWeek.map((day) => (
+                <span
+                  key={day}
+                  className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
+                >
+                  {day}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

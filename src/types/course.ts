@@ -5,6 +5,13 @@ export interface Course {
   endDate: string;
 }
 
+export interface CourseGroup {
+  id: string;
+  name: string;
+  menteeCount: number;
+  mentorAssigned: boolean;
+}
+
 // Sample course data for development
 export const sampleCourses: Course[] = [
   {
@@ -38,5 +45,43 @@ export const sampleCourses: Course[] = [
     endDate: '2024-10-31'
   }
 ];
+
+// Sample group data for development
+export const sampleCourseGroups: { [courseName: string]: CourseGroup[] } = {
+  'UPSC Foundation Course 2024': [
+    {
+      id: 'group-1',
+      name: 'Group-1',
+      menteeCount: 15,
+      mentorAssigned: true
+    },
+    {
+      id: 'group-2',
+      name: 'Group-2',
+      menteeCount: 12,
+      mentorAssigned: false
+    },
+    {
+      id: 'group-3',
+      name: 'Group-3',
+      menteeCount: 18,
+      mentorAssigned: true
+    }
+  ],
+  'Advanced Essay Writing Program': [
+    {
+      id: 'group-1',
+      name: 'Group-1',
+      menteeCount: 8,
+      mentorAssigned: true
+    },
+    {
+      id: 'group-2',
+      name: 'Group-2',
+      menteeCount: 10,
+      mentorAssigned: true
+    }
+  ]
+};
 
 // Remove sample courses as we'll be getting real data from the backend 

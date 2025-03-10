@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Course, sampleCourses } from '@/types/course';
 import CourseListItem from './CourseListItem';
 
 export default function ActiveCourses() {
+  const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,8 +29,7 @@ export default function ActiveCourses() {
   }, []);
 
   const handleCourseSelect = (course: Course) => {
-    // Handle course selection - can be implemented later
-    console.log('Selected course:', course);
+    router.push(`/admin/dashboard/courses/${encodeURIComponent(course.name)}/details`);
   };
 
   return (
@@ -56,7 +57,7 @@ export default function ActiveCourses() {
         <div className="space-y-4">
           {courses.map((course) => (
             <CourseListItem
-              key={course.id}
+              key={course.name}
               course={course}
               onSelect={handleCourseSelect}
             />
