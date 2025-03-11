@@ -32,8 +32,7 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
   const handleLogout = () => {
     const confirmLogout = window.confirm('Are you sure you want to logout?');
     if (confirmLogout) {
-      localStorage.removeItem('adminAuthenticated');
-      router.push('/admin');
+      onLogout();
     }
   };
 

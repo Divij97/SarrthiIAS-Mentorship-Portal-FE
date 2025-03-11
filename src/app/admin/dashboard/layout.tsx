@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/Admin/Sidebar';
+import { useAdminStore } from '@/stores/admin/store';
 
 export default function DashboardLayout({
   children,
@@ -9,9 +10,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const { logout } = useAdminStore();
 
   const handleLogout = () => {
-    // TODO: Implement proper logout
+    logout();
     router.push('/admin');
   };
 

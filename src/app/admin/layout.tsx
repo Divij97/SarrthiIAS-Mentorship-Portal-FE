@@ -1,15 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-
-// Simple admin auth state management
-const isAdminAuthenticated = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('adminAuthenticated') === 'true';
-  }
-  return false;
-};
+import { useAdminStore } from '@/stores/admin/store';
 
 export default function AdminLayout({
   children,
@@ -18,20 +11,29 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { isAuthenticated, logout } = useAdminStore();
+  const lastValidPath = useRef<string>('/admin/dashboard/courses/active');
+
+  // Reset lastValidPath when authentication state changes
+  useEffect(() => {
+    if (!isAuthenticated) {
+      lastValidPath.current = '/admin/dashboard/courses/active';
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isAdminAuthenticated() && pathname !== '/admin') {
+      if (isAuthenticated && pathname !== '/admin') {
         e.preventDefault();
-        e.returnValue = '';
+        return 'Changes you made may not be saved.';
       }
     };
 
     const handlePopState = (e: PopStateEvent) => {
-      if (isAdminAuthenticated() && pathname !== '/admin') {
+      if (isAuthenticated && pathname !== '/admin') {
         const confirmLogout = window.confirm('Going back will log you out of the admin panel. Continue?');
         if (confirmLogout) {
-          localStorage.removeItem('adminAuthenticated');
+          logout();
           router.push('/admin');
         } else {
           // Prevent going back by pushing current state again
@@ -47,12 +49,16 @@ export default function AdminLayout({
     // Push initial state to enable popstate handling
     window.history.pushState(null, '', window.location.href);
 
-    // Check authentication and handle redirects
+    // Update last valid path when on a dashboard route
+    if (isAuthenticated && pathname.startsWith('/admin/dashboard')) {
+      lastValidPath.current = pathname;
+    }
+
+    // Handle route protection and redirection
     const isLoginPage = pathname === '/admin';
-    const isAuthenticated = isAdminAuthenticated();
 
     if (isLoginPage && isAuthenticated) {
-      router.replace('/admin/dashboard');
+      router.replace(lastValidPath.current);
     } else if (!isLoginPage && !isAuthenticated) {
       router.replace('/admin');
     }
@@ -61,7 +67,7 @@ export default function AdminLayout({
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [pathname, router]);
+  }, [pathname, router, isAuthenticated, logout]);
 
   return (
     <div className="min-h-screen bg-gray-50">
