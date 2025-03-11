@@ -26,14 +26,20 @@ export const loginAdmin = async (username: string, password: string): Promise<Ad
     }
 
     const data = await response.json();
-    return {
+    console.log("Raw API response data:", JSON.stringify(data, null, 2));
+    
+    // Create the return object
+    const returnData = {
       success: true,
       data: {
         username: data.username,
-        courses: data.courses || [],
-        mentors: data.mentors || []
+        courses: data.courseList || [],
+        mentors: data.mentorList || []
       }
     };
+    
+    console.log("Returning data from service:", JSON.stringify(returnData, null, 2));
+    return returnData;
   } catch (error) {
     console.error('Admin login error:', error);
     return {

@@ -23,7 +23,8 @@ export default function AdminLayout({
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isAuthenticated && pathname !== '/admin') {
+      // Only show the dialog when actually leaving the site, not during internal navigation
+      if (isAuthenticated && !pathname.startsWith('/admin/dashboard')) {
         e.preventDefault();
         return 'Changes you made may not be saved.';
       }

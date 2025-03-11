@@ -11,7 +11,8 @@ interface MentorListItemProps {
 }
 
 export default function MentorListItem({ mentor, onSelect, onEdit, isSelected }: MentorListItemProps) {
-  const formatOptionalSubject = (subject: string) => {
+  const formatOptionalSubject = (subject: string | null) => {
+    if (!subject) return 'Not specified';
     return subject.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
     ).join(' ');
@@ -72,14 +73,18 @@ export default function MentorListItem({ mentor, onSelect, onEdit, isSelected }:
           <div>
             <p className="text-sm font-medium text-gray-500">Off Days</p>
             <div className="flex flex-wrap gap-1 mt-1">
-              {mentor.offDaysOfWeek.map((day) => (
-                <span
-                  key={day}
-                  className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
-                >
-                  {day}
-                </span>
-              ))}
+              {mentor.offDaysOfWeek?.length ? (
+                mentor.offDaysOfWeek.map((day) => (
+                  <span
+                    key={day}
+                    className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
+                  >
+                    {day}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">No off days specified</span>
+              )}
             </div>
           </div>
         </div>
