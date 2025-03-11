@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { sampleMentors } from '@/data/mentors';
-import { Mentor } from '@/types/mentor';
+import { useRouter } from 'next/navigation';
+import { createCourse } from '@/services/courses';
+import { useAdminStore } from '@/stores/admin/store';
+import { Course } from '@/types/course';
 
 interface CourseFormData {
   title: string;
@@ -10,7 +12,6 @@ interface CourseFormData {
   endDate: string;
   isOneOnOneMentorship: boolean;
   isGroupMentorshipEnabled: boolean;
-  mentorId: string;
 }
 
 export default function CourseForm() {
@@ -19,9 +20,10 @@ export default function CourseForm() {
     description: '',
     endDate: '',
     isOneOnOneMentorship: true,
-    isGroupMentorshipEnabled: false,
-    mentorId: ''
+    isGroupMentorshipEnabled: false
   });
+
+  const router = useRouter();
 
   const handleOneOnOneChange = (checked: boolean) => {
     setFormData(prev => ({
@@ -53,7 +55,25 @@ export default function CourseForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form submitted:', formData);
-    // TODO: Implement API call
+    const { authHeader, addCourse } = useAdminStore.getState();
+    
+    const course: Course = {
+      name: formData.title,
+      description: formData.description,
+      endDate: formData.endDate,
+      isOneOnOneMentorshipCourse: formData.isOneOnOneMentorship,
+    };
+
+    try {
+      const createdCourse = await createCourse(course, authHeader || "");
+      // Add the new course to the admin store
+      addCourse(createdCourse);
+      // TODO: Show success message and redirect
+      router.push('/admin/dashboard/courses/active');
+    } catch (error) {
+      console.error('Error creating course:', error);
+      // TODO: Show error message
+    }
   };
 
   const isSubmitDisabled = () => {
@@ -61,7 +81,6 @@ export default function CourseForm() {
       !formData.title ||
       !formData.description ||
       !formData.endDate ||
-      !formData.mentorId ||
       (!formData.isOneOnOneMentorship && !formData.isGroupMentorshipEnabled)
     );
   };
@@ -94,26 +113,6 @@ export default function CourseForm() {
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-black"
           required
         />
-      </div>
-
-      <div>
-        <label htmlFor="mentor" className="block text-sm font-medium text-gray-700">
-          Select Mentor
-        </label>
-        <select
-          id="mentor"
-          value={formData.mentorId}
-          onChange={(e) => setFormData(prev => ({ ...prev, mentorId: e.target.value }))}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-black"
-          required
-        >
-          <option value="">Choose a mentor</option>
-          {sampleMentors.map((mentor) => (
-            <option key={mentor.phone} value={mentor.phone}>
-              {mentor.name} - {mentor.optionalSubject.split('_').join(' ')}
-            </option>
-          ))}
-        </select>
       </div>
 
       <div>

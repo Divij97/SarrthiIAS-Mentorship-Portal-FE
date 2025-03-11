@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { loginAdmin } from '@/services/admin';
 import { AdminData } from '@/types/admin';
+import { Course } from '@/types/course';
 
 interface AdminState {
   username: string;
@@ -15,6 +16,7 @@ interface AdminState {
   setError: (error: string) => void;
   handleLogin: (username: string, password: string) => Promise<{ success: boolean; adminData: AdminData | null }>;
   logout: () => void;
+  addCourse: (course: Course) => void;
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -30,6 +32,13 @@ export const useAdminStore = create<AdminState>()(
       setUsername: (username) => set({ username }),
       setAuthHeader: (header) => set({ authHeader: header, isAuthenticated: true }),
       setError: (error) => set({ error }),
+
+      addCourse: (course) => set((state) => ({
+        adminData: state.adminData ? {
+          ...state.adminData,
+          courses: [...(state.adminData.courses || []), course]
+        } : null
+      })),
 
       handleLogin: async (username: string, password: string) => {
         set({ error: '', loading: true });
