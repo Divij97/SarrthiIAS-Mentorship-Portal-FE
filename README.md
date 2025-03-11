@@ -1,6 +1,6 @@
-# Saarthi IAS Mentorship Portal
+# Sarrthi IAS Mentorship Portal
 
-A web application for managing mentorship programs at Saarthi IAS, built with Next.js 14, TypeScript, and Tailwind CSS.
+A web application for managing mentorship programs at Sarrthi IAS, built with Next.js 14, TypeScript, and Tailwind CSS.
 
 ## Features
 

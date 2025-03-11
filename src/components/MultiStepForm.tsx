@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FormData } from '@/types/form';
+import { FormData } from '@/types/multistep_form';
 import PersonalInfo from '@/components/Onboarding/PersonalInfo';
 import EducationBackground from '@/components/Onboarding/EducationBackground';
 import PreparationJourney from '@/components/Onboarding/PreparationJourney';

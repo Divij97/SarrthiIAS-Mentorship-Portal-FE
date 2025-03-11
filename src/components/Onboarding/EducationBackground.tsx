@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FormData } from '@/types/form';
+import { FormData } from '@/types/multistep_form';
 import { OptionalSubject } from '@/types/mentee';
 import { FormErrors } from '@/utils/MultiStepFormValidator';
 

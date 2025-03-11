@@ -2,14 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Session, sampleGroupSessions } from '@/types/session';
+import { Session } from '@/types/session';
 import { ArrowLeftIcon, PlusIcon, VideoCameraIcon, DocumentIcon, ClockIcon } from '@heroicons/react/24/outline';
 import SessionForm, { SessionFormData } from '@/components/Admin/SessionForm';
+import sampleGroupSessionsData from '@/data/sampleGroupSessions.json';
 
 interface SessionCardProps {
   session: Session;
   onEdit: (session: Session) => void;
 }
+
+// Helper function to type-check and convert the sample data
+const getSampleGroupSessions = (groupId: string): Session[] => {
+  const data = sampleGroupSessionsData[groupId as keyof typeof sampleGroupSessionsData];
+  if (!data) return [];
+  
+  return data.map(session => ({
+    ...session,
+    status: session.status as Session['status'] // This is safe because we know the data matches our type
+  }));
+};
 
 function SessionCard({ session, onEdit }: SessionCardProps) {
   const getStatusColor = (status: Session['status']) => {
@@ -98,7 +110,7 @@ export default function GroupDetailsPage({
 
   useEffect(() => {
     // In a real app, this would be an API call
-    const groupSessions = sampleGroupSessions[groupId] || [];
+    const groupSessions = getSampleGroupSessions(groupId);
     setSessions(groupSessions);
   }, [groupId]);
 

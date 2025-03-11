@@ -3,7 +3,7 @@ import "./globals.css";
 import RootLayoutClient from "@/components/RootLayoutClient";
 
 export const metadata: Metadata = {
-  title: "Saarthi IAS Mentorship Program",
+  title: "Sarrthi IAS Mentorship Program",
   description: "Join our mentorship program to enhance your UPSC preparation journey",
 };
 

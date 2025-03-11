@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FormData } from '@/types/form';
+import { FormData } from '@/types/multistep_form';
 import { FormErrors } from '@/utils/MultiStepFormValidator';
 
 interface CurrentPreparationProps {

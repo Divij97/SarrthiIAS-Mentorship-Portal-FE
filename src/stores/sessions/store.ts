@@ -1,19 +1,19 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { MentorshipSessionsInfo } from '@/types/session';
+import { MentorSessionsResponse } from '@/types/session';
 
 interface SessionsStore {
-  sessions: MentorshipSessionsInfo;
-  setSessions: (sessions: MentorshipSessionsInfo) => void;
+  sessions: MentorSessionsResponse;
+  setSessions: (sessions: MentorSessionsResponse) => void;
   clearSessions: () => void;
 }
 
 export const useSessionsStore = create<SessionsStore>()(
   persist(
     (set) => ({
-      sessions: { sessionsByDate: {} },
+      sessions: { username: '', sessionsByDate: {} },
       setSessions: (sessions) => set({ sessions }),
-      clearSessions: () => set({ sessions: { sessionsByDate: {} } }),
+      clearSessions: () => set({ sessions: { username: '', sessionsByDate: {} } }),
     }),
     {
       name: 'sessions-storage',

@@ -1,4 +1,4 @@
-import { FormData } from '@/types/form';
+import { FormData } from '@/types/multistep_form';
 
 export interface FormErrors {
   [key: string]: string;

@@ -3,8 +3,8 @@ import { Mentor } from "./mentor";
 
 export interface AdminData {
     username: string;
-    courses: any[];
-    mentors: any[];
+    courses:  Course[];
+    mentors: Mentor[];
 }
 
 export interface AdminResponse {

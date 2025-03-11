@@ -1,6 +1,6 @@
 'use client';
 
-import { FormData } from '@/types/form';
+import { FormData } from '@/types/multistep_form';
 import { RadioGroup } from '@/components/ui/RadioGroup';
 import { FormErrors } from '@/utils/MultiStepFormValidator';
 
@@ -77,7 +77,7 @@ const PreparationJourney = ({ formData, handleChange }: PreparationJourneyProps)
                 className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
               />
               <label className="ml-2 block text-sm text-gray-700">
-                I am an ex-student of Saarthi IAS
+                I am an ex-student of Sarrthi IAS
               </label>
             </div>
           </div>

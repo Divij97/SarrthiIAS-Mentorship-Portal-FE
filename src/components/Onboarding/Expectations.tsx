@@ -1,6 +1,6 @@
 'use client';
 
-import { FormData } from '@/types/form';
+import { FormData } from '@/types/multistep_form';
 import { FormErrors } from '@/utils/MultiStepFormValidator';
 
 interface ExpectationsProps {

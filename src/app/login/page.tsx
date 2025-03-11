@@ -64,7 +64,7 @@ export default function LoginPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Saarthi IAS Mentorship Portal
+            Sarrthi IAS Mentorship Portal
           </h1>
           <h2 className="text-2xl font-semibold text-gray-900">
             Sign in to your account

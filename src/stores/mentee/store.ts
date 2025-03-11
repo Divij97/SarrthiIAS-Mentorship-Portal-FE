@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Mentee, MenteeResponse } from '@/types/mentee';
+import { MenteeResponse } from '@/types/mentee';
 import { Course } from '@/types/course';
 
 interface MenteeStore {
