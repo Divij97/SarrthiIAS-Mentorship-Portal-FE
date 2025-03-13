@@ -1,5 +1,23 @@
 import { DayOfWeek } from "@/types/mentor";
 
+const timeSlots = {
+    MORNING: '9AM_6PM',
+    EVENING: '6PM_9PM'
+  } as const;
+
+  const answerWritingLevels = {
+    NEEDS_SUPPORT: 'BEGINNER',
+    AVERAGE: 'INTERMEDIATE',
+    FAIRLY_GOOD: 'ADVANCED'
+  } as const;
+
+
+const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as const;
+
+const formatTimeSlot = (slot: string): string => {
+    return slot === timeSlots.MORNING ? '9:00 AM - 6:00 PM' : '6:00 PM - 9:00 PM';
+  };
+
 // Helper function to format time from 24h format (HH:MM:SS) to 12h format
 const formatTimeDisplay = (timeString: string): string => {
     // Handle ISO date strings or simple time strings
@@ -76,6 +94,16 @@ const getNextDayOfWeek = (dayOfWeek: DayOfWeek): Date => {
     return nextDate;
 };
 
-export { formatTimeDisplay, formatDisplayDate, ddmmyyyy, formatDateKey, getNextDayOfWeek };
+export {
+    weekDays,
+    timeSlots, 
+    answerWritingLevels,
+    formatTimeSlot, 
+    formatTimeDisplay, 
+    formatDisplayDate, 
+    ddmmyyyy, 
+    formatDateKey, 
+    getNextDayOfWeek 
+};
 
 
