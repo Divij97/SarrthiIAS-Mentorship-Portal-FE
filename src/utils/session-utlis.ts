@@ -2,7 +2,7 @@ import { DayOfWeek, MentorResponse } from "@/types/mentor"
 import { MentorshipSession } from "@/types/session";
 import { formatDateKey, getNextDayOfWeek } from "./date-time-utils";
 
-export const getCombinedSessionsFromMentor = (mentorResponse: MentorResponse) => {
+export const combinedSessionsFromMentor = (mentorResponse: MentorResponse) => {
     const combined: Record<string, MentorshipSession[]> = { ...mentorResponse.sessionsByDate };
     
     // Process sessions by day of week
