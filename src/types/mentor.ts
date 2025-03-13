@@ -1,4 +1,5 @@
 import { Region, Gender, OptionalSubject } from './mentee';
+import { MentorshipSession } from './session';
 
 export enum DayOfWeek {
   MONDAY = 'MONDAY',
@@ -23,9 +24,23 @@ export interface Mentor {
   offDaysOfWeek: DayOfWeek[];
 }
 
+export interface GroupMentorshipSession {
+  sessionId: string;
+  groupFriendlyName: string;
+  dateOfSession: number; // Day of month (1-31)
+  startTime: string; // 24-hour format HH:mm
+  endTime: string; // 24-hour format HH:mm
+  mentorUserName: string;
+  mentorName: string;
+  zoomLink: string;
+}
+
 export interface MentorResponse {
   mentor: Mentor | null;
   username: string | null;
   isTempPassword: boolean;
   otp: string | null;
+  sessionsByDayOfWeek: { [key in DayOfWeek]?: MentorshipSession[] };
+  sessionsByDate: { [date: string]: MentorshipSession[] };
+  groupMentorshipSessions: GroupMentorshipSession[];
 }

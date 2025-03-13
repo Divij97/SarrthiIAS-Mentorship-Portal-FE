@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Course, CourseGroup, sampleCourseGroups } from '@/types/course';
+import { Course, CourseGroup } from '@/types/course';
 import { UserGroupIcon, ArrowLeftIcon, UserIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 interface GroupCardProps {
@@ -46,17 +46,18 @@ const GroupCard = ({ group, onClick }: GroupCardProps) => (
 export default function CourseDetailsPage({
   params,
 }: {
-  params: { courseName: string };
+  params: Promise<{ courseName: string }>;
 }) {
   const router = useRouter();
-  const courseName = decodeURIComponent(params.courseName);
+  const { courseName } = use(params);
+  const decodedCourseName = decodeURIComponent(courseName);
   const [groups, setGroups] = useState<CourseGroup[]>([]);
 
   useEffect(() => {
     // In a real app, this would be an API call
-    const courseGroups = sampleCourseGroups[courseName] || [];
-    setGroups(courseGroups);
-  }, [courseName]);
+    // const courseGroups = sampleCourseGroups[courseName] || [];
+    setGroups([]);
+  }, [decodedCourseName]);
 
   const handleBackToCourses = () => {
     router.push('/admin/dashboard/courses/active');
@@ -64,7 +65,7 @@ export default function CourseDetailsPage({
 
   const handleGroupClick = (groupId: string) => {
     // Navigate to group details page
-    router.push(`/admin/dashboard/courses/${encodeURIComponent(courseName)}/groups/${groupId}`);
+    router.push(`/admin/dashboard/courses/${encodeURIComponent(decodedCourseName)}/groups/${groupId}`);
   };
 
   return (
@@ -78,7 +79,7 @@ export default function CourseDetailsPage({
             <ArrowLeftIcon className="h-4 w-4 mr-1" />
             Back to Courses
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">{courseName}</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{decodedCourseName}</h1>
         </div>
         <button
           onClick={() => {/* Handle creating new group */}}

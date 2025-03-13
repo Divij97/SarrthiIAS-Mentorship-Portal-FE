@@ -1,4 +1,9 @@
-import { MentorshipSessionsInfo } from '@/types/session';
+import { MentorshipSession } from '@/types/session';
+
+// Define the structure for sessions data
+export interface SessionsData {
+  sessionsByDate: Record<string, MentorshipSession[]>;
+}
 
 // Helper function to generate dates for the next 7 days
 const getNextSevenDays = (): string[] => {
@@ -18,9 +23,8 @@ const getNextSevenDays = (): string[] => {
   
   return dates;
 };
-
 // Sample data for a MENTEE (one session per week with their assigned mentor)
-export const sampleMenteeSessionsData: MentorshipSessionsInfo = {
+export const sampleMenteeSessionsData: SessionsData = {
   sessionsByDate: getNextSevenDays().reduce((acc, date, index) => {
     // Only add a session for one day in the week (e.g., the first day)
     if (index === 0) {
@@ -32,18 +36,20 @@ export const sampleMenteeSessionsData: MentorshipSessionsInfo = {
           isZoomLinkGenerated: true,
           zoomLink: "https://zoom.us/j/123456789",
           startTime: "10:00",
-          endTime: "11:00"
+          endTime: "11:00",
+          mentorUsername: "mentor123",
+          mentorName: "John Mentor"
         }
       ];
     } else {
       acc[date] = []; // No sessions on other days
     }
     return acc;
-  }, {} as MentorshipSessionsInfo['sessionsByDate'])
+  }, {} as Record<string, MentorshipSession[]>)
 };
 
 // Sample data for a MENTOR (multiple sessions per day with different mentees)
-export const sampleMentorSessionsData: MentorshipSessionsInfo = {
+export const sampleMentorSessionsData: SessionsData = {
   sessionsByDate: getNextSevenDays().reduce((acc, date, index) => {
     // Add 2-3 sessions for each day except Sunday (index 6)
     if (index !== 6) {
@@ -55,7 +61,9 @@ export const sampleMentorSessionsData: MentorshipSessionsInfo = {
           isZoomLinkGenerated: index === 0, // Only today's sessions have zoom links
           zoomLink: index === 0 ? "https://zoom.us/j/123456789" : null,
           startTime: "10:00",
-          endTime: "11:00"
+          endTime: "11:00",
+          mentorUsername: "mentor123",
+          mentorName: "John Mentor"
         },
         {
           id: `session-${date}-2`,
@@ -64,7 +72,9 @@ export const sampleMentorSessionsData: MentorshipSessionsInfo = {
           isZoomLinkGenerated: index === 0,
           zoomLink: index === 0 ? "https://zoom.us/j/987654321" : null,
           startTime: "14:30",
-          endTime: "15:30"
+          endTime: "15:30",
+          mentorUsername: "mentor123",
+          mentorName: "John Mentor"
         }
       ];
 
@@ -77,27 +87,29 @@ export const sampleMentorSessionsData: MentorshipSessionsInfo = {
           isZoomLinkGenerated: index === 0,
           zoomLink: index === 0 ? "https://zoom.us/j/456789123" : null,
           startTime: "16:00",
-          endTime: "17:00"
+          endTime: "17:00",
+          mentorUsername: "mentor123",
+          mentorName: "John Mentor"
         });
       }
     } else {
       acc[date] = []; // No sessions on Sunday
     }
     return acc;
-  }, {} as MentorshipSessionsInfo['sessionsByDate'])
+  }, {} as Record<string, MentorshipSession[]>)
 };
 
 // Helper functions to get sessions based on user type
 export const getSessionsByDate = (
   date: string,
   isMentor: boolean = false
-): MentorshipSessionsInfo['sessionsByDate'][string] => {
+): MentorshipSession[] => {
   const data = isMentor ? sampleMentorSessionsData : sampleMenteeSessionsData;
   return data.sessionsByDate[date] || [];
 };
 
 export const getAllSessions = (
   isMentor: boolean = false
-): MentorshipSessionsInfo => {
+): SessionsData => {
   return isMentor ? sampleMentorSessionsData : sampleMenteeSessionsData;
 }; 

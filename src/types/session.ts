@@ -6,6 +6,8 @@ export interface MentorshipSession {
   zoomLink: string | null;
   startTime: string;
   endTime: string;
+  mentorUsername: string;
+  mentorName: string;
 }
 
 export interface MentorSessionsByDate {

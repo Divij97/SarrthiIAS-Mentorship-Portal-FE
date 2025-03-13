@@ -3,80 +3,96 @@
 import { useEffect, useState } from 'react';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
-import { getMentorSessions } from '@/services/mentors';
-import { MentorSessionsResponse, MentorshipSession, formatTime } from '@/types/session';
-import { CalendarDaysIcon, ClockIcon, UserIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { SessionCard } from '@/components/Sessions/SessionCard';
+import { MentorshipSession } from '@/types/session';
+import { DayOfWeek } from '@/types/mentor';
+
+// Helper function to get the next occurrence of a day of week
+const getNextDayOfWeek = (dayOfWeek: DayOfWeek): Date => {
+  const today = new Date();
+  const daysOfWeek = {
+    [DayOfWeek.MONDAY]: 1,
+    [DayOfWeek.TUESDAY]: 2,
+    [DayOfWeek.WEDNESDAY]: 3,
+    [DayOfWeek.THURSDAY]: 4,
+    [DayOfWeek.FRIDAY]: 5,
+    [DayOfWeek.SATURDAY]: 6,
+    [DayOfWeek.SUNDAY]: 0
+  };
+  
+  const targetDay = daysOfWeek[dayOfWeek];
+  const currentDay = today.getDay();
+  
+  // Calculate days to add
+  const daysToAdd = (targetDay + 7 - currentDay) % 7;
+  
+  // Create a new date for the next occurrence
+  const nextDate = new Date(today);
+  nextDate.setDate(today.getDate() + daysToAdd);
+  
+  return nextDate;
+};
+
+// Format date as DD/MM/YYYY
+const formatDateKey = (date: Date): string => {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 
 export default function MentorSessionsPage() {
-  const { authHeader } = useLoginStore();
-  const { mentor } = useMentorStore();
-  const [sessions, setSessions] = useState<MentorSessionsResponse | null>(null);
+  const { mentor, mentorResponse } = useMentorStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [combinedSessions, setCombinedSessions] = useState<Record<string, MentorshipSession[]>>({});
 
   useEffect(() => {
-    const fetchSessions = async () => {
-      if (!mentor?.phone || !authHeader) {
-        setError('Authentication required');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await getMentorSessions(mentor.phone, authHeader);
-        setSessions(response);
-      } catch (error) {
-        console.error('Error fetching sessions:', error);
-        setError('Failed to fetch sessions');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSessions();
-  }, [mentor?.phone, authHeader]);
-
-  const renderSession = (session: MentorshipSession) => {
-    const startTime = formatTime(session.startTime);
-    const endTime = formatTime(session.endTime);
-
-    return (
-      <div key={session.id} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-all duration-200">
-        <div className="flex flex-col space-y-4">
-          <div className="flex justify-between items-start">
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <UserIcon className="h-5 w-5 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-900">{session.menteeFullName}</h3>
-              </div>
-              <div className="flex items-center space-x-2 text-gray-500">
-                <PhoneIcon className="h-4 w-4" />
-                <span className="text-sm">{session.menteeUsername}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-gray-500">
-                <ClockIcon className="h-4 w-4" />
-                <span className="text-sm">{startTime} - {endTime}</span>
-              </div>
-            </div>
-            {session.isZoomLinkGenerated ? (
-              <a
-                href={session.zoomLink || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-              >
-                Join Meeting
-              </a>
-            ) : (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                Link Pending
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
+    if (!mentor) {
+      setError('Authentication required');
+      setLoading(false);
+      return;
+    }
+    
+    if (!mentorResponse) {
+      setError('No sessions data available');
+      setLoading(false);
+      return;
+    }
+    
+    // Combine sessions from both sources
+    const combined: Record<string, MentorshipSession[]> = { ...mentorResponse.sessionsByDate };
+    
+    // Process sessions by day of week
+    if (mentorResponse.sessionsByDayOfWeek) {
+      Object.entries(mentorResponse.sessionsByDayOfWeek).forEach(([day, sessions]) => {
+        if (sessions && sessions.length > 0) {
+          // Convert day of week to next occurrence date
+          const nextDate = getNextDayOfWeek(day as DayOfWeek);
+          const dateKey = formatDateKey(nextDate);
+          
+          // Add to combined sessions
+          if (!combined[dateKey]) {
+            combined[dateKey] = [];
+          }
+          
+          // Add sessions that aren't already in the list (avoid duplicates)
+          sessions.forEach(session => {
+            const isDuplicate = combined[dateKey].some(existingSession => 
+              existingSession.id === session.id
+            );
+            
+            if (!isDuplicate) {
+              combined[dateKey].push(session);
+            }
+          });
+        }
+      });
+    }
+    
+    setCombinedSessions(combined);
+    setLoading(false);
+  }, [mentor, mentorResponse]);
 
   if (loading) {
     return (
@@ -113,25 +129,22 @@ export default function MentorSessionsPage() {
         </div>
 
         <div className="space-y-8">
-          {sessions && Object.entries(sessions.sessionsByDate).map(([date, dateSessions]) => (
-            <div key={date} className="bg-white shadow-sm rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-6 py-3 flex items-center space-x-2">
-                <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
-                <h2 className="text-lg font-medium text-gray-900">{date}</h2>
-              </div>
-              <div className="p-6 space-y-4">
-                {dateSessions.length > 0 ? (
-                  dateSessions.map(session => renderSession(session))
-                ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    No sessions scheduled for this day
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+          {Object.entries(combinedSessions)
+            .sort(([dateA], [dateB]) => {
+              // Sort dates in ascending order
+              const [dayA, monthA, yearA] = dateA.split('/').map(Number);
+              const [dayB, monthB, yearB] = dateB.split('/').map(Number);
+              
+              const dateObjA = new Date(yearA, monthA - 1, dayA);
+              const dateObjB = new Date(yearB, monthB - 1, dayB);
+              
+              return dateObjA.getTime() - dateObjB.getTime();
+            })
+            .map(([date, dateSessions]) => (
+              <SessionCard key={date} date={date} sessions={dateSessions} />
+            ))}
 
-          {sessions && Object.keys(sessions.sessionsByDate).length === 0 && (
+          {Object.keys(combinedSessions).length === 0 && (
             <div className="text-center text-gray-500">
               No upcoming sessions found
             </div>
