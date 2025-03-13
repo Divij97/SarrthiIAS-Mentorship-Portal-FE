@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FormData } from '@/types/multistep_form';
+import { FormData } from '@/types/multistep-form';
 import { OptionalSubject } from '@/types/mentee';
-import { FormErrors } from '@/utils/MultiStepFormValidator';
+import { FormErrors } from '@/utils/mentee-signup-form-validator';
 
 interface EducationBackgroundProps {
   formData: FormData;

@@ -1,45 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { SessionCard } from '@/components/Sessions/SessionCard';
 import { MentorshipSession } from '@/types/session';
-import { DayOfWeek } from '@/types/mentor';
-
-// Helper function to get the next occurrence of a day of week
-const getNextDayOfWeek = (dayOfWeek: DayOfWeek): Date => {
-  const today = new Date();
-  const daysOfWeek = {
-    [DayOfWeek.MONDAY]: 1,
-    [DayOfWeek.TUESDAY]: 2,
-    [DayOfWeek.WEDNESDAY]: 3,
-    [DayOfWeek.THURSDAY]: 4,
-    [DayOfWeek.FRIDAY]: 5,
-    [DayOfWeek.SATURDAY]: 6,
-    [DayOfWeek.SUNDAY]: 0
-  };
-  
-  const targetDay = daysOfWeek[dayOfWeek];
-  const currentDay = today.getDay();
-  
-  // Calculate days to add
-  const daysToAdd = (targetDay + 7 - currentDay) % 7;
-  
-  // Create a new date for the next occurrence
-  const nextDate = new Date(today);
-  nextDate.setDate(today.getDate() + daysToAdd);
-  
-  return nextDate;
-};
-
-// Format date as DD/MM/YYYY
-const formatDateKey = (date: Date): string => {
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
+import { getCombinedSessionsFromMentor } from '@/utils/session-utlis';
 
 export default function MentorSessionsPage() {
   const { mentor, mentorResponse } = useMentorStore();
@@ -49,7 +14,7 @@ export default function MentorSessionsPage() {
 
   useEffect(() => {
     if (!mentor) {
-      setError('Authentication required');
+      setError('Authentication required. Kindly login again.');
       setLoading(false);
       return;
     }
@@ -61,34 +26,7 @@ export default function MentorSessionsPage() {
     }
     
     // Combine sessions from both sources
-    const combined: Record<string, MentorshipSession[]> = { ...mentorResponse.sessionsByDate };
-    
-    // Process sessions by day of week
-    if (mentorResponse.sessionsByDayOfWeek) {
-      Object.entries(mentorResponse.sessionsByDayOfWeek).forEach(([day, sessions]) => {
-        if (sessions && sessions.length > 0) {
-          // Convert day of week to next occurrence date
-          const nextDate = getNextDayOfWeek(day as DayOfWeek);
-          const dateKey = formatDateKey(nextDate);
-          
-          // Add to combined sessions
-          if (!combined[dateKey]) {
-            combined[dateKey] = [];
-          }
-          
-          // Add sessions that aren't already in the list (avoid duplicates)
-          sessions.forEach(session => {
-            const isDuplicate = combined[dateKey].some(existingSession => 
-              existingSession.id === session.id
-            );
-            
-            if (!isDuplicate) {
-              combined[dateKey].push(session);
-            }
-          });
-        }
-      });
-    }
+    const combined: Record<string, MentorshipSession[]> = getCombinedSessionsFromMentor(mentorResponse);
     
     setCombinedSessions(combined);
     setLoading(false);
@@ -129,17 +67,7 @@ export default function MentorSessionsPage() {
         </div>
 
         <div className="space-y-8">
-          {Object.entries(combinedSessions)
-            .sort(([dateA], [dateB]) => {
-              // Sort dates in ascending order
-              const [dayA, monthA, yearA] = dateA.split('/').map(Number);
-              const [dayB, monthB, yearB] = dateB.split('/').map(Number);
-              
-              const dateObjA = new Date(yearA, monthA - 1, dayA);
-              const dateObjB = new Date(yearB, monthB - 1, dayB);
-              
-              return dateObjA.getTime() - dateObjB.getTime();
-            })
+          {combinedSessions && Object.entries(combinedSessions)
             .map(([date, dateSessions]) => (
               <SessionCard key={date} date={date} sessions={dateSessions} />
             ))}

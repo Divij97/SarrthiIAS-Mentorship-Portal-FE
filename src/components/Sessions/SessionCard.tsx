@@ -1,7 +1,7 @@
 import { MentorshipSession } from "@/types/session";
 import { SessionInfoCard } from "./SessionInfoCard";
 import { CalendarDaysIcon } from '@heroicons/react/24/outline';
-import { formatDisplayDate } from "@/utils/date_time_utils";
+import { formatDisplayDate } from "@/utils/date-time-utils";
 
 interface SessionCardProps {
     date: string;

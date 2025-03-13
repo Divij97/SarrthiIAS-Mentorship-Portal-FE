@@ -1,5 +1,5 @@
 import { MentorshipSession } from "@/types/session";
-import { formatTimeDisplay } from "@/utils/date_time_utils";
+import { formatTimeDisplay } from "@/utils/date-time-utils";
 import { ClockIcon, UserIcon, PhoneIcon } from '@heroicons/react/24/outline';
 
 interface SessionCardProps {

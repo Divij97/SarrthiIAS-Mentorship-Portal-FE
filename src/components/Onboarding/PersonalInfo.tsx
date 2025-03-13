@@ -1,6 +1,6 @@
 'use client';
 
-import { FormData } from '@/types/multistep_form';
+import { FormData } from '@/types/multistep-form';
 import { RadioGroup } from '@/components/ui/RadioGroup';
 import { useMenteeStore } from '@/stores/mentee/store';
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FormData } from '@/types/multistep_form';
+import { FormData } from '@/types/multistep-form';
 import PersonalInfo from '@/components/Onboarding/PersonalInfo';
 import EducationBackground from '@/components/Onboarding/EducationBackground';
 import PreparationJourney from '@/components/Onboarding/PreparationJourney';
@@ -11,7 +11,7 @@ import Expectations from '@/components/Onboarding/Expectations';
 import { Button } from '@/components/ui/Button';
 import { Region, Gender, OptionalSubject, Mentee, MenteeWithAuth, ReservationCategory, PreferredSlot, AnswerWritingLevel } from '@/types/mentee';
 import { signupMentee } from '@/services/mentee';
-import { validateStep, FormErrors } from '@/utils/MultiStepFormValidator';
+import { validateStep, FormErrors } from '@/utils/mentee-signup-form-validator';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { useLoginStore } from '@/stores/auth/store';
 import { TempMenteeData } from '@/types/auth';

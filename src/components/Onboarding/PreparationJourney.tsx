@@ -1,8 +1,8 @@
 'use client';
 
-import { FormData } from '@/types/multistep_form';
+import { FormData } from '@/types/multistep-form';
 import { RadioGroup } from '@/components/ui/RadioGroup';
-import { FormErrors } from '@/utils/MultiStepFormValidator';
+import { FormErrors } from '@/utils/mentee-signup-form-validator';
 
 interface PreparationJourneyProps {
   formData: FormData;

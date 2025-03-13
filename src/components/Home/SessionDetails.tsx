@@ -7,7 +7,7 @@ import { UserType } from '@/types/auth';
 import { MentorshipSession } from '@/types/session';
 import { CalendarDaysIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { ZoomLinkButton } from '../ui/ZoomLinkButton';
-import { ddmmyyyy } from '@/utils/date_time_utils';
+import { ddmmyyyy } from '@/utils/date-time-utils';
 
 export default function SessionDetails() {
   const { userType } = useLoginStore();

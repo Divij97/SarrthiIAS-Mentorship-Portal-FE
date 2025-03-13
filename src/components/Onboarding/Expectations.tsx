@@ -1,7 +1,7 @@
 'use client';
 
-import { FormData } from '@/types/multistep_form';
-import { FormErrors } from '@/utils/MultiStepFormValidator';
+import { FormData } from '@/types/multistep-form';
+import { FormErrors } from '@/utils/mentee-signup-form-validator';
 
 interface ExpectationsProps {
   formData: FormData;
