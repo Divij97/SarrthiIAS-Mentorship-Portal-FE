@@ -27,6 +27,7 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
       ]
     },
     { name: 'Mentors', path: '/admin/dashboard/mentors' },
+    { name: 'Meetings', path: '/admin/dashboard/meetings' },
   ];
 
   const handleLogout = () => {
