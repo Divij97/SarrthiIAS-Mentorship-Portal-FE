@@ -26,10 +26,10 @@ export default function LoginPage() {
   } = useLoginStore();
   const { setMentee, mentee, setMenteeResponse } = useMenteeStore();
   const { setMentor, setMentorResponse } = useMentorStore();
-  const [rememberMe, setRememberMe] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     try {
       const response = await handleLogin();
       if (response) {
@@ -118,31 +118,18 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <div className="flex items-center">
                 <input
                   id="is-mentor"
                   name="is-mentor"
                   type="checkbox"
+                  checked={userType === UserType.MENTOR}
                   onChange={(e) => setUserType(e.target.checked ? UserType.MENTOR : UserType.MENTEE)}
                   className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                 />
                 <label htmlFor="is-mentor" className="ml-2 block text-sm text-gray-900">
                   I am a mentor
-                </label>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
                 </label>
               </div>
             </div>
