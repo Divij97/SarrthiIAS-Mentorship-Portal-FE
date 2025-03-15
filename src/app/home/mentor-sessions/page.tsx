@@ -3,76 +3,47 @@
 import { useEffect, useState } from 'react';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
-import { SessionCard } from '@/components/Sessions/SessionCard';
 import { MentorshipSession } from '@/types/session';
 import { combinedSessionsFromMentor } from '@/utils/session-utlis';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { XMarkIcon, ClockIcon, CalendarIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { DayOfWeek } from '@/types/mentor';
-
-// First, let's update the SessionCard component to accept our new props
-interface EnhancedSessionCardProps {
-  date: string;
-  sessions: MentorshipSession[];
-  onEditSession?: (session: MentorshipSession) => void;
-  onCancelSession?: (session: MentorshipSession) => void;
-}
-
-// Create an enhanced version of SessionCard that supports editing and cancellation
-const EnhancedSessionCard = ({ date, sessions, onEditSession, onCancelSession }: EnhancedSessionCardProps) => {
-  const SessionCardComponent = SessionCard as any; // Type cast to avoid prop type errors
-  
-  // Render the original SessionCard
-  return (
-    <div className="relative">
-      <SessionCardComponent date={date} sessions={sessions} />
-      
-      {/* Add edit/cancel buttons for each session */}
-      {(onEditSession || onCancelSession) && (
-        <div className="mt-4 space-y-4">
-          {sessions.map(session => (
-            <div key={session.id} className="flex justify-end space-x-3 px-6 pb-4">
-              {onEditSession && (
-                <button
-                  onClick={() => onEditSession(session)}
-                  className="text-sm text-orange-600 hover:text-orange-800 font-medium"
-                >
-                  Edit Schedule
-                </button>
-              )}
-              {onCancelSession && (
-                <button
-                  onClick={() => onCancelSession(session)}
-                  className="text-sm text-red-600 hover:text-red-800 font-medium"
-                >
-                  Cancel Session
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+import { XMarkIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { DayOfWeek, MentorResponse } from '@/types/mentor';
+import CalendarView from '@/components/Calendar/CalendarView';
+import { Meeting } from '@/types/meeting';
+import { convertDateFormat, extractTimeFromISOString } from '@/utils/date-time-utils';
 
 // Mock API functions - replace with actual API calls
-const updateSessionSchedule = async (sessionId: string, startTime: string, endTime: string): Promise<MentorshipSession> => {
-  // Simulate API call
+const updateSessionSchedule = async (
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  sessionId: string, 
+  startTime: string, 
+  endTime: string
+): Promise<MentorshipSession> => {
+  // Simulate API call with the sessionId parameter
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve({
+      // Use sessionId to create a response that matches the request
+      const updatedSession: MentorshipSession = {
         id: sessionId,
+        menteeFullName: 'Test User',
+        menteeUsername: 'testuser',
+        isZoomLinkGenerated: false,
+        zoomLink: null,
         startTime,
         endTime,
-        // Other fields would be returned by the API
-      } as MentorshipSession);
+        mentorUsername: 'mentor',
+        mentorName: 'Mentor Name'
+      };
+      resolve(updatedSession);
     }, 1000);
   });
 };
 
-const cancelSession = async (sessionId: string): Promise<{ success: boolean }> => {
+const cancelSession = async (
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  sessionId: string
+): Promise<{ success: boolean }> => {
   // Simulate API call
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -87,6 +58,7 @@ export default function MentorSessionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [combinedSessions, setCombinedSessions] = useState<Record<string, MentorshipSession[]>>({});
+  const [calendarMeetings, setCalendarMeetings] = useState<Meeting[]>([]);
   
   // Session editing state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -98,10 +70,10 @@ export default function MentorSessionsPage() {
 
   useEffect(() => {
     if (!mentor) {
-      setError('Authentication required');
-      setLoading(false);
-      return;
-    }
+        setError('Authentication required');
+        setLoading(false);
+        return;
+      }
     
     if (!mentorResponse) {
       setError('No sessions data available');
@@ -112,23 +84,75 @@ export default function MentorSessionsPage() {
     // Combine sessions from both sources
     const combined = combinedSessionsFromMentor(mentorResponse);
     setCombinedSessions(combined);
+    console.log("sessions found: ", combined);
+    
+    // Convert sessions to meetings format for calendar view
+    const meetings: Meeting[] = [];
+    
+    Object.entries(combined).forEach(([date, sessions]) => {
+      // Convert date format
+      const formattedDate = convertDateFormat(date);
+      
+      sessions.forEach(session => {
+        // Extract time from ISO string
+        const startTime = extractTimeFromISOString(session.startTime);
+        const endTime = extractTimeFromISOString(session.endTime);
+        
+        meetings.push({
+          id: session.id,
+          title: `Session with ${session.menteeFullName || session.menteeUsername || 'Mentee'}`,
+          date: formattedDate,
+          startTime: startTime,
+          endTime: endTime,
+          menteeUsername: session.menteeUsername,
+          zoomLink: session.zoomLink,
+        });
+      });
+    });
+    
+    console.log("Calendar meetings: ", meetings);
+    setCalendarMeetings(meetings);
     setLoading(false);
   }, [mentor, mentorResponse]);
 
-  const handleEditClick = (session: MentorshipSession) => {
-    setSelectedSession(session);
-    setEditFormData({
-      startTime: session.startTime.substring(0, 5), // Extract HH:MM
-      endTime: session.endTime.substring(0, 5), // Extract HH:MM
+  const handleEditClick = (meeting: Meeting) => {
+    // Find the original session
+    let foundSession: MentorshipSession | null = null;
+    
+    Object.values(combinedSessions).forEach(sessions => {
+      const session = sessions.find(s => s.id === meeting.id);
+      if (session) {
+        foundSession = session;
+      }
     });
-    setIsEditModalOpen(true);
-    setActionError(null);
+    
+    if (foundSession) {
+      setSelectedSession(foundSession);
+      setEditFormData({
+        startTime: extractTimeFromISOString((foundSession as MentorshipSession).startTime),
+        endTime: extractTimeFromISOString((foundSession as MentorshipSession).endTime),
+      });
+      setIsEditModalOpen(true);
+      setActionError(null);
+    }
   };
 
-  const handleCancelClick = (session: MentorshipSession) => {
-    setSelectedSession(session);
-    setIsCancelModalOpen(true);
-    setActionError(null);
+  const handleCancelClick = (meeting: Meeting) => {
+    // Find the original session
+    let foundSession: MentorshipSession | null = null;
+    
+    Object.values(combinedSessions).forEach(sessions => {
+      const session = sessions.find(s => s.id === meeting.id);
+      if (session) {
+        foundSession = session;
+      }
+    });
+    
+    if (foundSession) {
+      setSelectedSession(foundSession);
+      setIsCancelModalOpen(true);
+      setActionError(null);
+    }
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
@@ -147,56 +171,63 @@ export default function MentorSessionsPage() {
         editFormData.endTime
       );
       
-      // Update local state
+      // Update local state with the updated session data
       const updatedSessions = { ...combinedSessions };
       
       // Find which date contains this session
       Object.entries(updatedSessions).forEach(([date, sessions]) => {
         const sessionIndex = sessions.findIndex(s => s.id === selectedSession.id);
         if (sessionIndex !== -1) {
-          // Update the session in place
-          updatedSessions[date][sessionIndex] = {
-            ...sessions[sessionIndex],
-            startTime: editFormData.startTime,
-            endTime: editFormData.endTime
-          };
+          // Update the session in place with the data from the API response
+          updatedSessions[date][sessionIndex] = updatedSession;
         }
       });
       
       setCombinedSessions(updatedSessions);
       
+      // Update calendar meetings
+      setCalendarMeetings(prevMeetings => 
+        prevMeetings.map(meeting => {
+          if (meeting.id === selectedSession.id) {
+            // Extract time from ISO string if needed
+            const startTime = extractTimeFromISOString(updatedSession.startTime);
+            const endTime = extractTimeFromISOString(updatedSession.endTime);
+              
+            return { 
+              ...meeting, 
+              startTime: startTime, 
+              endTime: endTime 
+            };
+          }
+          return meeting;
+        })
+      );
+      
       // Update in store (this would update localStorage)
       if (mentorResponse) {
-        // Update in sessionsByDate
-        const updatedMentorResponse = { ...mentorResponse };
+        // Create a safe copy of the mentor response
+        const updatedMentorResponse = { ...mentorResponse } as MentorResponse;
         
+        // Update in sessionsByDate
         Object.entries(updatedMentorResponse.sessionsByDate).forEach(([date, sessions]) => {
           const sessionIndex = sessions.findIndex(s => s.id === selectedSession.id);
           if (sessionIndex !== -1) {
-            updatedMentorResponse.sessionsByDate[date][sessionIndex] = {
-              ...sessions[sessionIndex],
-              startTime: editFormData.startTime,
-              endTime: editFormData.endTime
-            };
+            updatedMentorResponse.sessionsByDate[date][sessionIndex] = updatedSession;
           }
         });
         
         // Update in sessionsByDayOfWeek if it exists
         if (updatedMentorResponse.sessionsByDayOfWeek) {
-          Object.entries(updatedMentorResponse.sessionsByDayOfWeek).forEach(([day, sessions]) => {
+          Object.keys(updatedMentorResponse.sessionsByDayOfWeek).forEach((day) => {
+            const dayKey = day as DayOfWeek;
+            const sessions = updatedMentorResponse.sessionsByDayOfWeek[dayKey];
+            
             if (sessions) {
-              const dayKey = day as DayOfWeek;
-              const sessionIndex = updatedMentorResponse.sessionsByDayOfWeek[dayKey]?.findIndex(
-                s => s.id === selectedSession.id
-              );
+              const sessionIndex = sessions.findIndex(s => s.id === selectedSession.id);
               
-              if (sessionIndex !== undefined && sessionIndex !== -1) {
-                const updatedSessions = [...(updatedMentorResponse.sessionsByDayOfWeek[dayKey] || [])];
-                updatedSessions[sessionIndex] = {
-                  ...updatedSessions[sessionIndex],
-                  startTime: editFormData.startTime,
-                  endTime: editFormData.endTime
-                };
+              if (sessionIndex !== -1) {
+                const updatedSessions = [...sessions];
+                updatedSessions[sessionIndex] = updatedSession;
                 updatedMentorResponse.sessionsByDayOfWeek[dayKey] = updatedSessions;
               }
             }
@@ -236,9 +267,15 @@ export default function MentorSessionsPage() {
         
         setCombinedSessions(updatedSessions);
         
+        // Update calendar meetings
+        setCalendarMeetings(prevMeetings => 
+          prevMeetings.filter(meeting => meeting.id !== selectedSession.id)
+        );
+        
         // Update in store (this would update localStorage)
         if (mentorResponse) {
-          const updatedMentorResponse = { ...mentorResponse };
+          // Create a safe copy of the mentor response
+          const updatedMentorResponse = { ...mentorResponse } as MentorResponse;
           
           // Remove from sessionsByDate
           Object.entries(updatedMentorResponse.sessionsByDate).forEach(([date, sessions]) => {
@@ -247,15 +284,14 @@ export default function MentorSessionsPage() {
           
           // Remove from sessionsByDayOfWeek if it exists
           if (updatedMentorResponse.sessionsByDayOfWeek) {
-            Object.entries(updatedMentorResponse.sessionsByDayOfWeek).forEach(([day, sessions]) => {
+            Object.keys(updatedMentorResponse.sessionsByDayOfWeek).forEach((day) => {
+              const dayKey = day as DayOfWeek;
+              const sessions = updatedMentorResponse.sessionsByDayOfWeek[dayKey];
+              
               if (sessions) {
-                const dayKey = day as DayOfWeek;
-                if (updatedMentorResponse.sessionsByDayOfWeek[dayKey]) {
-                  updatedMentorResponse.sessionsByDayOfWeek[dayKey] = 
-                    updatedMentorResponse.sessionsByDayOfWeek[dayKey]?.filter(
-                      s => s.id !== selectedSession.id
-                    ) || [];
-                }
+                updatedMentorResponse.sessionsByDayOfWeek[dayKey] = sessions.filter(
+                  s => s.id !== selectedSession.id
+                );
               }
             });
           }
@@ -278,7 +314,7 @@ export default function MentorSessionsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Loading sessions...</div>
+            <div className="text-gray-500">Loading sessions...</div>
       </div>
     );
   }
@@ -302,18 +338,14 @@ export default function MentorSessionsPage() {
         </div>
 
         <div className="space-y-8">
-          {Object.entries(combinedSessions).map(([date, dateSessions]) => (
-            <EnhancedSessionCard 
-              key={date} 
-              date={date} 
-              sessions={dateSessions} 
-              onEditSession={handleEditClick}
-              onCancelSession={handleCancelClick}
+          {calendarMeetings.length > 0 ? (
+            <CalendarView 
+              meetings={calendarMeetings}
+              onEditMeeting={handleEditClick}
+              onCancelMeeting={handleCancelClick}
             />
-          ))}
-
-          {Object.keys(combinedSessions).length === 0 && (
-            <div className="text-center text-gray-500">
+          ) : (
+            <div className="text-center text-gray-500 bg-white p-8 rounded-lg shadow">
               No upcoming sessions found
             </div>
           )}
@@ -369,7 +401,7 @@ export default function MentorSessionsPage() {
                             Mentee
                           </label>
                           <div className="mt-1 p-2 bg-gray-50 rounded-md text-gray-700">
-                            {selectedSession.menteeUsername}
+                            {selectedSession.menteeUsername || 'Unknown Mentee'}
                           </div>
                         </div>
 
@@ -488,7 +520,7 @@ export default function MentorSessionsPage() {
                     <div>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Are you sure you want to cancel your session with {selectedSession.menteeUsername}? This action cannot be undone.
+                          Are you sure you want to cancel your session with {selectedSession.menteeUsername || 'this mentee'}? This action cannot be undone.
                         </p>
                       </div>
 

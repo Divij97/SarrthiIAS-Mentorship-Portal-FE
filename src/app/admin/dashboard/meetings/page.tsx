@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useLoginStore } from '@/stores/auth/store';
 import { config } from '@/config/env';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import CalendarView from '@/components/Calendar/CalendarView';
+import { Meeting } from '@/types/meeting';
 
 interface MeetingFormData {
   title: string;
@@ -24,6 +26,9 @@ export default function MeetingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [isLoadingMeetings, setIsLoadingMeetings] = useState(true);
+  const [meetingsError, setMeetingsError] = useState<string | null>(null);
   const [formData, setFormData] = useState<MeetingFormData>({
     title: '',
     description: '',
@@ -33,6 +38,43 @@ export default function MeetingsPage() {
     courseId: '',
     groupId: ''
   });
+
+  // Fetch meetings
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      if (!authHeader) {
+        setMeetingsError('Authentication required');
+        setIsLoadingMeetings(false);
+        return;
+      }
+
+      try {
+        let apiUrl = config.api.url;
+        apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+        
+        const response = await fetch(`${apiUrl}/v1/meetings`, {
+          headers: {
+            'Authorization': authHeader,
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        setMeetings(data);
+      } catch (error) {
+        console.error('Failed to fetch meetings:', error);
+        setMeetingsError('Failed to load meetings');
+      } finally {
+        setIsLoadingMeetings(false);
+      }
+    };
+
+    fetchMeetings();
+  }, [authHeader]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -74,6 +116,9 @@ export default function MeetingsPage() {
       const data = await response.json();
       console.log('Meeting created successfully:', data);
       
+      // Add the new meeting to the state
+      setMeetings(prevMeetings => [...prevMeetings, data]);
+      
       setSuccess('Meeting created successfully!');
       setFormData({
         title: '',
@@ -99,6 +144,18 @@ export default function MeetingsPage() {
     }
   };
 
+  const handleEditMeeting = (meeting: Meeting) => {
+    // Implement edit functionality
+    console.log('Edit meeting:', meeting);
+    // This would open an edit modal or navigate to an edit page
+  };
+
+  const handleCancelMeeting = (meeting: Meeting) => {
+    // Implement cancel functionality
+    console.log('Cancel meeting:', meeting);
+    // This would show a confirmation dialog and then make an API call to cancel
+  };
+
   return (
     <div className="py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
@@ -111,7 +168,7 @@ export default function MeetingsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-8">
         <div className="bg-white shadow-sm rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-medium text-gray-900">All Meetings</h2>
+            <h2 className="text-lg font-medium text-gray-900">Meeting Calendar</h2>
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
@@ -121,12 +178,28 @@ export default function MeetingsPage() {
             </button>
           </div>
           
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">No meetings found</p>
-            <p className="mt-1 text-sm text-gray-400">
-              Get started by creating your first meeting
-            </p>
-          </div>
+          {isLoadingMeetings ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Loading meetings...</p>
+            </div>
+          ) : meetingsError ? (
+            <div className="text-center py-12">
+              <p className="text-red-500">{meetingsError}</p>
+            </div>
+          ) : meetings.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <p className="text-gray-500">No meetings found</p>
+              <p className="mt-1 text-sm text-gray-400">
+                Get started by creating your first meeting
+              </p>
+            </div>
+          ) : (
+            <CalendarView 
+              meetings={meetings}
+              onEditMeeting={handleEditMeeting}
+              onCancelMeeting={handleCancelMeeting}
+            />
+          )}
         </div>
       </div>
       

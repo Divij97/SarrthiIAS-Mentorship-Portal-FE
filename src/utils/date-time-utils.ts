@@ -94,6 +94,28 @@ const getNextDayOfWeek = (dayOfWeek: DayOfWeek): Date => {
     return nextDate;
 };
 
+// Convert from DD/MM/YYYY to YYYY-MM-DD
+const convertDateFormat = (date: string): string => {
+    // Convert from DD/MM/YYYY to YYYY-MM-DD
+    const dateParts = date.split('/');
+    if (dateParts.length === 3) {
+        const day = dateParts[0];
+        const month = dateParts[1];
+        const year = dateParts[2];
+        return `${year}-${month}-${day}`;
+    }
+    return date;
+};
+
+// Extract time (HH:MM) from ISO string
+const extractTimeFromISOString = (timeString: string): string => {
+    // Extract time (HH:MM) from ISO string or return as is if already in correct format
+    if (timeString.includes('T')) {
+        return timeString.split('T')[1].substring(0, 5);
+    }
+    return timeString;
+};
+
 export {
     weekDays,
     timeSlots, 
@@ -103,7 +125,9 @@ export {
     formatDisplayDate, 
     ddmmyyyy, 
     formatDateKey, 
-    getNextDayOfWeek 
+    getNextDayOfWeek,
+    convertDateFormat,
+    extractTimeFromISOString
 };
 
 
