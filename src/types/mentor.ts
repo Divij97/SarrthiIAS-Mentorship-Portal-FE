@@ -44,3 +44,10 @@ export interface MentorResponse {
   sessionsByDate: { [date: string]: MentorshipSession[] };
   groupMentorshipSessions: GroupMentorshipSession[];
 }
+
+export interface MentorWithAuth {
+  mentor: Mentor;
+  username: string;
+  passwordSHA: string;
+  isTempPassword: boolean;
+}

@@ -9,3 +9,9 @@ export interface TempMenteeData {
   password: string;
   verifiedOtp: string;
 } 
+
+export interface TempMentorData {
+  phone: string;
+  password: string;
+  verifiedOtp: string;
+} 

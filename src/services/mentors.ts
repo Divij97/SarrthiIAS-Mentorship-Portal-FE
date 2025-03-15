@@ -1,5 +1,4 @@
-import { Mentor, DayOfWeek, MentorResponse } from '@/types/mentor';
-import { Region, Gender, OptionalSubject } from '@/types/mentee';
+import { MentorResponse, MentorWithAuth } from '@/types/mentor';
 import { config } from '@/config/env';
 import { useLoginStore } from '@/stores/auth/store';
 import { MentorSessionsResponse } from '@/types/session';
@@ -48,36 +47,68 @@ export const updateMentorPassword = async ({
   otp: string;
   authHeader: string;
 }) => {
-  const response = await fetch('/v1/mentors', {
-    method: 'PUT',
-    headers: {
-      'Authorization': authHeader,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      phone,
-      password: newPassword,
-      otp
-    }),
-  });
-  
-  return response;
-};
-
-export const signupMentor = async (mentorData: Mentor, newPassword: string) => {
   try {
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
     
-    const response = await fetch(`${apiUrl}/v1/mentees`, {
+    const response = await fetch(`${apiUrl}/v1/mentors`, {
       method: 'PUT',
       headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phone,
+        password: newPassword,
+        otp
+      }),
+    });
+    
+    if (!response.ok) {
+      // If we get an error response, try to parse it
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to update password: ${response.statusText}`);
+      } catch (parseError) {
+        // If we can't parse the error, use the status text
+        throw new Error(`Failed to update password: ${response.statusText}`);
+      }
+    }
+    
+    // For 204 No Content or other successful responses without body
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return { success: true };
+    }
+    
+    // Try to parse response if there is one
+    try {
+      return await response.json();
+    } catch (error) {
+      // If there's no JSON to parse but the request was successful, return a success object
+      return { success: true };
+    }
+  } catch (error) {
+    console.error('Error updating password:', error);
+    throw error;
+  }
+};
+
+export const signupMentor = async (mentorData: MentorWithAuth) => {
+  try {
+    let apiUrl = config.api.url;
+    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+
+    const authHeader = useLoginStore.getState().authHeader || '';
+    
+    const response = await fetch(`${apiUrl}/v1/mentors`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': authHeader,
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        ...mentorData,
-        password: newPassword
+        ...mentorData
       }),
     });
 
@@ -89,7 +120,18 @@ export const signupMentor = async (mentorData: Mentor, newPassword: string) => {
       throw new Error(`Failed to signup mentor: ${response.statusText}`);
     }
 
-    return await response.json();
+    // For 204 No Content or other successful responses without body
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return { success: true };
+    }
+    
+    // Try to parse response if there is one
+    try {
+      return await response.json();
+    } catch (error) {
+      // If there's no JSON to parse but the request was successful, return a success object
+      return { success: true };
+    }
   } catch (error) {
     console.error('Error signing up mentor:', error);
     throw error;

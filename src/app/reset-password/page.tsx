@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
@@ -20,6 +20,21 @@ export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+  const [canResend, setCanResend] = useState(false);
+  const [resending, setResending] = useState(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0 && !canResend) {
+      timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+    } else if (countdown === 0 && !canResend) {
+      setCanResend(true);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown, canResend]);
 
   const validateInputs = () => {
     if (!phone) {
@@ -63,13 +78,21 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    await updateMentorPassword({
-      phone: mentor.phone,
-      newPassword,
-      otp,
-      authHeader
-    });
-    router.replace('/home');
+    try {
+      const response = await updateMentorPassword({
+        phone: mentor.phone,
+        newPassword,
+        otp,
+        authHeader
+      });
+      
+      // If we get here, the request was successful, even if no response body
+      router.replace('/home');
+    } catch (error) {
+      console.error('Error updating password:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update password. Please try again.');
+      throw error; // Re-throw to be caught by the handleSubmit function
+    }
   };
 
   const handleMenteeSignup = () => {
@@ -80,6 +103,66 @@ export default function ResetPasswordPage() {
       verifiedOtp: otp
     }));
     router.replace('/signup');
+  };
+
+  const handleMentorSignup = () => {
+    // Store necessary information for signup
+    localStorage.setItem('tempMentorData', JSON.stringify({
+      phone,
+      password: newPassword,
+      verifiedOtp: otp
+    }));
+    router.replace('/mentor-signup');
+  };
+
+  const handleResendOtp = async () => {
+    if (!phone) {
+      setError('Phone number not found');
+      return;
+    }
+
+    try {
+      setResending(true);
+      setError('');
+
+      // In a real implementation, you would call your API here
+      // Example of handling a PUT request that doesn't return a response
+      const response = await fetch(`/api/resend-otp`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authHeader ? { Authorization: authHeader } : {})
+        },
+        body: JSON.stringify({ phone })
+      });
+      
+      // Check if response is ok (status in the range 200-299)
+      if (!response.ok) {
+        // If we get an error response, try to parse it
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to resend OTP');
+        } catch (parseError) {
+          // If we can't parse the error, use the status text
+          throw new Error(`Failed to resend OTP: ${response.statusText}`);
+        }
+      }
+      
+      // No need to parse response.json() if backend doesn't send a response
+      // Just check if status is OK (204 No Content is common for successful PUT with no response)
+      
+      // Reset countdown and disable resend button
+      setCountdown(60);
+      setCanResend(false);
+      
+      // Show success message
+      alert('OTP has been resent to your phone number');
+    } catch (error) {
+      console.error('Failed to resend OTP:', error);
+      setError(error instanceof Error ? error.message : 'Failed to resend OTP. Please try again.');
+    } finally {
+      setResending(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,7 +177,7 @@ export default function ResetPasswordPage() {
       setError('');
 
       if (userType === UserType.MENTOR) {
-        await handleMentorPasswordReset();
+        await handleMentorSignup();
       } else {
         handleMenteeSignup();
       }
@@ -149,6 +232,23 @@ export default function ResetPasswordPage() {
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900"
                   placeholder="Enter OTP"
                 />
+              </div>
+              <div className="mt-2 flex justify-between items-center">
+                <span className="text-sm text-gray-500">
+                  {!canResend && countdown > 0 ? `Resend OTP in ${countdown}s` : ''}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={!canResend || resending}
+                  className={`text-sm font-medium ${
+                    canResend && !resending
+                      ? 'text-orange-600 hover:text-orange-500'
+                      : 'text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {resending ? 'Sending...' : 'Resend OTP'}
+                </button>
               </div>
             </div>
 
