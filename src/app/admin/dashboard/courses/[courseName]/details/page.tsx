@@ -3,10 +3,14 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Course, CourseGroup } from '@/types/course';
-import { UserGroupIcon, ArrowLeftIcon, UserIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { MentorshipGroup, MentorshipGroupsResponse } from '@/types/session';
+import { UserGroupIcon, ArrowLeftIcon, UserIcon, CheckCircleIcon, XCircleIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { fetchCourseGroups } from '@/services/courses';
+import { useLoginStore } from '@/stores/auth/store';
+import { useAdminStore } from '@/stores/admin/store';
 
 interface GroupCardProps {
-  group: CourseGroup;
+  group: MentorshipGroup;
   onClick: () => void;
 }
 
@@ -20,22 +24,22 @@ const GroupCard = ({ group, onClick }: GroupCardProps) => (
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <UserGroupIcon className="h-5 w-5 text-gray-400" />
-            <h3 className="text-lg font-medium text-gray-900">{group.name}</h3>
+            <h3 className="text-lg font-medium text-gray-900">Group {group.id}</h3>
           </div>
           <div className="flex items-center space-x-2 text-gray-500">
-            <UserIcon className="h-4 w-4" />
-            <span className="text-sm">{group.menteeCount} mentees</span>
+            <CalendarIcon className="h-4 w-4" />
+            <span className="text-sm">{group.sessions.length} sessions</span>
           </div>
         </div>
-        {group.mentorAssigned ? (
+        {group.sessions.length > 0 ? (
           <div className="flex items-center text-green-600">
             <CheckCircleIcon className="h-5 w-5" />
-            <span className="ml-1 text-sm">Mentor Assigned</span>
+            <span className="ml-1 text-sm">Sessions Scheduled</span>
           </div>
         ) : (
           <div className="flex items-center text-red-600">
             <XCircleIcon className="h-5 w-5" />
-            <span className="ml-1 text-sm">No Mentor</span>
+            <span className="ml-1 text-sm">No Sessions</span>
           </div>
         )}
       </div>
@@ -51,13 +55,51 @@ export default function CourseDetailsPage({
   const router = useRouter();
   const { courseName } = use(params);
   const decodedCourseName = decodeURIComponent(courseName);
-  const [groups, setGroups] = useState<CourseGroup[]>([]);
+  const [groups, setGroups] = useState<MentorshipGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { authHeader, setCourseGroups, getCourseGroups } = useAdminStore();
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    // const courseGroups = sampleCourseGroups[courseName] || [];
-    setGroups([]);
-  }, [decodedCourseName]);
+    const fetchGroups = async () => {
+      if (!authHeader) {
+        setError('Authentication required');
+        setLoading(false);
+        return;
+      }
+
+      // First, check if we already have the groups in the store
+      const cachedGroups = getCourseGroups(decodedCourseName);
+      if (cachedGroups && cachedGroups.length > 0) {
+        console.log('Using cached mentorship groups for:', decodedCourseName);
+        setGroups(cachedGroups);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        
+        console.log('Fetching mentorship groups for:', decodedCourseName);
+        const response = await fetchCourseGroups(decodedCourseName, authHeader);
+        const mentorshipGroups = response.mentorshipGroups || [];
+        
+        // Store the groups in the admin store
+        setCourseGroups(decodedCourseName, mentorshipGroups);
+        
+        // Update local state
+        setGroups(mentorshipGroups);
+      } catch (err) {
+        console.error('Error fetching groups:', err);
+        setError('Failed to load groups. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, [decodedCourseName, authHeader, setCourseGroups, getCourseGroups]);
 
   const handleBackToCourses = () => {
     router.push('/admin/dashboard/courses/active');
@@ -89,24 +131,38 @@ export default function CourseDetailsPage({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {groups.map((group) => (
-          <GroupCard
-            key={group.id}
-            group={group}
-            onClick={() => handleGroupClick(group.id)}
-          />
-        ))}
-      </div>
-
-      {groups.length === 0 && (
+      {loading ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-          <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No Groups</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Get started by creating a new group.
-          </p>
+          <p className="text-gray-500">Loading groups...</p>
         </div>
+      ) : error ? (
+        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+          <XCircleIcon className="mx-auto h-12 w-12 text-red-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900">Error</h3>
+          <p className="mt-1 text-sm text-red-500">{error}</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {groups.map((group) => (
+              <GroupCard
+                key={group.id}
+                group={group}
+                onClick={() => handleGroupClick(group.id)}
+              />
+            ))}
+          </div>
+
+          {groups.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+              <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No Groups</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Get started by creating a new group.
+              </p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

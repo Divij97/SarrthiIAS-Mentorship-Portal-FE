@@ -1,26 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Session } from '@/types/session';
+import { Session, GroupMentorshipSession } from '@/types/session';
 import { ArrowLeftIcon, PlusIcon, VideoCameraIcon, DocumentIcon, ClockIcon } from '@heroicons/react/24/outline';
 import SessionForm, { SessionFormData } from '@/components/Admin/SessionForm';
-import sampleGroupSessionsData from '@/data/sampleGroupSessions.json';
+import { useAdminStore } from '@/stores/admin/store';
 
 interface SessionCardProps {
   session: Session;
   onEdit: (session: Session) => void;
 }
 
-// Helper function to type-check and convert the sample data
-const getSampleGroupSessions = (groupId: string): Session[] => {
-  const data = sampleGroupSessionsData[groupId as keyof typeof sampleGroupSessionsData];
-  if (!data) return [];
-  
-  return data.map(session => ({
-    ...session,
-    status: session.status as Session['status'] // This is safe because we know the data matches our type
-  }));
+// Helper function to convert GroupMentorshipSession to Session
+const convertToSession = (groupSession: GroupMentorshipSession): Session => {
+  return {
+    id: groupSession.sessionId,
+    title: `Group Session ${groupSession.dateOfSession}`,
+    description: `Group mentorship session with ${groupSession.mentorName}`,
+    date: new Date().toISOString().split('T')[0], // This would need to be calculated based on dateOfSession
+    startTime: groupSession.startTime,
+    endTime: groupSession.endTime,
+    status: 'scheduled',
+    meetingLink: groupSession.zoomLink || undefined,
+  };
 };
 
 function SessionCard({ session, onEdit }: SessionCardProps) {
@@ -100,22 +103,42 @@ function SessionCard({ session, onEdit }: SessionCardProps) {
 export default function GroupDetailsPage({
   params,
 }: {
-  params: { courseName: string; groupId: string };
+  params: Promise<{ courseName: string; groupId: string }>;
 }) {
   const router = useRouter();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const courseName = decodeURIComponent(params.courseName);
-  const groupId = params.groupId;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Unwrap params using React.use()
+  const { courseName, groupId } = use(params);
+  const decodedCourseName = decodeURIComponent(courseName);
+  const decodedGroupId = decodeURIComponent(groupId);
+  const { getGroupSessions } = useAdminStore();
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    const groupSessions = getSampleGroupSessions(groupId);
-    setSessions(groupSessions);
-  }, [groupId]);
+    const loadGroupSessions = () => {
+      setLoading(true);
+      setError(null);
+      const groupSessions = getGroupSessions(decodedCourseName, decodedGroupId);
+      if (groupSessions && groupSessions.length > 0) {
+          console.log('Using cached group sessions for:', decodedGroupId);
+          const convertedSessions = groupSessions.map(convertToSession);
+          setSessions(convertedSessions);
+          setLoading(false);
+          return;
+      }
+      
+      console.log('No cached sessions found for group:', decodedGroupId);
+      setLoading(false);
+    };
+
+    loadGroupSessions();
+  }, [decodedGroupId, decodedCourseName, getGroupSessions]);
 
   const handleBackClick = () => {
-    router.push(`/admin/dashboard/courses/${encodeURIComponent(courseName)}/details`);
+    router.push(`/admin/dashboard/courses/${encodeURIComponent(decodedCourseName)}/details`);
   };
 
   const handleEditSession = (session: Session) => {
@@ -144,6 +167,22 @@ export default function GroupDetailsPage({
     console.log('Creating session with data:', formData);
   };
 
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">Loading sessions...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -156,7 +195,7 @@ export default function GroupDetailsPage({
             Back to Course
           </button>
           <h1 className="text-2xl font-semibold text-gray-900">
-            {groupId} Sessions
+            {decodedGroupId} Sessions
           </h1>
         </div>
         <button

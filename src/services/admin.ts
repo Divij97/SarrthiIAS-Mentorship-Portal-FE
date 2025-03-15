@@ -1,5 +1,5 @@
 import { config } from '@/config/env';
-import { AdminResponse } from '@/types/admin';
+import { AdminData, AdminResponse } from '@/types/admin';
 
 export const loginAdmin = async (username: string, password: string): Promise<AdminResponse> => {
   try {
@@ -25,17 +25,20 @@ export const loginAdmin = async (username: string, password: string): Promise<Ad
       };
     }
 
-    const data = await response.json();
-    console.log("Raw API response data:", JSON.stringify(data, null, 2));
+    const rawData = await response.json();
+    console.log("Raw API response data:", JSON.stringify(rawData, null, 2));
+    
+    // Ensure the data matches the AdminData structure
+    const adminData: AdminData = {
+      username: rawData.username || username,
+      courses: Array.isArray(rawData.courses) ? rawData.courses : [],
+      mentors: Array.isArray(rawData.mentors) ? rawData.mentors : []
+    };
     
     // Create the return object
-    const returnData = {
+    const returnData: AdminResponse = {
       success: true,
-      data: {
-        username: data.username,
-        courses: data.courseList || [],
-        mentors: data.mentorList || []
-      }
+      data: adminData
     };
     
     console.log("Returning data from service:", JSON.stringify(returnData, null, 2));

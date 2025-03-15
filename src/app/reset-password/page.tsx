@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
     }
 
     if (otp !== expectedOtp) {
-      setError('Invalid OTP. Please check and try again.');
+      setError('Incorrect OTP. Please check and try again.');
       return false;
     }
 
@@ -65,34 +65,6 @@ export default function ResetPasswordPage() {
     }
 
     return true;
-  };
-
-  const handleMentorPasswordReset = async () => {
-    if (!authHeader) {
-      setError('Authentication error. Please try logging in again.');
-      return;
-    }
-
-    if (!mentor?.phone) {
-      setError('Phone number not found');
-      return;
-    }
-
-    try {
-      const response = await updateMentorPassword({
-        phone: mentor.phone,
-        newPassword,
-        otp,
-        authHeader
-      });
-      
-      // If we get here, the request was successful, even if no response body
-      router.replace('/home');
-    } catch (error) {
-      console.error('Error updating password:', error);
-      setError(error instanceof Error ? error.message : 'Failed to update password. Please try again.');
-      throw error; // Re-throw to be caught by the handleSubmit function
-    }
   };
 
   const handleMenteeSignup = () => {
@@ -125,9 +97,7 @@ export default function ResetPasswordPage() {
       setResending(true);
       setError('');
 
-      // In a real implementation, you would call your API here
-      // Example of handling a PUT request that doesn't return a response
-      const response = await fetch(`/api/resend-otp`, {
+      const response = await fetch(`/v1/resend-otp`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -136,9 +106,7 @@ export default function ResetPasswordPage() {
         body: JSON.stringify({ phone })
       });
       
-      // Check if response is ok (status in the range 200-299)
       if (!response.ok) {
-        // If we get an error response, try to parse it
         try {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to resend OTP');
@@ -148,10 +116,6 @@ export default function ResetPasswordPage() {
         }
       }
       
-      // No need to parse response.json() if backend doesn't send a response
-      // Just check if status is OK (204 No Content is common for successful PUT with no response)
-      
-      // Reset countdown and disable resend button
       setCountdown(60);
       setCanResend(false);
       

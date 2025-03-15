@@ -19,23 +19,37 @@ export interface MentorSessionsResponse {
   sessionsByDate: MentorSessionsByDate;
 }
 
-// Helper function to format date as DD/MM/YYYY
-export const formatDateKey = (date: Date): string => {
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
+/**
+ * Interface representing a group mentorship session
+ * Maps to the backend GroupMentorshipSession class
+ */
+export interface GroupMentorshipSession {
+  groupFriendlyName: string;
+  sessionId: string;
+  dateOfSession: number; // Day of month (1-31)
+  startTime: string; // 24-hour format HH:mm
+  endTime: string; // 24-hour format HH:mm
+  mentorUserName: string;
+  mentorName: string;
+  zoomLink: string;
+}
 
-// Helper function to format time as HH:mm
-export const formatTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
-};
+/**
+ * Interface representing a mentorship group
+ * Maps to the backend MentorshipGroup class
+ */
+export interface MentorshipGroup {
+  id: string;
+  sessions: GroupMentorshipSession[];
+}
+
+/**
+ * Interface representing the response for mentorship groups
+ * Maps to the backend MentorshipGroupsResponse class
+ */
+export interface MentorshipGroupsResponse {
+  mentorshipGroups: MentorshipGroup[];
+}
 
 export interface Session {
   id: string;
@@ -48,4 +62,36 @@ export interface Session {
   meetingLink?: string;
   recordingLink?: string;
   notes?: string;
+}
+
+/**
+ * Enum representing the type of update operation for a session
+ */
+export enum UpdateType {
+  ADD = 'ADD',
+  DELETE = 'DELETE',
+  UPDATE = 'UPDATE'
+}
+
+/**
+ * Enum representing the type of session
+ */
+export enum SessionType {
+  SCHEDULED = 'SCHEDULED',
+  AD_HOC = 'AD_HOC'
+}
+
+/**
+ * Interface representing a session update request
+ * Maps to the backend SessionUpdate class
+ */
+export interface SessionUpdate {
+  id: string;
+  date: string;
+  menteeUsername: string;
+  updateType: UpdateType;
+  isPermanentUpdate: boolean;
+  startTime?: string;
+  endTime?: string;
+  sessionType?: SessionType;
 } 

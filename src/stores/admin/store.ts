@@ -3,6 +3,12 @@ import { persist } from 'zustand/middleware';
 import { loginAdmin } from '@/services/admin';
 import { AdminData } from '@/types/admin';
 import { Course } from '@/types/course';
+import { MentorshipGroup, GroupMentorshipSession } from '@/types/session';
+
+// Map to store mentorship groups by course name
+interface CourseGroupsMap {
+  [courseName: string]: MentorshipGroup[];
+}
 
 interface AdminState {
   username: string;
@@ -11,23 +17,30 @@ interface AdminState {
   error: string;
   loading: boolean;
   adminData: AdminData | null;
+  courseGroups: CourseGroupsMap;
   setUsername: (username: string) => void;
   setAuthHeader: (header: string) => void;
   setError: (error: string) => void;
   handleLogin: (username: string, password: string) => Promise<{ success: boolean; adminData: AdminData | null }>;
   logout: () => void;
   addCourse: (course: Course) => void;
+  // New functions for mentorship groups
+  setCourseGroups: (courseName: string, groups: MentorshipGroup[]) => void;
+  getCourseGroups: (courseName: string) => MentorshipGroup[] | null;
+  clearCourseGroups: (courseName: string) => void;
+  getGroupSessions: (courseName: string, groupId: string) => GroupMentorshipSession[] | null;
 }
 
 export const useAdminStore = create<AdminState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       username: '',
       isAuthenticated: false,
       authHeader: null,
       error: '',
       loading: false,
       adminData: null,
+      courseGroups: {},
 
       setUsername: (username) => set({ username }),
       setAuthHeader: (header) => set({ authHeader: header, isAuthenticated: true }),
@@ -39,6 +52,31 @@ export const useAdminStore = create<AdminState>()(
           courses: [...(state.adminData.courses || []), course]
         } : null
       })),
+
+      // New functions for mentorship groups
+      setCourseGroups: (courseName, groups) => set((state) => ({
+        courseGroups: {
+          ...state.courseGroups,
+          [courseName]: groups
+        }
+      })),
+
+      getCourseGroups: (courseName) => {
+        const state = get();
+        return state.courseGroups[courseName] || null;
+      },
+
+      clearCourseGroups: (courseName) => set((state) => {
+        const newCourseGroups = { ...state.courseGroups };
+        delete newCourseGroups[courseName];
+        return { courseGroups: newCourseGroups };
+      }),
+      getGroupSessions: (courseName: string, groupId: string) => {
+        const state = get();
+        const courseGroups = state.courseGroups[courseName] || [];
+        const group = courseGroups.find(g => g.id === groupId);
+        return group?.sessions || [];
+      },
 
       handleLogin: async (username: string, password: string) => {
         set({ error: '', loading: true });
@@ -76,7 +114,8 @@ export const useAdminStore = create<AdminState>()(
           authHeader: null,
           error: '',
           loading: false,
-          adminData: null
+          adminData: null,
+          courseGroups: {}
         });
       }
     }),
@@ -86,7 +125,8 @@ export const useAdminStore = create<AdminState>()(
         isAuthenticated: state.isAuthenticated,
         authHeader: state.authHeader,
         username: state.username,
-        adminData: state.adminData
+        adminData: state.adminData,
+        courseGroups: state.courseGroups
       })
     }
   )
