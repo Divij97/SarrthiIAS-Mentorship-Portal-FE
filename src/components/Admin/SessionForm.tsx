@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { sampleMentors } from '@/data/mentors';
+import { useAdminStore } from '@/stores/admin/store';
 
 interface SessionFormProps {
   isOpen: boolean;
@@ -28,6 +28,9 @@ export default function SessionForm({ isOpen, onClose, onSubmit }: SessionFormPr
     endTime: '11:00',
     mentorId: ''
   });
+  
+  // Always call hooks at the top level, before any conditional returns
+  const mentors = useAdminStore((state) => state.adminData?.mentors);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,7 +135,7 @@ export default function SessionForm({ isOpen, onClose, onSubmit }: SessionFormPr
               required
             >
               <option value="">Select a mentor</option>
-              {sampleMentors.map((mentor) => (
+              {mentors?.map((mentor) => (
                 <option key={mentor.phone} value={mentor.phone}>
                   {mentor.name}
                 </option>

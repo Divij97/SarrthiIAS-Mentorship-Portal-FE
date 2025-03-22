@@ -96,7 +96,6 @@ const getNextDayOfWeek = (dayOfWeek: DayOfWeek): Date => {
 
 // Convert from DD/MM/YYYY to YYYY-MM-DD
 const convertDateFormat = (date: string): string => {
-    // Convert from DD/MM/YYYY to YYYY-MM-DD
     const dateParts = date.split('/');
     if (dateParts.length === 3) {
         const day = dateParts[0];
@@ -109,7 +108,6 @@ const convertDateFormat = (date: string): string => {
 
 // Extract time (HH:MM) from ISO string
 const extractTimeFromISOString = (timeString: string): string => {
-    // Extract time (HH:MM) from ISO string or return as is if already in correct format
     if (timeString.includes('T')) {
         return timeString.split('T')[1].substring(0, 5);
     }

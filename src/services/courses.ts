@@ -1,5 +1,5 @@
 import { Course } from '@/types/course';
-import { MentorshipGroupsResponse } from '@/types/session';
+import { GroupMentorshipSession, MentorshipGroupsResponse } from '@/types/session';
 import { config } from '@/config/env';
 
 
@@ -93,6 +93,42 @@ export const fetchCourseGroups = async (courseName: string, authHeader: string):
     return await response.json();
   } catch (error) {
     console.error('Error fetching course groups:', error);
+    throw error;
+  }
+};
+
+export const createMentorshipGroup = async (
+  courseName: string, 
+  groupId: string, 
+  authHeader: string
+): Promise<boolean> => {
+  try {
+    let apiUrl = config.api.url;
+    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+
+    console.log('Creating mentorship group:', groupId, 'for course:', courseName);
+    
+    const response = await fetch(`${apiUrl}/v1/courses/${encodeURIComponent(courseName)}/groups/${encodeURIComponent(groupId)}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sessions: [] as GroupMentorshipSession[] }), // Empty list of GroupMentorshipSession
+    });
+
+    if (!response.ok) {
+      console.error('API Error:', {
+        status: response.status,
+        statusText: response.statusText
+      });
+      throw new Error(`Failed to create mentorship group: ${response.statusText}`);
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error creating mentorship group:', error);
     throw error;
   }
 };  

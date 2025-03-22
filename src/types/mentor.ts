@@ -1,5 +1,5 @@
 import { Region, Gender, OptionalSubject } from './mentee';
-import { MentorshipSession } from './session';
+import { MentorshipSession, SessionUpdate } from './session';
 
 export enum DayOfWeek {
   MONDAY = 'MONDAY',
@@ -9,6 +9,11 @@ export enum DayOfWeek {
   FRIDAY = 'FRIDAY',
   SATURDAY = 'SATURDAY',
   SUNDAY = 'SUNDAY'
+}
+
+export interface MenteeIdentifier {
+  name: string;
+  phone: string;
 }
 
 export interface Mentor {
@@ -50,4 +55,5 @@ export interface MentorWithAuth {
   username: string;
   passwordSHA: string;
   isTempPassword: boolean;
+  updates: { [sessionId: string]: SessionUpdate };
 }

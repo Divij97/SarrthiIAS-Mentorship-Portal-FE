@@ -29,6 +29,7 @@ interface AdminState {
   getCourseGroups: (courseName: string) => MentorshipGroup[] | null;
   clearCourseGroups: (courseName: string) => void;
   getGroupSessions: (courseName: string, groupId: string) => GroupMentorshipSession[] | null;
+  getMentorUserNameByPhone: (phone: string) => string | null;
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -64,6 +65,11 @@ export const useAdminStore = create<AdminState>()(
       getCourseGroups: (courseName) => {
         const state = get();
         return state.courseGroups[courseName] || null;
+      },
+
+      getMentorUserNameByPhone: (phone) => {
+        const state = get();
+        return state.adminData?.mentors?.find(mentor => mentor.phone === phone)?.name || null;
       },
 
       clearCourseGroups: (courseName) => set((state) => {
