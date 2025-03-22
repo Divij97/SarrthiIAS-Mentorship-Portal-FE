@@ -55,5 +55,7 @@ export interface MentorWithAuth {
   username: string;
   passwordSHA: string;
   isTempPassword: boolean;
+  courses?: Set<string>;
   updates: { [sessionId: string]: SessionUpdate };
+  sessionsByDayOfWeek?: { [key in DayOfWeek]?: MentorshipSession[] };
 }

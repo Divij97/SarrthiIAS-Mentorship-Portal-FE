@@ -87,11 +87,43 @@ export enum SessionType {
  */
 export interface SessionUpdate {
   id: string;
-  date: string;
+  date: DateFormatDDMMYYYY;
   menteeUsername: string;
+  menteeFullName: string;
   updateType: UpdateType;
   isPermanentUpdate: boolean;
   startTime?: string;
   endTime?: string;
   sessionType?: SessionType;
+}
+
+// Create a string literal type for the date format dd/mm/yyyy
+export type DateFormatDDMMYYYY = string & { __brand: 'DateFormatDDMMYYYY' };
+
+/**
+ * Validates and creates a DateFormatDDMMYYYY type from a string
+ * @param date - the date string to validate
+ * @returns the date string as DateFormatDDMMYYYY type or null if invalid
+ */
+export function createDateDDMMYYYY(date: string): DateFormatDDMMYYYY | null {
+  // Validate the date format is dd/mm/yyyy
+  const regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
+  
+  if (!regex.test(date)) {
+    return null;
+  }
+  
+  // Further validate the date is actually valid (e.g., not 31/02/2023)
+  const [day, month, year] = date.split('/').map(Number);
+  const dateObj = new Date(year, month - 1, day);
+  
+  if (
+    dateObj.getFullYear() !== year ||
+    dateObj.getMonth() !== month - 1 ||
+    dateObj.getDate() !== day
+  ) {
+    return null;
+  }
+  
+  return date as DateFormatDDMMYYYY;
 } 

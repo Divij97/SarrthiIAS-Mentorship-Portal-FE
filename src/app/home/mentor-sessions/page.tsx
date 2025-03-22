@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { PlusIcon } from '@heroicons/react/24/outline';
@@ -13,6 +13,9 @@ import SessionModals from '@/components/app/SessionModals';
 export default function MentorSessionsPage() {
   // Create a local state for found sessions to avoid unnecessary recomputation
   const [sessionManager, setSessionManagerState] = useState<SessionManager | null>(null);
+  
+  // Store references to avoid recreating functions on each render
+  const sessionStoreRef = useRef(useSessionStore.getState());
 
   // Access auth state
   const authHeader = useLoginStore(state => state.authHeader);
@@ -22,21 +25,18 @@ export default function MentorSessionsPage() {
   const mentorResponse = useMentorStore(state => state.mentorResponse);
   const setMentorResponse = useMentorStore(state => state.setMentorResponse);
   
-  // Access session state directly with primitive selectors
+  // Access session state with individual primitive selectors
   const loading = useSessionStore(state => state.loading);
   const error = useSessionStore(state => state.error);
   const calendarMeetings = useSessionStore(state => state.calendarMeetings);
   const sessionsByDate = useSessionStore(state => state.sessionsByDate);
-  
-  // Get essential store functions only once
-  const sessionStore = useSessionStore.getState();
   
   // Initialize the session manager when authHeader is available
   useEffect(() => {
     if (authHeader) {
       const manager = new SessionManager(authHeader);
       setSessionManagerState(manager);
-      sessionStore.setSessionManager(manager);
+      sessionStoreRef.current.setSessionManager(manager);
     }
   }, [authHeader]);
 
@@ -46,7 +46,7 @@ export default function MentorSessionsPage() {
       return;
     }
     
-    sessionStore.loadSessions(mentorResponse);
+    sessionStoreRef.current.loadSessions(mentorResponse);
   }, [mentor, mentorResponse]);
   
   // Use useMemo to find sessions only when necessary
@@ -65,25 +65,31 @@ export default function MentorSessionsPage() {
     };
   }, [sessionsByDate]);
   
-  // Handle calendar meeting actions with memoized functions
-  const handleEditClick = (meeting: Meeting) => {
-    const session = findSession(meeting.id);
-    if (session) {
-      sessionStore.openEditModal(session);
-    }
-  };
+  // Handle calendar meeting actions with memoized handlers
+  const handleEditClick = useMemo(() => {
+    return (meeting: Meeting) => {
+      const session = findSession(meeting.id);
+      if (session) {
+        sessionStoreRef.current.openEditModal(session);
+      }
+    };
+  }, [findSession]);
 
-  const handleCancelClick = (meeting: Meeting) => {
-    const session = findSession(meeting.id);
-    if (session) {
-      sessionStore.openCancelModal(session);
-    }
-  };
+  const handleCancelClick = useMemo(() => {
+    return (meeting: Meeting) => {
+      const session = findSession(meeting.id);
+      if (session) {
+        sessionStoreRef.current.openCancelModal(session);
+      }
+    };
+  }, [findSession]);
 
   // Handler for Add Session button click
-  const handleAddSessionClick = () => {
-    sessionStore.openAddModal();
-  };
+  const handleAddSessionClick = useMemo(() => {
+    return () => {
+      sessionStoreRef.current.openAddModal();
+    };
+  }, []);
 
   if (loading) {
     return (

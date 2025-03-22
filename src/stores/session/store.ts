@@ -23,6 +23,7 @@ interface AddModalState extends ModalState {
     startTime: string;
     endTime: string;
     menteeUsername: string;
+    menteeFullName: string;
   };
 }
 
@@ -112,7 +113,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         date: '',
         startTime: '10:00',
         endTime: '11:00',
-        menteeUsername: ''
+        menteeUsername: '',
+        menteeFullName: ''
       }
     },
     cancel: {
@@ -219,7 +221,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             date: formattedDate,
             startTime: '10:00',
             endTime: '11:00',
-            menteeUsername: ''
+            menteeUsername: '',
+            menteeFullName: ''
           }
         },
         actionError: null
@@ -316,6 +319,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     try {
       const mentees = await sessionManager.fetchMenteeList();
       set({ menteeList: mentees, loadingMentees: false });
+      console.log('Mentee list loaded:', mentees);
     } catch (error) {
       console.error('Failed to load mentee list:', error);
       set((state) => ({ 
@@ -569,75 +573,17 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       const mentorUsername = mentorResponse.username || 'mentor';
       
       // Call API to add a new session
-      const newSession = await sessionManager.addNewSession(
+      await sessionManager.addNewSession(
         mentorUsername,
         formData.date,
         formData.startTime,
         formData.endTime,
-        formData.menteeUsername
+        formData.menteeUsername,
+        formData.menteeFullName
       );
       
-      // Format date in DD/MM/YYYY format for sessionsByDate
-      const dateKey = formData.date.split('-').reverse().join('/');
-      
-      // Update local state with the new session
-      const updatedSessions = { ...get().sessionsByDate };
-      if (!updatedSessions[dateKey]) {
-        updatedSessions[dateKey] = [];
-      }
-      updatedSessions[dateKey].push(newSession);
-      
-      // Update calendar meetings
-      const newMeeting: Meeting = {
-        id: newSession.id,
-        title: `Session with ${newSession.menteeFullName || newSession.menteeUsername || 'Mentee'}`,
-        date: formData.date,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        menteeUsername: newSession.menteeUsername,
-        zoomLink: newSession.zoomLink,
-      };
-      
-      // Update in store
-      if (mentorResponse) {
-        // Create a safe copy of the mentor response
-        const updatedMentorResponse = { ...mentorResponse } as MentorResponse;
-        
-        // Update in sessionsByDate
-        if (!updatedMentorResponse.sessionsByDate[dateKey]) {
-          updatedMentorResponse.sessionsByDate[dateKey] = [];
-        }
-        updatedMentorResponse.sessionsByDate[dateKey].push(newSession);
-        
-        // Update in sessionsByDayOfWeek if it exists
-        if (updatedMentorResponse.sessionsByDayOfWeek) {
-          const dayIndex = selectedDate.getDay();
-          const dayOfWeekMap: Record<number, DayOfWeek> = {
-            0: DayOfWeek.SUNDAY,
-            1: DayOfWeek.MONDAY,
-            2: DayOfWeek.TUESDAY,
-            3: DayOfWeek.WEDNESDAY,
-            4: DayOfWeek.THURSDAY,
-            5: DayOfWeek.FRIDAY,
-            6: DayOfWeek.SATURDAY
-          };
-          
-          const dayKey = dayOfWeekMap[dayIndex];
-          
-          if (dayKey) {
-            if (!updatedMentorResponse.sessionsByDayOfWeek[dayKey]) {
-              updatedMentorResponse.sessionsByDayOfWeek[dayKey] = [];
-            }
-            updatedMentorResponse.sessionsByDayOfWeek[dayKey].push(newSession);
-          }
-        }
-        
-        setMentorResponse(updatedMentorResponse);
-      }
-      
+      // Close the modal
       set((state) => ({
-        sessionsByDate: updatedSessions,
-        calendarMeetings: [...get().calendarMeetings, newMeeting],
         modals: {
           ...state.modals,
           add: {
@@ -647,6 +593,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           actionLoading: false
         }
       }));
+      
+      // Force a page refresh to get updated data from the backend
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     } catch (error) {
       console.error('Failed to add session:', error);
       set((state) => ({

@@ -205,7 +205,9 @@ export default function MentorSignUpForm() {
           mentor: mentorObj,
           username: tempMentorData.phone,
           passwordSHA: tempMentorData.password,
-          isTempPassword: false
+          isTempPassword: false,
+          updates: {},
+          sessionsByDayOfWeek: {}
         };
   
         // The response might be { success: true } if no JSON is returned

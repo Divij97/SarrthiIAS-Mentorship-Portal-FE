@@ -94,7 +94,11 @@ export default function AddSessionModal({
                             id="mentee-username"
                             className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 pr-10 py-2 sm:text-sm border-gray-300 rounded-md"
                             value={formData.menteeUsername}
-                            onChange={(e) => onFormChange('menteeUsername', e.target.value)}
+                            onChange={(e) => {
+                              const menteeIdentifier = menteeList.find((mentee) => mentee.phone === e.target.value);
+                              onFormChange('menteeUsername', menteeIdentifier?.phone || '');
+                              onFormChange('menteeFullName', menteeIdentifier?.name || '');
+                            }}
                             required
                             disabled={isLoading}
                           >
