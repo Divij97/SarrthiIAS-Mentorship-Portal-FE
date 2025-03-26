@@ -22,8 +22,15 @@ export default function RootLayoutClient({
   // Separate the state access to avoid circular dependencies
   const isAuthenticated = useLoginStore((state) => state.isAuthenticated);
   const userType = useLoginStore((state) => state.userType);
+  const phone = useLoginStore((state) => state.phone);
+  const hasVerifiedOTP = useLoginStore((state) => state.hasVerifiedOTP);
   const mentee = useMenteeStore((state) => state.mentee);
+  const menteeResponse = useMenteeStore((state) => state.menteeResponse);
   const mentor = useMentorStore((state) => state.mentor);
+  const mentorResponse = useMentorStore((state) => state.mentorResponse);
+
+  // Check if user has temporary password/OTP
+  const hasOTP = Boolean(menteeResponse?.otp || mentorResponse?.otp);
 
   useEffect(() => {
     const checkAuthAndRedirect = () => {
@@ -33,25 +40,45 @@ export default function RootLayoutClient({
         return;
       }
 
-      const publicRoutes = ['/login', '/signup', '/reset-password'];
+      const publicRoutes = ['/login', '/signup', '/reset-password', '/mentor-signup'];
       const isPublicRoute = publicRoutes.includes(pathname) || 
                           pathname.startsWith('/reset-password');
+      
+      // If user is in signup flow or has verified OTP, don't redirect
+      const isInSignupFlow = pathname === '/signup' || pathname === '/mentor-signup';
+      
+      // Allow direct access to signup pages when OTP is verified
+      if (hasVerifiedOTP && isInSignupFlow) {
+        console.log("OTP verified and in signup flow, allowing access");
+        setIsLoading(false);
+        return;
+      }
+      
+      // If authenticated but has OTP and hasn't verified it yet, redirect to reset password
+      if (isAuthenticated && hasOTP && !hasVerifiedOTP && !pathname.startsWith('/reset-password') && !isInSignupFlow) {
+        console.log("RootLayoutClient detected OTP that hasn't been verified, redirecting to reset password");
+        router.replace(`/reset-password?phone=${phone}`);
+        setIsLoading(false);
+        return;
+      }
 
       // Check for valid user based on userType
       const hasValidUser = userType === UserType.MENTOR 
                           ? Boolean(mentor) 
                           : Boolean(mentee);
 
-      if (isAuthenticated && hasValidUser && isPublicRoute) {
+      // Only redirect to home if user is authenticated, has a valid user, is on a public route, and doesn't have OTP
+      // or if they're in signup flow with verified OTP
+      if (isAuthenticated && hasValidUser && isPublicRoute && !hasOTP && !isInSignupFlow) {
         router.replace('/home');
       } else if (!isAuthenticated && !isPublicRoute) {
         router.replace('/login');
-      }
+      }      
       setIsLoading(false);
     };
 
     checkAuthAndRedirect();
-  }, [isAuthenticated, mentee, mentor, userType, pathname, router]);
+  }, [isAuthenticated, mentee, mentor, menteeResponse, mentorResponse, hasOTP, hasVerifiedOTP, userType, pathname, router, phone]);
 
   if (isLoading) {
     return (

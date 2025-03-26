@@ -18,10 +18,12 @@ interface AuthState {
   isAuthenticated: boolean;
   authHeader: string | null;
   userType: UserType | null;
+  hasVerifiedOTP: boolean;
   setPhone: (phone: string) => void;
   setPassword: (password: string) => void;
   setError: (error: string) => void;
   setUserType: (type: UserType) => void;
+  setHasVerifiedOTP: (value: boolean) => void;
   handleLogin: () => Promise<MenteeResponse | MentorResponse | null>;
   setAuthHeader: (header: string) => void;
   logout: () => void;
@@ -65,11 +67,13 @@ export const useLoginStore = create<AuthState>()(
         isAuthenticated: false,
         authHeader: null,
         userType: UserType.MENTEE,
+        hasVerifiedOTP: false,
 
         setPhone: (phone) => set({ phone }),
         setPassword: (password) => set({ password }),
         setError: (error) => set({ error }),
         setUserType: (type) => set({ userType: type }),
+        setHasVerifiedOTP: (value) => set({ hasVerifiedOTP: value }),
         setAuthHeader: (header) => set({ authHeader: header, isAuthenticated: true }),
 
         handleLogin: async () => {
@@ -82,8 +86,6 @@ export const useLoginStore = create<AuthState>()(
           set({ error: '', loading: true });
           
           try {
-            const passwordHash = CryptoJS.SHA256(password).toString();
-            const testPassword = "password1";
             const credentials = btoa(`${phone}:${password}`);
             const authHeader = `Basic ${credentials}`;
             
@@ -109,7 +111,8 @@ export const useLoginStore = create<AuthState>()(
             password: '',
             error: '',
             loading: false,
-            userType: UserType.MENTEE
+            userType: UserType.MENTEE,
+            hasVerifiedOTP: false
           });
         },
 
@@ -118,7 +121,8 @@ export const useLoginStore = create<AuthState>()(
           password: '',
           error: '',
           loading: false,
-          userType: UserType.MENTEE
+          userType: UserType.MENTEE,
+          hasVerifiedOTP: false
         })
       };
     },
@@ -127,7 +131,8 @@ export const useLoginStore = create<AuthState>()(
       partialize: (state) => ({ 
         isAuthenticated: state.isAuthenticated,
         authHeader: state.authHeader,
-        userType: state.userType
+        userType: state.userType,
+        hasVerifiedOTP: state.hasVerifiedOTP
       })
     }
   )

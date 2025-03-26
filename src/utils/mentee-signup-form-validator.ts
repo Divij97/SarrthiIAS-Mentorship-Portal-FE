@@ -78,6 +78,10 @@ export const validatePreparationJourney = (formData: FormData): FormErrors => {
 export const validateCurrentPreparation = (formData: FormData): FormErrors => {
   const errors: FormErrors = {};
 
+  if (!formData.menteeUpscExperience) {
+    errors.upscExperience = 'Please select your UPSC experience level';
+  }
+
   if (!formData.preferredSlotsOnWeekdays.length) {
     errors.preferredSlotsOnWeekdays = 'Please select at least one preferred time slot';
   }

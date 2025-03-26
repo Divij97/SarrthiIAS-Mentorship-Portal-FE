@@ -1,34 +1,45 @@
 import { formatTimeSlot, timeSlots, weekDays } from "@/utils/date-time-utils";
 import { useState } from "react";
 import { FormData } from "@/types/multistep-form";
+import { PreferredSlot } from "@/types/mentee";
 
 interface TimeSlotChooserProps {
     formData: FormData;
     handleArrayChange: (field: 'preferredSlotsOnWeekdays') => (value: string[]) => void;
 }
 
+// Map time slots to enum keys - these should be the enum keys, not the display values
+const slotMap: Record<string, string> = {
+    [timeSlots.MORNING]: PreferredSlot.MORNING,
+    [timeSlots.EVENING]: PreferredSlot.EVENING
+};
+
 export const TimeSlotChooser = ({ formData, handleArrayChange }: TimeSlotChooserProps) => {
     const [useUniformSlot, setUseUniformSlot] = useState(true);
-  const [uniformSlot, setUniformSlot] = useState('');
+    const [uniformSlot, setUniformSlot] = useState('');
 
-  const handleUniformSlotChange = (slot: string) => {
-    setUniformSlot(slot);
-    const newSlots = weekDays.map(() => slot);
-    handleArrayChange('preferredSlotsOnWeekdays')(newSlots);
-  };
+    const handleUniformSlotChange = (slot: string) => {
+        setUniformSlot(slot);
+        // Map to enum key - the server expects the enum key (MORNING), not display value
+        const enumSlot = slotMap[slot] || PreferredSlot.MORNING;
+        const newSlots = weekDays.map(() => enumSlot);
+        handleArrayChange('preferredSlotsOnWeekdays')(newSlots);
+    };
 
-  const handleDayWiseSlotChange = (day: number, slot: string) => {
-    const newSlots = [...formData.preferredSlotsOnWeekdays];
-    newSlots[day] = slot;
-    handleArrayChange('preferredSlotsOnWeekdays')(newSlots);
-  };
+    const handleDayWiseSlotChange = (day: number, slot: string) => {
+        const newSlots = [...formData.preferredSlotsOnWeekdays];
+        // Map to enum key - the server expects the enum key (MORNING), not display value
+        const enumSlot = slotMap[slot] || PreferredSlot.MORNING;
+        newSlots[day] = enumSlot;
+        handleArrayChange('preferredSlotsOnWeekdays')(newSlots);
+    };
 
-  const handleSlotTypeChange = (isUniform: boolean) => {
-    setUseUniformSlot(isUniform);
-    // Reset slots when switching between uniform and day-wise
-    handleArrayChange('preferredSlotsOnWeekdays')([]);
-    setUniformSlot('');
-  };
+    const handleSlotTypeChange = (isUniform: boolean) => {
+        setUseUniformSlot(isUniform);
+        // Reset slots when switching between uniform and day-wise
+        handleArrayChange('preferredSlotsOnWeekdays')([]);
+        setUniformSlot('');
+    };
     
     return (
         <div className="space-y-4">
@@ -99,7 +110,8 @@ export const TimeSlotChooser = ({ formData, handleArrayChange }: TimeSlotChooser
                                 <input
                                     type="radio"
                                     id={`${day}-morning-slot`}
-                                    checked={formData.preferredSlotsOnWeekdays[index] === timeSlots.MORNING}
+                                    checked={formData.preferredSlotsOnWeekdays[index] === timeSlots.MORNING || 
+                                        formData.preferredSlotsOnWeekdays[index] === slotMap[timeSlots.MORNING]}
                                     onChange={() => handleDayWiseSlotChange(index, timeSlots.MORNING)}
                                     className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
                                 />
@@ -109,7 +121,8 @@ export const TimeSlotChooser = ({ formData, handleArrayChange }: TimeSlotChooser
                                 <input
                                     type="radio"
                                     id={`${day}-evening-slot`}
-                                    checked={formData.preferredSlotsOnWeekdays[index] === timeSlots.EVENING}
+                                    checked={formData.preferredSlotsOnWeekdays[index] === timeSlots.EVENING || 
+                                        formData.preferredSlotsOnWeekdays[index] === slotMap[timeSlots.EVENING]}
                                     onChange={() => handleDayWiseSlotChange(index, timeSlots.EVENING)}
                                     className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
                                 />

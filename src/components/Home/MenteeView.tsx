@@ -41,7 +41,7 @@ export default function MenteeView({ mentee }: MenteeViewProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-gray-500">Optional Subject</p>
-                <p className="text-gray-900">{mentee.optionalSubject.split('_').join(' ')}</p>
+                <p className="text-gray-900">{mentee.optionalSubject ? mentee.optionalSubject.split('_').join(' ') : 'Not specified'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Working Professional</p>
@@ -68,35 +68,35 @@ export default function MenteeView({ mentee }: MenteeViewProps) {
               <div>
                 <p className="text-sm font-medium text-gray-500">Preferred Time Slots</p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {mentee.preferredSlots.map((slot) => (
+                  {mentee.preferredSlots?.map((slot) => (
                     <span key={slot} className="px-2 py-1 bg-orange-100 text-orange-800 rounded text-sm">
                       {slot}
                     </span>
-                  ))}
+                  )) || <span className="text-gray-500">None specified</span>}
                 </div>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Answer Writing Level</p>
-                <p className="text-gray-900">{mentee.answerWritingLevel}</p>
+                <p className="text-gray-900">{mentee.answerWritingLevel || 'Not specified'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Weak Subjects</p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {mentee.weakSubjects.map((subject) => (
+                  {mentee.weakSubjects?.map((subject) => (
                     <span key={subject} className="px-2 py-1 bg-red-100 text-red-800 rounded text-sm">
                       {subject}
                     </span>
-                  ))}
+                  )) || <span className="text-gray-500">None specified</span>}
                 </div>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Strong Subjects</p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {mentee.strongSubjects.map((subject) => (
+                  {mentee.strongSubjects?.map((subject) => (
                     <span key={subject} className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
                       {subject}
                     </span>
-                  ))}
+                  )) || <span className="text-gray-500">None specified</span>}
                 </div>
               </div>
             </div>
@@ -108,20 +108,20 @@ export default function MenteeView({ mentee }: MenteeViewProps) {
               <div>
                 <p className="text-sm font-medium text-gray-500">Previously Enrolled Courses</p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {mentee.previouslyEnrolledCourses.map((course) => (
+                  {mentee.previouslyEnrolledCourses?.map((course) => (
                     <span key={course} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
                       {course}
                     </span>
-                  ))}
+                  )) || <span className="text-gray-500">None specified</span>}
                 </div>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Primary Source of Current Affairs</p>
-                <p className="text-gray-900">{mentee.primarySourceOfCurrentAffairs}</p>
+                <p className="text-gray-900">{mentee.primarySourceOfCurrentAffairs || 'Not specified'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Expectation from Mentorship</p>
-                <p className="text-gray-900">{mentee.expectationFromMentorshipCourse}</p>
+                <p className="text-gray-900">{mentee.expectationFromMentorshipCourse || 'Not specified'}</p>
               </div>
             </div>
           </div>

@@ -3,24 +3,62 @@
 import { FormData } from '@/types/multistep-form';
 import { RadioGroup } from '@/components/ui/RadioGroup';
 import { useMenteeStore } from '@/stores/mentee/store';
+import { Gender, Region } from '@/types/mentee';
 
 interface PersonalInfoProps {
   formData: FormData;
   handleChange: (field: keyof FormData) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
-  region: string[];
+  region: Region[];
   errors?: Record<string, string>;
 }
 
+// Map gender options to enum values
 const genderOptions = [
-  { value: 'MALE', label: 'Male' },
-  { value: 'FEMALE', label: 'Female' },
-  { value: 'OTHER', label: 'Other' }
+  { value: Gender.MALE, label: 'Male' },
+  { value: Gender.FEMALE, label: 'Female' },
+  { value: Gender.OTHER, label: 'Other' }
 ];
 
 const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoProps) => {
   const { menteeResponse } = useMenteeStore();
+
+  // Custom handler for gender to ensure enum values are used
+  const handleGenderChange = (value: string) => {
+    // Find matching enum value
+    const enumValue = Object.values(Gender).find(
+      gender => gender === value
+    );
+    
+    // Create a custom event with the enum value
+    handleChange('gender')({ target: { value: enumValue || value } } as any);
+  };
+
+  // Custom handler for region to ensure enum values are used
+  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectValue = e.target.value;
+    
+    // Find matching enum value
+    const enumValue = Object.values(Region).find(
+      regionVal => regionVal === selectValue
+    );
+    
+    // Create a custom event with the enum value
+    if (enumValue) {
+      const customEvent = {
+        ...e,
+        target: {
+          ...e.target,
+          value: enumValue
+        }
+      };
+      handleChange('region')(customEvent);
+    } else {
+      // Pass the original event if no matching enum value
+      handleChange('region')(e);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -36,7 +74,7 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
           <input
             type="text"
             id="name"
-            value={menteeResponse?.mentee?.name || formData.name}
+            value={formData.name}
             onChange={handleChange('name')}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
             required
@@ -64,7 +102,7 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
           <input
             type="tel"
             id="phoneNumber"
-            value={menteeResponse?.username || formData.phoneNumber}
+            value={formData.phoneNumber || menteeResponse?.username || ''}
             onChange={handleChange('phoneNumber')}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 bg-gray-100"
             required
@@ -76,7 +114,7 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
           <label className="block text-sm font-medium text-gray-700">Gender</label>
           <RadioGroup
             value={formData.gender}
-            onChange={(value) => handleChange('gender')({ target: { value } } as any)}
+            onChange={handleGenderChange}
             options={genderOptions}
             name="gender"
           />
@@ -90,7 +128,7 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
             id="region"
             name="region"
             value={formData.region}
-            onChange={handleChange('region')}
+            onChange={handleRegionChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
           >
             <option value="">Select a region</option>

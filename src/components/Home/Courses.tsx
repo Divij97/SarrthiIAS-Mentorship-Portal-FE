@@ -11,37 +11,7 @@ export default function Courses() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  
-  const { authHeader, phone } = useLoginStore();
-  const { courses, setCourses } = useMenteeStore();
-
-  useEffect(() => {
-    const loadCourses = async () => {
-      // Early return conditions
-      if (courses.length > 0) return; // Don't fetch if we already have courses
-      if (!authHeader || !phone) {
-        setError('Please log in to view your courses.');
-        return;
-      }
-      
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        console.log('Fetching courses with phone:', phone);
-        const response = await fetchCourses(phone, authHeader);
-        console.log('Courses data:', response);
-        setCourses(response);
-      } catch (err) {
-        console.error('Failed to load courses:', err);
-        setError('Failed to load courses. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadCourses();
-  }, [authHeader, phone, courses.length, setCourses]);
+  const { courses } = useMenteeStore();
 
   const handleCourseClick = (courseName: string) => {
     // Navigate to course-specific route
@@ -74,8 +44,8 @@ export default function Courses() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses.map(course => (
           <CourseTile 
-            key={course.name} 
-            course={course} 
+            key={course.course.name} 
+            enrolledCourseInfo={course} 
             onClick={handleCourseClick}
           />
         ))}
@@ -83,7 +53,7 @@ export default function Courses() {
 
       {courses.length === 0 && !isLoading && (
         <div className="text-center py-12">
-          <p className="text-gray-600">You haven't enrolled in any courses yet.</p>
+          <p className="text-gray-600">Any courses you have enrolled in will appear here. Revisit this page after some time to access your subscribed courses.</p>
         </div>
       )}
     </div>

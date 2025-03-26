@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FormData } from '@/types/multistep-form';
-import { OptionalSubject } from '@/types/mentee';
+import { OptionalSubject, ReservationCategory } from '@/types/mentee';
 import { FormErrors } from '@/utils/mentee-signup-form-validator';
 
 interface EducationBackgroundProps {
@@ -13,27 +13,49 @@ interface EducationBackgroundProps {
   errors?: FormErrors;
 }
 
-const reservationCategories = ['General', 'OBC', 'SC/ST'];
+// Get reservation categories from enum
+const reservationCategories = Object.values(ReservationCategory).map(category => ({
+  value: category,
+  label: category === ReservationCategory.OBC ? 'OBC' : 
+         category === ReservationCategory.SC ? 'SC' : 
+         category === ReservationCategory.ST ? 'ST' : 'General'
+}));
 
-// Get all valid optional subjects from the enum
-const optionalSubjects: string[] = Object.values(OptionalSubject);
+// Get all valid optional subjects from the enum with key and display value
+const optionalSubjects: Array<{key: string, value: OptionalSubject, label: string}> = Object.entries(OptionalSubject).map(([key, value]) => ({
+  key,
+  value: value as OptionalSubject,
+  label: value
+}));
 
 const EducationBackground = ({ formData, handleChange, errors }: EducationBackgroundProps) => {
-  const [subjectInput, setSubjectInput] = useState(formData.optionalSubject || '');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  // Find the display label for the current optionalSubject value
+  const getCurrentSubjectLabel = () => {
+    if (!formData.optionalSubject) return '';
+    const subject = optionalSubjects.find(s => s.key === formData.optionalSubject || s.value === formData.optionalSubject);
+    return subject ? subject.label : '';
+  };
+
+  const [subjectInput, setSubjectInput] = useState(getCurrentSubjectLabel());
+  const [suggestions, setSuggestions] = useState<Array<{key: string, value: OptionalSubject, label: string}>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isValidSubject, setIsValidSubject] = useState(true);
 
+  // Update the input field if formData.optionalSubject changes from outside
+  useEffect(() => {
+    setSubjectInput(getCurrentSubjectLabel());
+  }, [formData.optionalSubject]);
+
   // Function to validate if a subject is valid
   const validateSubject = (subject: string): boolean => {
-    return optionalSubjects.includes(subject);
+    return optionalSubjects.some(opt => opt.label === subject);
   };
 
   // Function to get suggestions based on input
-  const getSuggestions = (input: string): string[] => {
+  const getSuggestions = (input: string): Array<{key: string, value: OptionalSubject, label: string}> => {
     const inputValue = input.toLowerCase();
     return optionalSubjects.filter(subject =>
-      subject.toLowerCase().includes(inputValue)
+      subject.label.toLowerCase().includes(inputValue)
     );
   };
 
@@ -54,25 +76,47 @@ const EducationBackground = ({ formData, handleChange, errors }: EducationBackgr
     // Validate the input
     setIsValidSubject(value === '' || validateSubject(value));
 
-    // Update form data
-    const event = {
-      target: { value }
-    } as React.ChangeEvent<HTMLInputElement>;
-    handleChange('optionalSubject')(event);
+    // Don't update form data yet, wait for selection
   };
 
   // Handle suggestion selection
-  const handleSelectSuggestion = (subject: string) => {
-    setSubjectInput(subject);
+  const handleSelectSuggestion = (subjectOption: {key: string, value: OptionalSubject, label: string}) => {
+    setSubjectInput(subjectOption.label);
     setSuggestions([]);
     setShowSuggestions(false);
     setIsValidSubject(true);
 
-    // Update form data
+    // Create a custom event to update form data with the enum KEY (not value)
+    // This is critical - the server expects the enum key (HISTORY), not the display value (History)
     const event = {
-      target: { value: subject }
+      target: { value: subjectOption.key }
     } as React.ChangeEvent<HTMLInputElement>;
     handleChange('optionalSubject')(event);
+  };
+
+  // Handle reservation category selection
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectValue = e.target.value;
+    
+    // Find the matching enum value
+    const enumValue = Object.values(ReservationCategory).find(
+      category => category === selectValue
+    );
+    
+    // Create a custom event with the enum value
+    if (enumValue) {
+      const customEvent = {
+        ...e,
+        target: {
+          ...e.target,
+          value: enumValue
+        }
+      };
+      handleChange('reservationCategory')(customEvent);
+    } else {
+      // Pass the original event if no matching enum value
+      handleChange('reservationCategory')(e);
+    }
   };
 
   // Close suggestions when clicking outside
@@ -101,14 +145,14 @@ const EducationBackground = ({ formData, handleChange, errors }: EducationBackgr
           <select
             id="reservationCategory"
             value={formData.reservationCategory}
-            onChange={handleChange('reservationCategory')}
+            onChange={handleCategoryChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
             required
           >
             <option value="">Select Category</option>
             {reservationCategories.map((category) => (
-              <option key={category} value={category}>
-                {category}
+              <option key={category.value} value={category.value}>
+                {category.label}
               </option>
             ))}
           </select>
@@ -146,7 +190,7 @@ const EducationBackground = ({ formData, handleChange, errors }: EducationBackgr
                   className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-900"
                   onClick={() => handleSelectSuggestion(subject)}
                 >
-                  {subject}
+                  {subject.label}
                 </div>
               ))}
             </div>

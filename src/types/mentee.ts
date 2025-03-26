@@ -1,3 +1,5 @@
+import { Course } from "./course";
+
 export enum Region {
   NORTH = 'NORTH',
   SOUTH = 'SOUTH',
@@ -94,6 +96,14 @@ export enum AnswerWritingLevel {
   ADVANCED = 'ADVANCED'
 }
 
+export enum MenteeUpscExperience {
+  JUST_STARTED_PREPARATION = "JUST_STARTED_PREPARATION",
+  FINISHED_FOUNDATION_COACHING_GIVEN_1_ATTEMPT = "FINISHED_FOUNDATION_COACHING_GIVEN_1_ATTEMPT",
+  GIVEN_MULTIPLE_PRELIMS_ATTEMPTS = "GIVEN_MULTIPLE_PRELIMS_ATTEMPTS",
+  GIVEN_1_OR_MORE_MAINS = "GIVEN_1_OR_MORE_MAINS",
+  INTERVIEW_GIVEN = "INTERVIEW_GIVEN"
+}
+
 export interface Mentee {
   // S1
   name: string;
@@ -109,6 +119,7 @@ export interface Mentee {
   givenInterview: boolean;
   numberOfAttemptsInUpsc: number;
   numberOfMainsAttempts: number;
+  menteeUpscExperience?: MenteeUpscExperience;
 
   // S3
   preferredSlots: PreferredSlot[];
@@ -127,6 +138,7 @@ export interface MenteeResponse {
   mentee: Mentee | null;
   otp: string | null;
   username: string | null;
+  enrolledCourses: MenteeEnrolledCourseInfo[];
 }
 
 export interface MenteeWithAuth {
@@ -134,4 +146,10 @@ export interface MenteeWithAuth {
   username: string;
   passwordSHA: string;
   isTempPassword: boolean;
+  enrolledCourses: MenteeEnrolledCourseInfo[];
+}
+
+export interface MenteeEnrolledCourseInfo {
+  course: Course;
+  assignedGroup: string | null;
 }

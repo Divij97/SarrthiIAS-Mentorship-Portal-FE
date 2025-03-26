@@ -1,11 +1,13 @@
 import { Course } from '@/types/course';
+import { MenteeEnrolledCourseInfo } from '@/types/mentee';
 
 interface CourseTileProps {
-  course: Course;
+  enrolledCourseInfo: MenteeEnrolledCourseInfo;
   onClick: (courseName: string) => void;
 }
 
-export default function CourseTile({ course, onClick }: CourseTileProps) {
+export default function CourseTile({ enrolledCourseInfo, onClick }: CourseTileProps) {
+  const course = enrolledCourseInfo.course;
   const endDate = new Date(course.endDate).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',

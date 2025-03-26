@@ -8,16 +8,28 @@ interface MentorStore {
   setMentor: (mentor: Mentor | null) => void;
   setMentorResponse: (response: MentorResponse | null) => void;
   clearMentor: () => void;
+  clearMentorOTP: () => void;
 }
 
 export const useMentorStore = create<MentorStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       mentor: null,
       mentorResponse: null,
       setMentor: (mentor) => set({ mentor }),
       setMentorResponse: (response) => set({ mentorResponse: response }),
       clearMentor: () => set({ mentor: null, mentorResponse: null }),
+      clearMentorOTP: () => {
+        const current = get().mentorResponse;
+        if (current) {
+          set({ 
+            mentorResponse: { 
+              ...current, 
+              otp: null 
+            } 
+          });
+        }
+      }
     }),
     {
       name: 'mentor-storage', // unique name for localStorage key

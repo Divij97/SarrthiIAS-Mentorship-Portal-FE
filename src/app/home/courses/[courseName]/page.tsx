@@ -17,7 +17,7 @@ export default function CourseDetailsPage({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { courses } = useMenteeStore();
+  const courses = useMenteeStore((state) => state.courses.map(c => c.course));
   const { authHeader, phone, userType } = useLoginStore();
   const { sessions, setSessions } = useSessionsStore();
   

@@ -6,15 +6,14 @@ import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { UserType } from '@/types/auth';
-import { updateMentorPassword } from '@/services/mentors';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const phone = searchParams.get('phone');
-  const { error, setError, userType, authHeader } = useLoginStore();
-  const { mentor, mentorResponse } = useMentorStore();
-  const { menteeResponse } = useMenteeStore();
+  const { error, setError, userType, authHeader, setHasVerifiedOTP } = useLoginStore();
+  const { mentor, mentorResponse, clearMentorOTP } = useMentorStore();
+  const { menteeResponse, clearMenteeOTP } = useMenteeStore();
   
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -23,6 +22,7 @@ export default function ResetPasswordPage() {
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [resending, setResending] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -68,23 +68,49 @@ export default function ResetPasswordPage() {
   };
 
   const handleMenteeSignup = () => {
+    if (redirecting) return;
+    
+    // Clear OTP to prevent future redirects back to reset-password
+    clearMenteeOTP?.();
+    
+    // Mark that OTP has been verified
+    setHasVerifiedOTP?.(true);
+    
     // Store necessary information for signup
     localStorage.setItem('tempMenteeData', JSON.stringify({
       phone,
       password: newPassword,
       verifiedOtp: otp
     }));
-    router.replace('/signup');
+    
+    console.log("Redirecting to signup from handleMenteeSignup");
+    setRedirecting(true);
+    
+    // Use window.location for a hard redirect to avoid Next.js router interception
+    window.location.href = '/signup';
   };
 
   const handleMentorSignup = () => {
+    if (redirecting) return;
+    
+    // Clear OTP to prevent future redirects back to reset-password
+    clearMentorOTP?.();
+    
+    // Mark that OTP has been verified
+    setHasVerifiedOTP?.(true);
+    
     // Store necessary information for signup
     localStorage.setItem('tempMentorData', JSON.stringify({
       phone,
       password: newPassword,
       verifiedOtp: otp
     }));
-    router.replace('/mentor-signup');
+    
+    console.log("Redirecting to mentor-signup from handleMentorSignup");
+    setRedirecting(true);
+    
+    // Use window.location for a hard redirect to avoid Next.js router interception
+    window.location.href = '/mentor-signup';
   };
 
   const handleResendOtp = async () => {
@@ -140,8 +166,40 @@ export default function ResetPasswordPage() {
       setLoading(true);
       setError('');
 
+      // Set hasVerifiedOTP early
+      setHasVerifiedOTP?.(true);
+      
+      // Clear OTP to prevent future redirects
       if (userType === UserType.MENTOR) {
-        await handleMentorSignup();
+        clearMentorOTP?.();
+      } else {
+        clearMenteeOTP?.();
+      }
+
+      // Store necessary information in localStorage
+      const navigateData = {
+        phone,
+        password: newPassword,
+        verifiedOtp: otp
+      };
+      
+      if (userType === UserType.MENTOR) {
+        localStorage.setItem('tempMentorData', JSON.stringify(navigateData));
+        console.log("Setting up mentor navigation to /mentor-signup");
+        setTimeout(() => {
+          window.location.href = '/mentor-signup';
+        }, 500);
+      } else {
+        localStorage.setItem('tempMenteeData', JSON.stringify(navigateData));
+        console.log("Setting up mentee navigation to /signup");
+        setTimeout(() => {
+          window.location.href = '/signup';
+        }, 500);
+      }
+
+      // Still try the normal navigation functions
+      if (userType === UserType.MENTOR) {
+        handleMentorSignup();
       } else {
         handleMenteeSignup();
       }

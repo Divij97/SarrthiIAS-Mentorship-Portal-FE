@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FormData } from '@/types/multistep-form';
 import PersonalInfo from '@/components/Onboarding/PersonalInfo';
@@ -9,8 +9,8 @@ import PreparationJourney from '@/components/Onboarding/PreparationJourney';
 import CurrentPreparation from '@/components/Onboarding/CurrentPreparation';
 import Expectations from '@/components/Onboarding/Expectations';
 import { Button } from '@/components/ui/Button';
-import { Region, Gender, OptionalSubject, Mentee, MenteeWithAuth, ReservationCategory, PreferredSlot, AnswerWritingLevel } from '@/types/mentee';
-import { signupMentee } from '@/services/mentee';
+import { Region, Gender, OptionalSubject, Mentee, MenteeWithAuth, ReservationCategory, PreferredSlot, AnswerWritingLevel, MenteeUpscExperience } from '@/types/mentee';
+import { signupMentee, getMenteeByPhone } from '@/services/mentee';
 import { validateStep, FormErrors } from '@/utils/mentee-signup-form-validator';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { useLoginStore } from '@/stores/auth/store';
@@ -31,6 +31,7 @@ const MultiStepForm = () => {
     preliminaryAttempts: 0,
     mainExamAttempts: 0,
     isSaarthiStudent: false,
+    menteeUpscExperience: '',
     preferredSlotsOnWeekdays: [],
     answerWritingLevel: '',
     weakSubjects: [],
@@ -42,7 +43,39 @@ const MultiStepForm = () => {
 
   const router = useRouter();
   const { setAuthHeader } = useLoginStore();
-  const { setMentee } = useMenteeStore();
+  const { setMentee, menteeResponse } = useMenteeStore();
+
+  // Initialize form data with mentee data if available
+  useEffect(() => {
+    if (menteeResponse?.mentee) {
+      const mentee = menteeResponse.mentee;
+      
+      // Only set initial values if form fields are empty (to avoid overriding user input)
+      if (!formData.name && mentee.name) {
+        setFormData(prev => ({
+          ...prev,
+          name: mentee.name || '',
+          email: mentee.email || '',
+          phoneNumber: menteeResponse.username || '',
+          gender: mentee.gender || '',
+          region: mentee.region || '',
+          reservationCategory: mentee.category || '',
+          optionalSubject: mentee.optionalSubject || '',
+          isWorkingProfessional: mentee.isWorkingProfessional || false,
+          preliminaryAttempts: mentee.numberOfAttemptsInUpsc || 0,
+          mainExamAttempts: mentee.numberOfMainsAttempts || 0,
+          menteeUpscExperience: mentee.menteeUpscExperience || '',
+          preferredSlotsOnWeekdays: mentee.preferredSlots || [],
+          answerWritingLevel: mentee.answerWritingLevel || '',
+          weakSubjects: mentee.weakSubjects || [],
+          strongSubjects: mentee.strongSubjects || [],
+          previouslyEnrolledCourses: mentee.previouslyEnrolledCourses?.[0] || '',
+          currentAffairsSource: mentee.primarySourceOfCurrentAffairs || '',
+          expectations: mentee.expectationFromMentorshipCourse || ''
+        }));
+      }
+    }
+  }, [menteeResponse]);
 
   // Update region options to use enum values
   const regionOptions = [
@@ -100,6 +133,7 @@ const MultiStepForm = () => {
           <CurrentPreparation
             formData={formData}
             handleArrayChange={handleArrayChange}
+            handleChange={handleChange}
             errors={errors}
           />
         );
@@ -139,6 +173,7 @@ const MultiStepForm = () => {
         givenInterview: formData.preliminaryAttempts > 0,
         numberOfAttemptsInUpsc: formData.preliminaryAttempts,
         numberOfMainsAttempts: formData.mainExamAttempts,
+        menteeUpscExperience: formData.menteeUpscExperience as MenteeUpscExperience,
         preferredSlots: formData.preferredSlotsOnWeekdays as PreferredSlot[],
         answerWritingLevel: formData.answerWritingLevel as AnswerWritingLevel,
         weakSubjects: formData.weakSubjects,
@@ -152,17 +187,39 @@ const MultiStepForm = () => {
         mentee: menteeObj,
         username: tempMenteeData.phone,
         passwordSHA: tempMenteeData.password,
-        isTempPassword: false
+        isTempPassword: false,
+        enrolledCourses: []
       };
 
       await signupMentee(menteeWithAuth);
       
       // After successful signup, create new auth header with the updated password
       const newAuthHeader = `Basic ${btoa(`${tempMenteeData.phone}:${tempMenteeData.password}`)}`;
+      
+      // Update the auth store with auth header
       setAuthHeader(newAuthHeader);
       
-      // Set the mentee data in the store
-      setMentee(menteeObj);
+      // Set the phone number in the auth store
+      useLoginStore.getState().setPhone(tempMenteeData.phone);
+      
+      // Fetch latest mentee data from server to get any updates (like enrolled courses)
+      try {
+        const menteeResponse = await getMenteeByPhone(tempMenteeData.phone, newAuthHeader);
+        if (menteeResponse && menteeResponse.mentee) {
+          // Update the mentee store with the latest data from server
+          setMentee(menteeResponse.mentee);
+          // Also store the full mentee response
+          useMenteeStore.getState().setMenteeResponse(menteeResponse);
+          useMenteeStore.getState().setCourses(menteeResponse.enrolledCourses);
+        } else {
+          // Fallback to the data we already have if the fetch fails
+          setMentee(menteeObj);
+        }
+      } catch (error) {
+        console.error('Error fetching updated mentee data:', error);
+        // If there's an error fetching updated data, use the data we have
+        setMentee(menteeObj);
+      }
       
       localStorage.removeItem('tempMenteeData'); // Clean up
       router.push('/home');

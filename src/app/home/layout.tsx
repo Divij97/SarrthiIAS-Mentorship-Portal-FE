@@ -6,6 +6,7 @@ import { useMentorStore } from '@/stores/mentor/store';
 import { useLoginStore } from '@/stores/auth/store';
 import { UserType } from '@/types/auth';
 import Sidebar from '@/components/Home/Sidebar';
+import { useRefreshMenteeData } from '@/hooks/useRefreshMenteeData';
 
 export default function HomeLayout({
   children,
@@ -17,6 +18,9 @@ export default function HomeLayout({
   const { userType, logout } = useLoginStore();
   const mentee = useMenteeStore((state) => state.mentee);
   const mentor = useMentorStore((state) => state.mentor);
+  
+  // Set up periodic refresh of mentee data
+  useRefreshMenteeData();
 
   // Get the current user based on userType
   const currentUser = userType === UserType.MENTOR ? mentor : mentee;

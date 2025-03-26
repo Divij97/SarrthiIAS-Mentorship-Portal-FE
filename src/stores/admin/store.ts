@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { loginAdmin } from '@/services/admin';
+import { loginAdmin, assignGroupsToCourse } from '@/services/admin';
 import { AdminData } from '@/types/admin';
 import { Course } from '@/types/course';
 import { MentorshipGroup, GroupMentorshipSession } from '@/types/session';
@@ -30,6 +30,7 @@ interface AdminState {
   clearCourseGroups: (courseName: string) => void;
   getGroupSessions: (courseName: string, groupId: string) => GroupMentorshipSession[] | null;
   getMentorUserNameByPhone: (phone: string) => string | null;
+  assignGroupsToCourse: (courseName: string, authHeader: string, course: any) => Promise<any>;
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -110,6 +111,15 @@ export const useAdminStore = create<AdminState>()(
           return { success: false, adminData: null };
         } finally {
           set({ loading: false });
+        }
+      },
+
+      assignGroupsToCourse: async (courseName: string, authHeader: string, course: any) => {
+        try {
+          return await assignGroupsToCourse(courseName, authHeader, course);
+        } catch (error) {
+          console.error('Error in store assignGroupsToCourse:', error);
+          throw error;
         }
       },
 

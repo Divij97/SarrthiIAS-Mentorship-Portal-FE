@@ -3,15 +3,28 @@
 import { FormData } from '@/types/multistep-form';
 import { FormErrors } from '@/utils/mentee-signup-form-validator';
 import { TimeSlotChooser } from '../ui/TimeSlotChooser';
+import { MenteeUpscExperience } from '@/types/mentee';
+
 interface CurrentPreparationProps {
   formData: FormData;
   handleArrayChange: (field: 'weakSubjects' | 'strongSubjects' | 'preferredSlotsOnWeekdays') => (value: string[]) => void;
+  handleChange: (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   errors?: FormErrors;
 }
+
+// Map UPSC experience options to more user-friendly labels
+const upscExperienceOptions = [
+  { value: MenteeUpscExperience.JUST_STARTED_PREPARATION, label: 'Just started preparation' },
+  { value: MenteeUpscExperience.FINISHED_FOUNDATION_COACHING_GIVEN_1_ATTEMPT, label: 'Finished foundation coaching, given 1 attempt' },
+  { value: MenteeUpscExperience.GIVEN_MULTIPLE_PRELIMS_ATTEMPTS, label: 'Given multiple prelims attempts' },
+  { value: MenteeUpscExperience.GIVEN_1_OR_MORE_MAINS, label: 'Given 1 or more mains' },
+  { value: MenteeUpscExperience.INTERVIEW_GIVEN, label: 'Interview given' }
+];
 
 const CurrentPreparation = ({ 
   formData,
   handleArrayChange,
+  handleChange,
   errors
 }: CurrentPreparationProps) => {
   
@@ -32,6 +45,29 @@ const CurrentPreparation = ({
       <p className="text-sm font-medium text-red-600">* All fields are required</p>
 
       <div className="space-y-4">
+        <div className="mb-4">
+          <label htmlFor="upscExperience" className="block text-sm font-medium text-gray-700">
+            UPSC Experience Level
+          </label>
+          <select
+            id="upscExperience"
+            name="upscExperience"
+            value={formData.menteeUpscExperience}
+            onChange={handleChange('menteeUpscExperience')}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
+          >
+            <option value="">Select your UPSC experience level</option>
+            {upscExperienceOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          {errors?.upscExperience && (
+            <p className="mt-1 text-sm text-red-600">{errors.upscExperience}</p>
+          )}
+        </div>
+
         <TimeSlotChooser formData={formData} handleArrayChange={handleArrayChange} />
 
         <div>

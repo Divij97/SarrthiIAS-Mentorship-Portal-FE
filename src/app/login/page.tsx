@@ -45,11 +45,15 @@ export default function LoginPage() {
           }
         } else {
           const menteeResponse = response as MenteeResponse;
-          setMentee(menteeResponse.mentee);
+          
+          // setMentee(menteeResponse.mentee);
           setMenteeResponse(menteeResponse);
+          
           if (menteeResponse.otp) {
+            console.log("Redirecting to reset password");
             router.push(`/reset-password?phone=${phone}`);
           } else {
+            console.log("Redirecting to home");
             router.push('/home');
           }
         }

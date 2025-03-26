@@ -50,4 +50,26 @@ export const loginAdmin = async (username: string, password: string): Promise<Ad
       message: 'An error occurred during login'
     };
   }
-}; 
+};
+
+export const assignGroupsToCourse = async (courseName: string, authHeader: string, course: any) => {
+  try {
+    const response = await fetch(`${config.api.url}/v1/courses/${encodeURIComponent(courseName)}/assignGroups`, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ course })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to assign groups to course');
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error('Error assigning groups to course:', error);
+    throw error;
+  }
+};

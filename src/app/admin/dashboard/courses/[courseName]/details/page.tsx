@@ -61,7 +61,9 @@ export default function CourseDetailsPage({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createGroupLoading, setCreateGroupLoading] = useState(false);
   const [createGroupError, setCreateGroupError] = useState<string | null>(null);
-  const { authHeader, setCourseGroups, getCourseGroups, adminData } = useAdminStore();
+  const [assigningGroups, setAssigningGroups] = useState(false);
+  const [groupsAssigned, setGroupsAssigned] = useState(false);
+  const { authHeader, setCourseGroups, getCourseGroups, adminData, assignGroupsToCourse } = useAdminStore();
   
   // Find the current course to check its type
   const currentCourse = adminData?.courses?.find(course => course.name === decodedCourseName);
@@ -118,11 +120,25 @@ export default function CourseDetailsPage({
     setIsCreateModalOpen(true);
   };
 
-  const handleAssignGroups = () => {
-    // Here you would implement the logic to assign groups automatically
-    console.log("Assign groups functionality to be implemented");
-    // For now, just show the create group modal as a placeholder
-    setIsCreateModalOpen(true);
+  const handleAssignGroups = async () => {
+    setAssigningGroups(true);
+    try {
+      if (!currentCourse) {
+        throw new Error('Course information not available');
+      }
+      
+      const response = await assignGroupsToCourse(decodedCourseName, authHeader!, currentCourse);
+      console.log("Response from assignGroupsToCourse: ", response);
+      // Notify user about successful request
+      setError(null); // Clear any previous errors
+      setGroupsAssigned(true);
+      alert("Group assignment request has been received. Please check back after a few minutes about your request.");
+    } catch (error) {
+      console.error('Error assigning groups to course:', error);
+      setError('Failed to assign groups. Please try again.');
+    } finally {
+      setAssigningGroups(false);
+    }
   };
 
   const handleGroupFormSubmit = async (formData: GroupFormData) => {
@@ -226,15 +242,22 @@ export default function CourseDetailsPage({
         </div>
         
         {/* Only show Assign Groups button for group courses with no groups */}
-        {!loading && !error && !isOneOnOneCourse && groups.length === 0 && (
+        {!loading && !error && !isOneOnOneCourse && groups.length === 0 && !groupsAssigned && (
           <button
             onClick={handleAssignGroups}
-            className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors duration-200"
-            disabled={createGroupLoading}
+            className={`flex items-center px-4 py-2 ${assigningGroups || groupsAssigned ? 'bg-gray-400' : 'bg-orange-600 hover:bg-orange-700'} text-white rounded-md transition-colors duration-200`}
+            disabled={assigningGroups || groupsAssigned}
           >
             <UserPlusIcon className="h-5 w-5 mr-2" />
-            {createGroupLoading ? 'Assigning...' : 'Assign Groups'}
+            {assigningGroups ? 'Assigning...' : 'Assign Groups'}
           </button>
+        )}
+        
+        {/* Show a message when groups have been assigned but not yet loaded */}
+        {!loading && !error && !isOneOnOneCourse && groups.length === 0 && groupsAssigned && (
+          <div className="text-sm text-green-600 font-medium">
+            Assignment request received. Please refresh after a few minutes.
+          </div>
         )}
         
         {/* Only show Create New Group button for group courses with existing groups */}
