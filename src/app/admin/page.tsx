@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAdminStore } from '@/stores/admin/store';
+import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('');
@@ -10,7 +10,7 @@ export default function AdminLogin() {
   const router = useRouter();
   const hasRedirected = useRef(false);
   
-  const { handleLogin, error, loading, isAuthenticated } = useAdminStore();
+  const { handleLogin, error, loading, isAuthenticated } = useAdminAuthStore();
 
   // Handle initial auth check
   useEffect(() => {

@@ -4,25 +4,25 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { XMarkIcon, ClockIcon, CalendarIcon, UserGroupIcon, AcademicCapIcon, VideoCameraIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
-import { Meeting } from '@/types/meeting';
+import { Meeting, GroupMeeting } from '@/types/meeting';
 import { formatTimeDisplay } from '@/utils/date-time-utils';
 
 interface MeetingDetailProps {
   meeting: Meeting | null;
   isOpen: boolean;
   onClose: () => void;
-  onEdit?: (meeting: Meeting) => void;
   onCancel?: (meeting: Meeting) => void;
 }
 
-export default function MeetingDetail({ meeting, isOpen, onClose, onEdit, onCancel }: MeetingDetailProps) {
+export default function MeetingDetail({ meeting, isOpen, onClose, onCancel }: MeetingDetailProps) {
   if (!meeting) return null;
 
   const formattedDate = meeting.date ? format(new Date(meeting.date), 'EEEE, MMMM d, yyyy') : '';
+  const isGroupSession = 'isGroupSession' in meeting && meeting.isGroupSession;
   
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={onClose}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -46,21 +46,21 @@ export default function MeetingDetail({ meeting, isOpen, onClose, onEdit, onCanc
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <div className="flex justify-between items-center mb-4">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-4 sm:p-6 text-left align-middle shadow-xl transition-all mx-4">
+                <div className="flex justify-between items-center mb-3 sm:mb-4">
                   <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
                     Meeting Details
                   </Dialog.Title>
                   <button
                     type="button"
-                    className="text-gray-400 hover:text-gray-500"
+                    className="text-gray-400 hover:text-gray-500 p-1 rounded-full"
                     onClick={onClose}
                   >
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
                     <h4 className="text-xl font-semibold text-gray-900 break-words">{meeting.title}</h4>
                   </div>
@@ -107,41 +107,45 @@ export default function MeetingDetail({ meeting, isOpen, onClose, onEdit, onCanc
                     </div>
                   )}
 
-                  {meeting.courseId && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <AcademicCapIcon className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                      <span className="break-words">Course ID: {meeting.courseId}</span>
-                    </div>
-                  )}
-
-                  {meeting.groupId && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <UserGroupIcon className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                      <span className="break-words">Group ID: {meeting.groupId}</span>
-                    </div>
+                  {isGroupSession ? (
+                    <>
+                      {/* <div className="flex items-center text-sm text-gray-600">
+                        <AcademicCapIcon className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                        <span className="break-words">Course: {(meeting as GroupMeeting).courseName}</span>
+                      </div> */}
+                      <div className="flex items-center text-sm text-gray-600">
+                        <UserGroupIcon className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                        <span className="break-words">Group: {(meeting as GroupMeeting).groupFriendlyName}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {meeting.courseId && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <AcademicCapIcon className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                          <span className="break-words">Course ID: {meeting.courseId}</span>
+                        </div>
+                      )}
+                      {meeting.groupId && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <UserGroupIcon className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                          <span className="break-words">Group ID: {meeting.groupId}</span>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
-                {(onEdit || onCancel) && (
-                  <div className="mt-6 flex justify-end space-x-3">
-                    {onEdit && (
-                      <button
-                        type="button"
-                        className="inline-flex justify-center rounded-md border border-transparent bg-orange-100 px-4 py-2 text-sm font-medium text-orange-900 hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-                        onClick={() => onEdit(meeting)}
-                      >
-                        Edit Meeting
-                      </button>
-                    )}
-                    {onCancel && (
-                      <button
-                        type="button"
-                        className="inline-flex justify-center rounded-md border border-transparent bg-red-100 px-4 py-2 text-sm font-medium text-red-900 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                        onClick={() => onCancel(meeting)}
-                      >
-                        Cancel Meeting
-                      </button>
-                    )}
+                {/* Action Buttons */}
+                {onCancel && (
+                  <div className="mt-5 sm:mt-6">
+                    <button
+                      type="button"
+                      className="w-full inline-flex justify-center rounded-md border border-transparent bg-red-100 px-4 py-2 text-sm font-medium text-red-900 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                      onClick={() => onCancel(meeting)}
+                    >
+                      Cancel Meeting
+                    </button>
                   </div>
                 )}
               </Dialog.Panel>

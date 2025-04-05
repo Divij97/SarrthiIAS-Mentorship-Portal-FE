@@ -7,6 +7,7 @@ import { useMenteeStore } from '@/stores/mentee/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { UserType } from '@/types/auth';
 import { Inter } from "next/font/google";
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,14 +36,15 @@ export default function RootLayoutClient({
   useEffect(() => {
     const checkAuthAndRedirect = () => {
       // Ignore authentication check for admin route
-      if (pathname.startsWith('/admin')) {
+      if (pathname.startsWith('/admin') || pathname.startsWith('/update-password')) {
         setIsLoading(false);
         return;
       }
 
-      const publicRoutes = ['/login', '/signup', '/reset-password', '/mentor-signup'];
+      const publicRoutes = ['/login', '/signup', '/reset-password', '/mentor-signup', '/update-password'];
       const isPublicRoute = publicRoutes.includes(pathname) || 
-                          pathname.startsWith('/reset-password');
+                          pathname.startsWith('/reset-password') ||
+                          pathname.startsWith('/update-password');
       
       // If user is in signup flow or has verified OTP, don't redirect
       const isInSignupFlow = pathname === '/signup' || pathname === '/mentor-signup';
@@ -90,5 +92,10 @@ export default function RootLayoutClient({
     );
   }
 
-  return <div className={inter.className}>{children}</div>;
+  return (
+    <div className={inter.className}>
+      {children}
+      <Toaster position="top-right" />
+    </div>
+  );
 } 

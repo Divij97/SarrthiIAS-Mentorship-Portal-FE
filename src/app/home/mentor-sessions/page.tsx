@@ -3,12 +3,25 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 import CalendarView from '@/components/Calendar/CalendarView';
 import { SessionManager } from '@/services/session-manager';
 import { useSessionStore } from '@/stores/session/store';
 import { Meeting } from '@/types/meeting';
 import SessionModals from '@/components/app/SessionModals';
+import { convertDateFormat } from '@/utils/date-time-utils';
+import { MentorshipSession, MentorshipGroup, SessionType } from '@/types/session';
+import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
+import { getGroupSessionForMentor } from '@/services/mentors';
+import NotifyMenteeModal from '@/components/app/NotifyMenteeModal';
+
+interface GroupMeeting extends Meeting {
+  isGroupSession: true;
+  groupId: string;
+  courseId: string;
+  courseName: string;
+  groupFriendlyName: string;
+}
 
 export default function MentorSessionsPage() {
   // Create a local state for found sessions to avoid unnecessary recomputation
@@ -18,11 +31,11 @@ export default function MentorSessionsPage() {
   const sessionStoreRef = useRef(useSessionStore.getState());
 
   // Access auth state
-  const authHeader = useLoginStore(state => state.authHeader);
+  const { getAuthHeader } = useAdminAuthStore();
   
   // Access mentor state directly
   const mentor = useMentorStore(state => state.mentor);
-  const mentorResponse = useMentorStore(state => state.mentorResponse);
+  const mentorResponse = useMentorStore((state) => state.mentorResponse);
   const setMentorResponse = useMentorStore(state => state.setMentorResponse);
   
   // Access session state with individual primitive selectors
@@ -30,6 +43,9 @@ export default function MentorSessionsPage() {
   const error = useSessionStore(state => state.error);
   const calendarMeetings = useSessionStore(state => state.calendarMeetings);
   const sessionsByDate = useSessionStore(state => state.sessionsByDate);
+  const authHeader = useLoginStore(state => state.getAuthHeader());
+  const [groupSessions, setGroupSessions] = useState<MentorshipGroup[]>([]);
+  const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
   
   // Initialize the session manager when authHeader is available
   useEffect(() => {
@@ -40,6 +56,47 @@ export default function MentorSessionsPage() {
     }
   }, [authHeader]);
 
+  // Fetch group sessions when mentor is available
+  useEffect(() => {
+    const fetchGroupSessions = async () => {
+      if (!mentor?.phone || !authHeader || !mentorResponse?.courses) return;
+      
+      try {
+        const response = await getGroupSessionForMentor(mentor.phone, mentorResponse.courses, authHeader);
+        setGroupSessions(response.groupSessions);
+      } catch (error) {
+        console.error('Error fetching group sessions:', error);
+      }
+    };
+
+    fetchGroupSessions();
+  }, [mentor?.phone, mentorResponse?.courses, authHeader]);
+
+  // Convert group sessions to meetings format
+  const groupMeetings = useMemo(() => {
+    return groupSessions.flatMap(group => 
+      group.sessions.map(session => ({
+        id: `group-${session.sessionId}`,
+        title: `Group Session`,
+        date: convertDateFormat(session.firstSessionDate),
+        startTime: session.startTime,
+        endTime: session.endTime,
+        isGroupSession: true as const,
+        groupId: group.groupId,
+        courseId: group.course,
+        courseName: group.course,
+        groupFriendlyName: group.groupFriendlyName,
+        zoomLink: session.zoomLink,
+        sessionType: SessionType.SCHEDULED
+      }))
+    );
+  }, [groupSessions]);
+
+  // Combine individual and group meetings
+  const allMeetings = useMemo(() => {
+    return [...calendarMeetings, ...groupMeetings] as Meeting[];
+  }, [calendarMeetings, groupMeetings]);
+
   // Load sessions when mentorResponse changes
   useEffect(() => {
     if (!mentor || !mentorResponse) {
@@ -47,39 +104,56 @@ export default function MentorSessionsPage() {
     }
     
     sessionStoreRef.current.loadSessions(mentorResponse);
+    
   }, [mentor, mentorResponse]);
   
   // Use useMemo to find sessions only when necessary
   const findSession = useMemo(() => {
-    return (meetingId: string | number) => {
-      let foundSession = null;
+    return (meetingId: string | number): MentorshipSession | null => {
+      let foundSession: MentorshipSession | null = null;
       
+      // Remove the 'session-' prefix if it exists
+      const cleanId = typeof meetingId === 'string' && meetingId.startsWith('session-') 
+        ? meetingId.replace('session-', '') 
+        : meetingId;
+      
+      // First try to find in sessionsByDate
       Object.values(sessionsByDate).forEach(sessions => {
-        const session = sessions.find(s => s.id === meetingId);
+        const session = sessions.find(s => s.id === cleanId);
         if (session) {
-          foundSession = session;
+          foundSession = {
+            ...session,
+            sessionType: session.sessionType || 'AD_HOC' // Ensure sessionType is set
+          };
         }
       });
       
+      // If not found, try to find in mentorResponse
+      if (!foundSession && mentorResponse) {
+        Object.values(mentorResponse.sessionsByDate).forEach(sessions => {
+          const session = sessions.find(s => s.id === cleanId);
+          if (session) {
+            foundSession = {
+              ...session,
+              sessionType: session.sessionType || 'AD_HOC' // Ensure sessionType is set
+            };
+          }
+        });
+      }
+      
       return foundSession;
     };
-  }, [sessionsByDate]);
+  }, [sessionsByDate, mentorResponse]);
   
-  // Handle calendar meeting actions with memoized handlers
-  const handleEditClick = useMemo(() => {
-    return (meeting: Meeting) => {
-      const session = findSession(meeting.id);
-      if (session) {
-        sessionStoreRef.current.openEditModal(session);
-      }
-    };
-  }, [findSession]);
-
+  
   const handleCancelClick = useMemo(() => {
     return (meeting: Meeting) => {
       const session = findSession(meeting.id);
       if (session) {
-        sessionStoreRef.current.openCancelModal(session);
+        console.log('Opening cancel modal with session:', session);
+        console.log('Meeting date:', meeting.originalDate || meeting.date);
+        console.log('Session type:', session.sessionType);
+        sessionStoreRef.current.openCancelModal(session, meeting.originalDate || meeting.date);
       }
     };
   }, [findSession]);
@@ -116,35 +190,55 @@ export default function MentorSessionsPage() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Your Mentorship Schedule</h1>
-          <p className="mt-2 text-gray-600">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="text-center mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Mentorship Schedule</h1>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
             View and manage your upcoming mentorship sessions
           </p>
         </div>
 
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end space-x-3 mb-3 sm:mb-4">
+          <button
+            onClick={() => setIsNotifyModalOpen(true)}
+            className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+          >
+            <EnvelopeIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+            <span className="whitespace-nowrap">Remind Mentee about Absenteeism</span>
+          </button>
           <button
             onClick={handleAddSessionClick}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+            className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
           >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Add Session
+            <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+            <span className="whitespace-nowrap">Add Session</span>
           </button>
         </div>
 
-        <div className="space-y-8">
-          {meetingsWithUniqueIds.length > 0 ? (
+        <div className="space-y-4 sm:space-y-8">
+          {allMeetings.length > 0 ? (
             <CalendarView 
-              meetings={meetingsWithUniqueIds}
-              onEditMeeting={handleEditClick}
+              meetings={allMeetings}
               onCancelMeeting={handleCancelClick}
             />
           ) : (
-            <div className="text-center text-gray-500 bg-white p-8 rounded-lg shadow">
-              No upcoming sessions found
+            <div className="text-center text-gray-500 bg-white p-4 sm:p-8 rounded-lg shadow">
+              <div className="py-8">
+                <svg 
+                  className="mx-auto h-12 w-12 text-gray-300" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">No upcoming sessions</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Click "Add Session" to schedule a new mentorship session.
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -154,6 +248,13 @@ export default function MentorSessionsPage() {
       <SessionModals 
         mentorResponse={mentorResponse} 
         setMentorResponse={setMentorResponse} 
+      />
+
+      <NotifyMenteeModal
+        isOpen={isNotifyModalOpen}
+        onClose={() => setIsNotifyModalOpen(false)}
+        mentees={mentorResponse?.assignedMentees || []}
+        authHeader={authHeader || ''}
       />
     </div>
   );

@@ -7,11 +7,10 @@ import { Meeting } from '@/types/meeting';
 
 interface CalendarViewProps {
   meetings: Meeting[];
-  onEditMeeting?: (meeting: Meeting) => void;
   onCancelMeeting?: (meeting: Meeting) => void;
 }
 
-export default function CalendarView({ meetings, onEditMeeting, onCancelMeeting }: CalendarViewProps) {
+export default function CalendarView({ meetings, onCancelMeeting }: CalendarViewProps) {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
@@ -24,13 +23,6 @@ export default function CalendarView({ meetings, onEditMeeting, onCancelMeeting 
     setIsDetailModalOpen(false);
   };
 
-  const handleEditMeeting = (meeting: Meeting) => {
-    if (onEditMeeting) {
-      onEditMeeting(meeting);
-      setIsDetailModalOpen(false);
-    }
-  };
-
   const handleCancelMeeting = (meeting: Meeting) => {
     if (onCancelMeeting) {
       onCancelMeeting(meeting);
@@ -39,18 +31,19 @@ export default function CalendarView({ meetings, onEditMeeting, onCancelMeeting 
   };
 
   return (
-    <div>
-      <WeekCalendar 
-        meetings={meetings} 
-        onMeetingClick={handleMeetingClick} 
-      />
+    <div className="flex flex-col">
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <WeekCalendar 
+          meetings={meetings} 
+          onMeetingClick={handleMeetingClick} 
+        />
+      </div>
       
       <MeetingDetail 
         meeting={selectedMeeting}
         isOpen={isDetailModalOpen}
         onClose={handleCloseModal}
-        onEdit={onEditMeeting ? handleEditMeeting : undefined}
-        onCancel={onCancelMeeting ? handleCancelMeeting : undefined}
+        onCancel={selectedMeeting && !('isGroupSession' in selectedMeeting) ? handleCancelMeeting : undefined}
       />
     </div>
   );

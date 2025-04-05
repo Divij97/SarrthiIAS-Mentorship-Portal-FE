@@ -68,7 +68,7 @@ const CurrentPreparation = ({
           )}
         </div>
 
-        <TimeSlotChooser formData={formData} handleArrayChange={handleArrayChange} />
+        {/* <TimeSlotChooser formData={formData} handleChange={handleChange} /> */}
 
         <div>
           <label htmlFor="weakSubjects" className="block text-sm font-medium text-gray-700">

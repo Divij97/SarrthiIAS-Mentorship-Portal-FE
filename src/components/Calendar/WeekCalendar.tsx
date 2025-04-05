@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks, isToday } from 'date-fns';
+import { ChevronLeftIcon, ChevronRightIcon, CalendarIcon, ClockIcon, UserIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks, isToday, addDays, isSameDay } from 'date-fns';
 import { Meeting } from '@/types/meeting';
 import { formatTimeDisplay } from '@/utils/date-time-utils';
 
@@ -20,6 +20,20 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
   
   // State to track which week is currently displayed (0 = this week, 1 = next week)
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
+
+  // For mobile view: track which day is selected (0-6 for Monday-Sunday)
+  const [selectedDayIndex, setSelectedDayIndex] = useState(() => {
+    // Default to today's index within the week (0 for Monday, 6 for Sunday)
+    const today = new Date();
+    const mondayStart = startOfWeek(today, { weekStartsOn: 1 });
+    // Find days between Monday and today
+    for (let i = 0; i < 7; i++) {
+      if (isSameDay(addDays(mondayStart, i), today)) {
+        return i;
+      }
+    }
+    return 0; // Default to Monday if something goes wrong
+  });
   
   // Calculate the current week start based on the index
   const currentWeekStart = useMemo(() => 
@@ -47,6 +61,28 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
     }
   };
 
+  // For mobile view: navigate to next day
+  const nextDay = () => {
+    if (selectedDayIndex < 6) {
+      setSelectedDayIndex(selectedDayIndex + 1);
+    } else if (currentWeekIndex === 0) {
+      // If at the end of the week and on "this week", move to next week
+      setCurrentWeekIndex(1);
+      setSelectedDayIndex(0); // Set to Monday of next week
+    }
+  };
+
+  // For mobile view: navigate to previous day
+  const prevDay = () => {
+    if (selectedDayIndex > 0) {
+      setSelectedDayIndex(selectedDayIndex - 1);
+    } else if (currentWeekIndex === 1) {
+      // If at the start of the week and on "next week", move to this week
+      setCurrentWeekIndex(0);
+      setSelectedDayIndex(6); // Set to Sunday of this week
+    }
+  };
+
   // Check if we're viewing this week
   const isCurrentWeek = currentWeekIndex === 0;
   
@@ -58,6 +94,14 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
     const weekEnd = format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'MMM d, yyyy');
     return `${weekStart} - ${weekEnd}`;
   }, [currentWeekStart]);
+
+  // For mobile: get current selected day
+  const selectedDay = useMemo(() => weekDays[selectedDayIndex], [weekDays, selectedDayIndex]);
+  
+  // For mobile: format the selected day
+  const selectedDayTitle = useMemo(() => {
+    return format(selectedDay, 'EEEE, MMMM d');
+  }, [selectedDay]);
 
   // Group meetings by day
   const meetingsByDay = useMemo(() => {
@@ -74,9 +118,16 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
     return grouped;
   }, [meetings, weekDays]);
 
+  // For mobile: get meetings for the selected day
+  const selectedDayMeetings = useMemo(() => {
+    const dateStr = format(selectedDay, 'yyyy-MM-dd');
+    return meetingsByDay[dateStr] || [];
+  }, [meetingsByDay, selectedDay]);
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="flex items-center justify-between px-6 py-4 border-b">
+      {/* Desktop Week View Header - Hidden on mobile */}
+      <div className="hidden md:flex items-center justify-between px-6 py-4 border-b">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
             {isCurrentWeek ? 'This Week' : 'Next Week'}
@@ -109,7 +160,66 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
         </div>
       </div>
 
-      <div className="grid grid-cols-7 border-b">
+      {/* Mobile Day View Header - Only visible on mobile */}
+      <div className="flex md:hidden items-center justify-between px-4 py-3 border-b">
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">
+            {isToday(selectedDay) ? 'Today' : selectedDayTitle}
+          </h2>
+          <p className="text-xs text-gray-500">
+            {isCurrentWeek ? 'This Week' : 'Next Week'}
+          </p>
+        </div>
+        <div className="flex space-x-2">
+          <button
+            onClick={prevDay}
+            disabled={currentWeekIndex === 0 && selectedDayIndex === 0}
+            className={`p-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+              currentWeekIndex === 0 && selectedDayIndex === 0
+                ? 'text-gray-300 cursor-not-allowed'
+                : 'hover:bg-gray-100 text-gray-600'
+            }`}
+          >
+            <ChevronLeftIcon className="h-4 w-4" />
+          </button>
+          <button
+            onClick={nextDay}
+            disabled={currentWeekIndex === 1 && selectedDayIndex === 6}
+            className={`p-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+              currentWeekIndex === 1 && selectedDayIndex === 6
+                ? 'text-gray-300 cursor-not-allowed'
+                : 'hover:bg-gray-100 text-gray-600'
+            }`}
+          >
+            <ChevronRightIcon className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Day Selector - Small date pills */}
+      <div className="md:hidden overflow-x-auto border-b">
+        <div className="flex p-2 space-x-2">
+          {weekDays.map((day: Date, index: number) => (
+            <button
+              key={day.toString()}
+              onClick={() => setSelectedDayIndex(index)}
+              className={`flex-shrink-0 flex flex-col items-center p-2 rounded-lg ${
+                selectedDayIndex === index
+                  ? 'bg-orange-100 text-orange-800'
+                  : 'hover:bg-gray-100'
+              }`}
+            >
+              <span className="text-xs font-medium">{format(day, 'EEE')}</span>
+              <span className={`text-sm mt-1 font-semibold ${isToday(day) ? 'text-orange-600' : 'text-gray-900'}`}>
+                {format(day, 'd')}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop Week View - Days of the week header */}
+      <div className="hidden md:grid grid-cols-7 border-b">
         {weekDays.map((day: Date) => (
           <div 
             key={day.toString()} 
@@ -125,7 +235,8 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
         ))}
       </div>
 
-      <div className="grid grid-cols-7 h-96 overflow-y-auto">
+      {/* Desktop Week View - Calendar grid */}
+      <div className="hidden md:grid grid-cols-7 h-96 overflow-y-auto">
         {weekDays.map((day: Date) => {
           const dateStr = format(day, 'yyyy-MM-dd');
           const dayMeetings = meetingsByDay[dateStr] || [];
@@ -143,12 +254,21 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
                     <div
                       key={meeting.id}
                       onClick={() => onMeetingClick && onMeetingClick(meeting)}
-                      className="bg-orange-100 border-l-4 border-orange-500 p-2 rounded text-sm cursor-pointer hover:bg-orange-200 transition-colors"
+                      className={`p-2 rounded text-sm cursor-pointer transition-colors ${
+                        (meeting as any).isGroupSession 
+                          ? 'bg-blue-100 border-l-4 border-blue-500 hover:bg-blue-200' 
+                          : 'bg-orange-100 border-l-4 border-orange-500 hover:bg-orange-200'
+                      }`}
                     >
                       <div className="font-medium text-gray-900 break-words">{meeting.title}</div>
                       <div className="text-xs text-gray-600">
                         {formatTimeDisplay(meeting.startTime)} - {formatTimeDisplay(meeting.endTime)}
                       </div>
+                      {(meeting as any).isGroupSession && (
+                        <div className="mt-1 text-xs text-blue-600">
+                          Group Session
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (
@@ -160,6 +280,41 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
             </div>
           );
         })}
+      </div>
+
+      {/* Mobile Day View - List of meetings for selected day */}
+      <div className="md:hidden h-96 overflow-y-auto">
+        <div className={`h-full p-4 ${isToday(selectedDay) ? 'bg-orange-50' : ''}`}>
+          {selectedDayMeetings.length > 0 ? (
+            <div className="space-y-3">
+              {selectedDayMeetings.map((meeting) => (
+                <div
+                  key={meeting.id}
+                  onClick={() => onMeetingClick && onMeetingClick(meeting)}
+                  className="bg-orange-100 border-l-4 border-orange-500 p-3 rounded-md text-sm cursor-pointer hover:bg-orange-200 transition-colors"
+                >
+                  <div className="font-medium text-gray-900 text-base mb-1">{meeting.title}</div>
+                  <div className="flex items-center text-xs text-gray-600 mb-1">
+                    <ClockIcon className="h-3.5 w-3.5 mr-1" />
+                    {formatTimeDisplay(meeting.startTime)} - {formatTimeDisplay(meeting.endTime)}
+                  </div>
+                  {meeting.menteeFullName && (
+                    <div className="flex items-center text-xs text-gray-600">
+                      <UserIcon className="h-3.5 w-3.5 mr-1" />
+                      {meeting.menteeFullName}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center">
+              <CalendarIcon className="h-12 w-12 text-gray-300 mb-2" />
+              <p className="text-gray-400">No meetings scheduled</p>
+              <p className="text-xs text-gray-400 mt-1">for {format(selectedDay, 'EEEE')}</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

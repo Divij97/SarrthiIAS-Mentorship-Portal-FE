@@ -1,6 +1,6 @@
 'use client';
 
-import { FormData } from '../MultiStepForm';
+import { FormData } from '@/types/multistep-form';
 import { useState } from 'react';
 
 interface CurrentPreparationProps {
@@ -12,8 +12,9 @@ interface CurrentPreparationProps {
 }
 
 const timeSlots = {
-  MORNING: '9AM_6PM',
-  EVENING: '6PM_9PM'
+  MORNING: 'MORNING',
+  EVENING: 'EVENING',
+  ALL: 'ALL'
 } as const;
 
 const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as const;
@@ -32,17 +33,17 @@ const CurrentPreparation = ({
   const [useUniformSlot, setUseUniformSlot] = useState(true);
   const [uniformSlot, setUniformSlot] = useState('');
 
-  const handleUniformSlotChange = (slot: string) => {
-    setUniformSlot(slot);
-    const newSlots = weekDays.map(() => slot);
-    handleArrayChange('preferredSlotsOnWeekdays')(newSlots);
-  };
+  // const handleUniformSlotChange = (slot: string) => {
+  //   setUniformSlot(slot);
+  //   const newSlots = weekDays.map(() => slot);
+  //   handleArrayChange('preferredSlotsOnWeekdays')(newSlots);
+  // };
 
-  const handleDayWiseSlotChange = (day: number, slot: string) => {
-    const newSlots = [...formData.preferredSlotsOnWeekdays];
-    newSlots[day] = slot;
-    handleArrayChange('preferredSlotsOnWeekdays')(newSlots);
-  };
+  // const handleDayWiseSlotChange = (day: number, slot: string) => {
+  //   const newSlots = [...formData.preferredSlotsOnWeekdays];
+  //   newSlots[day] = slot;
+  //   handleArrayChange('preferredSlotsOnWeekdays')(newSlots);
+  // };
 
   const handleSlotTypeChange = (isUniform: boolean) => {
     setUseUniformSlot(isUniform);
@@ -62,7 +63,7 @@ const CurrentPreparation = ({
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Current Preparation Details</h2>
       <div className="bg-white rounded-lg shadow p-6">
         <div className="space-y-6">
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-700">
               Preferred Time Slots
             </label>
@@ -152,7 +153,7 @@ const CurrentPreparation = ({
                 ))}
               </div>
             )}
-          </div>
+          </div> */}
 
           <div>
             <label htmlFor="answerWritingLevel" className="block text-sm font-medium text-gray-700">

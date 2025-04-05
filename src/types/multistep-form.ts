@@ -29,7 +29,6 @@ export interface FormData {
   vajiramCourse?: string;
   
   // Current Preparation Details
-  preferredSlotsOnWeekdays: PreferredSlot[] | string[];
   answerWritingLevel: AnswerWritingLevel | string;
   weakSubjects: string[];
   strongSubjects: string[];

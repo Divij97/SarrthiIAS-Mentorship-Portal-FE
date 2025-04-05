@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { MenteeEnrolledCourseInfo, MenteeResponse } from '@/types/mentee';
-import { Course } from '@/types/course';
 
 interface MenteeStore {
   mentee: any | null; // Replace 'any' with proper Mentee type when available
@@ -13,6 +12,7 @@ interface MenteeStore {
   clearMentee: () => void;
   clearMenteeOTP: () => void;
   reset: () => void;
+  getGroupIdByCourseName: (courseId: string) => string | null;
 }
 
 export const useMenteeStore = create<MenteeStore>()(
@@ -36,7 +36,11 @@ export const useMenteeStore = create<MenteeStore>()(
           });
         }
       },
-      reset: () => set({ mentee: null, menteeResponse: null })
+      reset: () => set({ mentee: null, menteeResponse: null }),
+      getGroupIdByCourseName: (courseId: string) => {
+        const course = get().courses.find(c => c.course.id === courseId);
+        return course?.assignedGroup || null;
+      }
     }),
     {
       name: 'mentee-storage', // unique name for localStorage key

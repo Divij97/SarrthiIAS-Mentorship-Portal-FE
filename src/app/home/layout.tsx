@@ -5,8 +5,9 @@ import { useMenteeStore } from '@/stores/mentee/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { useLoginStore } from '@/stores/auth/store';
 import { UserType } from '@/types/auth';
-import Sidebar from '@/components/Home/Sidebar';
+import ResponsiveNavbar from '@/components/Home/ResponsiveNavbar';
 import { useRefreshMenteeData } from '@/hooks/useRefreshMenteeData';
+import { useMentorRefresh } from '@/hooks/useMentorRefresh';
 
 export default function HomeLayout({
   children,
@@ -21,6 +22,9 @@ export default function HomeLayout({
   
   // Set up periodic refresh of mentee data
   useRefreshMenteeData();
+  
+  // Set up periodic refresh of mentor data
+  useMentorRefresh();
 
   // Get the current user based on userType
   const currentUser = userType === UserType.MENTOR ? mentor : mentee;
@@ -42,15 +46,15 @@ export default function HomeLayout({
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar 
-        activeSection={getActiveSection()} 
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <ResponsiveNavbar
+        activeSection={getActiveSection()}
         onSectionChange={handleSectionChange}
         onLogout={handleLogout}
         userType={userType}
       />
-      <main className="flex-1 p-8 md:ml-64">
-        <div className="max-w-7xl mx-auto">
+      <main className="flex-1 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {children}
         </div>
       </main>

@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { loginAdmin, assignGroupsToCourse } from '@/services/admin';
+import { assignGroupsToCourse } from '@/services/admin';
 import { AdminData } from '@/types/admin';
-import { Course } from '@/types/course';
-import { MentorshipGroup, GroupMentorshipSession } from '@/types/session';
+import { MentorshipGroup } from '@/types/session';
+import { useAdminAuthStore } from '../auth/admin-auth-store';
 
 // Map to store mentorship groups by course name
 interface CourseGroupsMap {
@@ -11,49 +11,31 @@ interface CourseGroupsMap {
 }
 
 interface AdminState {
-  username: string;
-  isAuthenticated: boolean;
-  authHeader: string | null;
   error: string;
   loading: boolean;
   adminData: AdminData | null;
   courseGroups: CourseGroupsMap;
-  setUsername: (username: string) => void;
-  setAuthHeader: (header: string) => void;
   setError: (error: string) => void;
-  handleLogin: (username: string, password: string) => Promise<{ success: boolean; adminData: AdminData | null }>;
-  logout: () => void;
-  addCourse: (course: Course) => void;
+  setAdminData: (data: AdminData | null) => void;
   // New functions for mentorship groups
   setCourseGroups: (courseName: string, groups: MentorshipGroup[]) => void;
   getCourseGroups: (courseName: string) => MentorshipGroup[] | null;
   clearCourseGroups: (courseName: string) => void;
-  getGroupSessions: (courseName: string, groupId: string) => GroupMentorshipSession[] | null;
   getMentorUserNameByPhone: (phone: string) => string | null;
-  assignGroupsToCourse: (courseName: string, authHeader: string, course: any) => Promise<any>;
+  getGroupFriendlyName: (courseName: string, groupId: string) => string | null;
+  assignGroupsToCourse: (courseId: string, course: any) => Promise<any>;
 }
 
 export const useAdminStore = create<AdminState>()(
   persist(
     (set, get) => ({
-      username: '',
-      isAuthenticated: false,
-      authHeader: null,
       error: '',
       loading: false,
       adminData: null,
       courseGroups: {},
 
-      setUsername: (username) => set({ username }),
-      setAuthHeader: (header) => set({ authHeader: header, isAuthenticated: true }),
       setError: (error) => set({ error }),
-
-      addCourse: (course) => set((state) => ({
-        adminData: state.adminData ? {
-          ...state.adminData,
-          courses: [...(state.adminData.courses || []), course]
-        } : null
-      })),
+      setAdminData: (data) => set({ adminData: data }),
 
       // New functions for mentorship groups
       setCourseGroups: (courseName, groups) => set((state) => ({
@@ -78,69 +60,30 @@ export const useAdminStore = create<AdminState>()(
         delete newCourseGroups[courseName];
         return { courseGroups: newCourseGroups };
       }),
-      getGroupSessions: (courseName: string, groupId: string) => {
+
+      getGroupFriendlyName: (courseName: string, groupId: string) => {
         const state = get();
         const courseGroups = state.courseGroups[courseName] || [];
-        const group = courseGroups.find(g => g.id === groupId);
-        return group?.sessions || [];
+        const group = courseGroups.find(g => g.groupId === groupId);
+        return group?.groupFriendlyName || null;
       },
 
-      handleLogin: async (username: string, password: string) => {
-        set({ error: '', loading: true });
-        
+      assignGroupsToCourse: async (courseId: string, course: any) => {
         try {
-          const authHeader = `Basic ${btoa(`${username}:${password}`)}`;
-          const response = await loginAdmin(username, password);
-          
-          if (response.success && response.data) {
-            set({ 
-              authHeader,
-              isAuthenticated: true,
-              username: response.data.username,
-              error: '',
-              adminData: response.data
-            });
-            return { success: true, adminData: response.data };
+          const authHeader = useAdminAuthStore.getState().getAuthHeader();
+          if (!authHeader) {
+            throw new Error('No authentication header available');
           }
-          
-          set({ error: response.message || 'Invalid credentials' });
-          return { success: false, adminData: null };
-        } catch (error) {
-          set({ error: 'An error occurred during login' });
-          console.error('Admin login error:', error);
-          return { success: false, adminData: null };
-        } finally {
-          set({ loading: false });
-        }
-      },
-
-      assignGroupsToCourse: async (courseName: string, authHeader: string, course: any) => {
-        try {
-          return await assignGroupsToCourse(courseName, authHeader, course);
+          return await assignGroupsToCourse(courseId, authHeader, course);
         } catch (error) {
           console.error('Error in store assignGroupsToCourse:', error);
           throw error;
         }
-      },
-
-      logout: () => {
-        set({
-          username: '',
-          isAuthenticated: false,
-          authHeader: null,
-          error: '',
-          loading: false,
-          adminData: null,
-          courseGroups: {}
-        });
       }
     }),
     {
       name: 'admin-storage',
       partialize: (state) => ({ 
-        isAuthenticated: state.isAuthenticated,
-        authHeader: state.authHeader,
-        username: state.username,
         adminData: state.adminData,
         courseGroups: state.courseGroups
       })

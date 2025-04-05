@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { config } from '@/config/env';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMenteeStore } from '@/stores/mentee/store';
@@ -11,12 +13,12 @@ import { MenteeResponse } from '@/types/mentee';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
   const { 
     phone, 
     password, 
     error, 
     loading, 
-    isAuthenticated,
     userType,
     setPhone, 
     setPassword, 
@@ -24,13 +26,17 @@ export default function LoginPage() {
     setUserType,
     handleLogin 
   } = useLoginStore();
-  const { setMentee, mentee, setMenteeResponse } = useMenteeStore();
+  const { setMenteeResponse, setCourses } = useMenteeStore();
   const { setMentor, setMentorResponse } = useMentorStore();
+  const { getAuthHeader, setAuthHeader } = useLoginStore();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      const passwordToUse = isFirstTimeLogin ? config.auth.defaultPassword : password.trim();
+      setPassword(passwordToUse);
+      
       const response = await handleLogin();
       if (response) {
         if (userType === UserType.MENTOR) {
@@ -48,7 +54,7 @@ export default function LoginPage() {
           
           // setMentee(menteeResponse.mentee);
           setMenteeResponse(menteeResponse);
-          
+          setCourses(menteeResponse.enrolledCourses);
           if (menteeResponse.otp) {
             console.log("Redirecting to reset password");
             router.push(`/reset-password?phone=${phone}`);
@@ -67,9 +73,16 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Sarrthi IAS Mentorship Portal
-          </h1>
+          <div className="mx-auto w-auto flex justify-center mb-6">
+            <Image
+              src="/sarrthiias.webp"
+              alt="Sarrthi IAS Logo"
+              width={200}
+              height={60}
+              className="object-contain"
+              priority
+            />
+          </div>
           <h2 className="text-2xl font-semibold text-gray-900">
             Sign in to your account
           </h2>
@@ -103,26 +116,27 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="Enter your password"
-                  disabled={loading}
-                />
+            {!isFirstTimeLogin && (
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Enter your password"
+                    disabled={loading}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
               <div className="flex items-center">
                 <input
                   id="is-mentor"
@@ -136,12 +150,42 @@ export default function LoginPage() {
                   I am a mentor
                 </label>
               </div>
+
+              <div className="flex items-center">
+                <input
+                  id="first-time-login"
+                  name="first-time-login"
+                  type="checkbox"
+                  checked={isFirstTimeLogin}
+                  onChange={(e) => {
+                    setIsFirstTimeLogin(e.target.checked);
+                    if (e.target.checked) {
+                      setPassword('');
+                    }
+                  }}
+                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                />
+                <label htmlFor="first-time-login" className="ml-2 block text-sm text-gray-900">
+                  Logging in for the first time
+                </label>
+              </div>
             </div>
 
             <div className="text-sm text-right">
-              <a href="#" className="font-medium text-orange-600 hover:text-orange-500">
+              <button 
+                type="button"
+                onClick={() => {
+                  if (!phone || phone.length !== 10) {
+                    setError('Please enter a valid phone number first');
+                    return;
+                  }
+                  router.push(`/update-password?phone=${phone}`);
+                }}
+                className="font-medium text-orange-600 hover:text-orange-500"
+                disabled={isFirstTimeLogin}
+              >
                 Forgot your password?
-              </a>
+              </button>
             </div>
 
             {error && (

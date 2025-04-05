@@ -1,4 +1,6 @@
 import { Course } from "./course";
+import { DayOfWeek, StrippedDownMentor } from "./mentor";
+import { SessionType, SuggestedInterval } from "./session";
 
 export enum Region {
   NORTH = 'NORTH',
@@ -85,9 +87,8 @@ export enum OptionalSubject {
 
 export enum PreferredSlot {
   MORNING = 'MORNING',
-  AFTERNOON = 'AFTERNOON',
   EVENING = 'EVENING',
-  // Add other slots as needed
+  ALL = 'ALL'
 }
 
 export enum AnswerWritingLevel {
@@ -139,6 +140,9 @@ export interface MenteeResponse {
   otp: string | null;
   username: string | null;
   enrolledCourses: MenteeEnrolledCourseInfo[];
+  assignedMentorUsername: string | null;
+  assignedMentor: StrippedDownMentor | null;
+  mentorshipSessions?: {[date: string]: MenteeSession[]};
 }
 
 export interface MenteeWithAuth {
@@ -151,5 +155,28 @@ export interface MenteeWithAuth {
 
 export interface MenteeEnrolledCourseInfo {
   course: Course;
-  assignedGroup: string | null;
+  assignedGroup: string;
+}
+
+export interface UnscheduledMenteeDetails {
+  strippedDownMentees: StrippedDownMentee[];
+  suggestedIntervalByDayOfWeek: { [key in DayOfWeek]?: SuggestedInterval[] };
+}
+
+export interface StrippedDownMentee {
+  name: string;
+  phone: string;
+  email: string;
+  preferredSlot: PreferredSlot;
+  creationTs?: number;
+}
+
+export interface MenteeSession {
+  id: string;
+  startTime: string;
+  endTime: string;
+  menteeFullName: string;
+  menteeUserName: string;
+  zoomLink: string;
+  sessionType: SessionType;
 }

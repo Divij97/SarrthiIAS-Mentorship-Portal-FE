@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
+import { Jost } from 'next/font/google';
 import "./globals.css";
 import RootLayoutClient from "@/components/RootLayoutClient";
+
+// Initialize the Jost font with subsets and variable features
+const jost = Jost({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-jost',
+});
 
 export const metadata: Metadata = {
   title: "Sarrthi IAS Mentorship Program",
@@ -13,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={jost.variable}>
+      <body className={jost.className}>
         <RootLayoutClient>{children}</RootLayoutClient>
       </body>
     </html>

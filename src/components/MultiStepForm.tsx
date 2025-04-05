@@ -15,6 +15,7 @@ import { validateStep, FormErrors } from '@/utils/mentee-signup-form-validator';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { useLoginStore } from '@/stores/auth/store';
 import { TempMenteeData } from '@/types/auth';
+import { SHA256 } from 'crypto-js';
 
 const MultiStepForm = () => {
   const [step, setStep] = useState(1);
@@ -32,7 +33,6 @@ const MultiStepForm = () => {
     mainExamAttempts: 0,
     isSaarthiStudent: false,
     menteeUpscExperience: '',
-    preferredSlotsOnWeekdays: [],
     answerWritingLevel: '',
     weakSubjects: [],
     strongSubjects: [],
@@ -174,7 +174,7 @@ const MultiStepForm = () => {
         numberOfAttemptsInUpsc: formData.preliminaryAttempts,
         numberOfMainsAttempts: formData.mainExamAttempts,
         menteeUpscExperience: formData.menteeUpscExperience as MenteeUpscExperience,
-        preferredSlots: formData.preferredSlotsOnWeekdays as PreferredSlot[],
+        preferredSlots: [PreferredSlot.ALL],
         answerWritingLevel: formData.answerWritingLevel as AnswerWritingLevel,
         weakSubjects: formData.weakSubjects,
         strongSubjects: formData.strongSubjects,
@@ -186,7 +186,7 @@ const MultiStepForm = () => {
       const menteeWithAuth: MenteeWithAuth = {
         mentee: menteeObj,
         username: tempMenteeData.phone,
-        passwordSHA: tempMenteeData.password,
+        passwordSHA: SHA256(tempMenteeData.password).toString(),
         isTempPassword: false,
         enrolledCourses: []
       };

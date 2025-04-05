@@ -10,10 +10,11 @@ import { getMenteeByPhone } from '@/services/mentee';
  * @param refreshInterval - Time in milliseconds between refreshes (default: 5 minutes)
  * @returns A function to manually trigger a refresh
  */
-export const useRefreshMenteeData = (refreshInterval = 5 * 60 * 1000) => {
-  const { phone, authHeader, userType, isAuthenticated } = useLoginStore();
+export const useRefreshMenteeData = (refreshInterval = 10 * 60 * 1000) => {
+  const { phone, getAuthHeader, userType, isAuthenticated } = useLoginStore();
   const { setMentee, setMenteeResponse, setCourses } = useMenteeStore();
 
+  const authHeader = getAuthHeader();
   const refreshMenteeData = async () => {
     if (!isAuthenticated || !authHeader || !phone || userType !== 'MENTEE') {
       return;

@@ -4,22 +4,24 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Course } from '@/types/course';
 import CourseListItem from './CourseListItem';
-import { useAdminStore } from '@/stores/admin/store';
-import { useLoginStore } from '@/stores/auth/store';
 import { fetchCourses } from '@/services/courses';
+import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 
 export default function ActiveCourses() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { adminData, addCourse } = useAdminStore();
-  const { authHeader } = useLoginStore();
+  const { addCourse } = useAdminAuthStore();
+  const adminData = useAdminAuthStore.getState().adminData;
+  const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
   const [courses, setCourses] = useState<Course[]>([]);
 
   useEffect(() => {
     // If we already have courses in the admin store, use those
     if (adminData?.courses?.length) {
-      setCourses(adminData.courses);
+      // Filter out retired courses
+      const activeCourses = adminData.courses.filter(course => !course.retired && !course.isOneOnOneMentorshipCourse);
+      setCourses(activeCourses);
       setLoading(false);
       return;
     }
@@ -39,8 +41,10 @@ export default function ActiveCourses() {
         const coursesData = await fetchCourses('admin', authHeader);
         console.log('Fetched courses data:', coursesData);
         
-        // Ensure coursesData is an array
-        const validCoursesData = Array.isArray(coursesData) ? coursesData : [];
+        // Ensure coursesData is an array and filter out retired courses
+        const validCoursesData = Array.isArray(coursesData) 
+          ? coursesData.filter(course => !course.retired)
+          : [];
         
         // Update local state
         setCourses(validCoursesData);
@@ -64,7 +68,7 @@ export default function ActiveCourses() {
   }, [authHeader, adminData, addCourse]);
 
   const handleCourseSelect = (course: Course) => {
-    router.push(`/admin/dashboard/courses/${encodeURIComponent(course.name)}/details`);
+    router.push(`/admin/dashboard/courses/${encodeURIComponent(course.id)}/details`);
   };
 
   if (loading) {
@@ -95,7 +99,7 @@ export default function ActiveCourses() {
     <div className="space-y-6">
       {courses.map((course) => (
         <CourseListItem
-          key={course.name || Math.random().toString()}
+          key={course.id || Math.random().toString()}
           course={course}
           onSelect={() => handleCourseSelect(course)}
         />

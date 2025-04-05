@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { UserType } from '@/types/auth';
 
 export default function ResetPasswordPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const phone = searchParams.get('phone');
   const { error, setError, userType, authHeader, setHasVerifiedOTP } = useLoginStore();
-  const { mentor, mentorResponse, clearMentorOTP } = useMentorStore();
+  const { mentorResponse, clearMentorOTP } = useMentorStore();
   const { menteeResponse, clearMenteeOTP } = useMenteeStore();
   
   const [otp, setOtp] = useState('');
@@ -214,8 +214,18 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="mx-auto w-auto flex justify-center mb-6">
+          <Image
+            src="/sarrthiias.webp"
+            alt="Sarrthi IAS Logo"
+            width={180}
+            height={50}
+            className="object-contain"
+            priority
+          />
+        </div>
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          {userType === UserType.MENTOR ? 'Reset your password' : 'Create your account'}
+          Create your account
         </h2>
         {userType === UserType.MENTEE && (
           <p className="mt-2 text-center text-sm text-gray-600">
@@ -276,7 +286,7 @@ export default function ResetPasswordPage() {
 
             <div>
               <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
-                {userType === UserType.MENTOR ? 'New Password' : 'Create Password'}
+                {'Create Password'}
               </label>
               <div className="mt-1">
                 <input
@@ -287,7 +297,7 @@ export default function ResetPasswordPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900"
-                  placeholder={userType === UserType.MENTOR ? 'Enter new password' : 'Create a strong password'}
+                  placeholder={'Create a strong password'}
                 />
               </div>
             </div>
@@ -316,7 +326,7 @@ export default function ResetPasswordPage() {
                 disabled={loading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300"
               >
-                {loading ? 'Processing...' : userType === UserType.MENTOR ? 'Reset Password' : 'Continue to Sign Up'}
+                {loading ? 'Processing...' : 'Continue to Sign Up'}
               </button>
             </div>
           </form>

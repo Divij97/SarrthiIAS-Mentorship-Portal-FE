@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLoginStore } from '@/stores/auth/store';
 import { useMenteeStore } from '@/stores/mentee/store';
-import { fetchCourses } from '@/services/courses';
 import CourseTile from '@/components/Courses/CourseTile';
 
 export default function Courses() {
@@ -44,9 +42,10 @@ export default function Courses() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses.map(course => (
           <CourseTile 
-            key={course.course.name} 
+            key={course.course.id} 
             enrolledCourseInfo={course} 
             onClick={handleCourseClick}
+            assignedGroup={course.assignedGroup}
           />
         ))}
       </div>

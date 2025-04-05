@@ -1,8 +1,9 @@
-import { MentorResponse, MentorWithAuth } from '@/types/mentor';
+import { MentorGroupsBulkResponse, MentorResponse, MentorWithAuth } from '@/types/mentor';
 import { config } from '@/config/env';
 import { useLoginStore } from '@/stores/auth/store';
-import { MentorSessionsResponse } from '@/types/session';
-import { sampleMentorSessions } from '@/data/sampleMentorSessions';
+import { DeleteRecurringSessionRequest, SessionUpdate } from '@/types/session';
+import { RecurringMentorshipSchedule, MentorshipSession } from '@/types/session';
+import { StrippedDownMentee } from '@/types/mentee';
 
 export const getMentorByPhone = async (phone: string, authHeader: string): Promise<MentorResponse> => {
   try {
@@ -12,7 +13,7 @@ export const getMentorByPhone = async (phone: string, authHeader: string): Promi
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
     
-    const response = await fetch(`${apiUrl}/v1/mentors`, {
+    const response = await fetch(`${apiUrl}/v1/mentors/me`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
@@ -98,7 +99,7 @@ export const signupMentor = async (mentorData: MentorWithAuth) => {
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
 
-    const authHeader = useLoginStore.getState().authHeader || '';
+    const authHeader = useLoginStore.getState().getAuthHeader() || '';
     
     const response = await fetch(`${apiUrl}/v1/mentors`, {
       method: 'PUT',
@@ -138,38 +139,122 @@ export const signupMentor = async (mentorData: MentorWithAuth) => {
   }
 };
 
-export const getMentorSessions = async (phone: string, authHeader: string): Promise<MentorSessionsResponse> => {
+export const createRecurringSchedule = async (
+  schedule: Omit<RecurringMentorshipSchedule, 'sessionId'>,
+  authHeader: string
+): Promise<MentorshipSession> => {
+  const response = await fetch(`${config.api.url}/v1/mentors/me/sessions/schedule`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    },
+    body: JSON.stringify(schedule)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to create schedule: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
+  }
+
+  const responseText = await response.text();
+  if (!responseText) {
+    throw new Error('Empty response received from server');
+  }
+
   try {
-    // Return sample data for now
-    return sampleMentorSessions;
-
-    // Commented out actual API call for now
-    /*
-    let apiUrl = config.api.url;
-    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
-    
-    const response = await fetch(`${apiUrl}/v1/sessions/mentor/${phone}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': authHeader,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'same-origin'
-    });
-
-    if (!response.ok) {
-      console.error('API Error:', {
-        status: response.status,
-        statusText: response.statusText
-      });
-      throw new Error(`Failed to fetch mentor sessions: ${response.statusText}`);
-    }
-
-    return await response.json();
-    */
+    const data = JSON.parse(responseText);
+    return data;
   } catch (error) {
-    console.error('Error fetching mentor sessions:', error);
-    throw error;
+    throw new Error(`Invalid JSON response: ${responseText}`);
   }
 }; 
+
+export const addNewAdHocSession = async (sessionUpdate: SessionUpdate, authHeader: string, mentorUsername: string) => {
+  const response = await fetch(`${config.api.url}/v1/mentors/${mentorUsername}/sessions`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    },
+    body: JSON.stringify(sessionUpdate)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to add new session: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
+  }
+
+  return { success: true };
+};
+
+export const cancelSession = async (sessionUpdate: SessionUpdate, authHeader: string) => {
+  const response = await fetch(`${config.api.url}/v1/mentors/me/sessions`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    },
+    body: JSON.stringify(sessionUpdate)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to cancel session: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
+  }
+
+  return { success: true };
+};
+
+export const cancelRecurringSession = async (deleteRecurringSessionRequest: DeleteRecurringSessionRequest, authHeader: string) => {
+  const response = await fetch(`${config.api.url}/v1/mentors/me/sessions/schedule`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    },
+    body: JSON.stringify(deleteRecurringSessionRequest)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to cancel recurring session: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
+  }
+
+  return { success: true };
+};
+
+export const getGroupSessionForMentor = async (mentorUsername: string, courses: string[], authHeader: string): Promise<MentorGroupsBulkResponse> => {
+  const response = await fetch(`${config.api.url}/v1/courses/groups?mentorUsername=${mentorUsername}&courses=${courses.join(',')}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    }
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to get group session for mentor: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
+  }
+
+  return await response.json();
+};
+
+export const sendEmailToMentor = async (mentee: StrippedDownMentee, authHeader: string) => {
+  const response = await fetch(`${config.api.url}/v1/mentors/me/emails`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    },
+    body: JSON.stringify(mentee)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to send email to mentor: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
+  }
+
+  return { success: true };
+};

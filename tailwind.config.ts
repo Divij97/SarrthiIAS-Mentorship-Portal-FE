@@ -7,7 +7,11 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        jost: ['var(--font-jost)', 'sans-serif'],
+      },
+    },
   },
   plugins: [require("@tailwindcss/forms")],
 };

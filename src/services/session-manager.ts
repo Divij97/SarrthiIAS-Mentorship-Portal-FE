@@ -1,9 +1,10 @@
-import { MenteeIdentifier, MentorWithAuth, MentorResponse } from '@/types/mentor';
-import { MentorshipSession, SessionUpdate, UpdateType, SessionType, DateFormatDDMMYYYY, createDateDDMMYYYY } from '@/types/session';
+import { MenteeIdentifier, MentorWithAuth, MentorResponse, DayOfWeek } from '@/types/mentor';
+import { MentorshipSession, SessionUpdate, UpdateType, SessionType, DateFormatDDMMYYYY, createDateDDMMYYYY, RecurrenceType, DeleteRecurringSessionRequest } from '@/types/session';
 import { config } from '@/config/env';
 import { useMentorStore } from '@/stores/mentor/store';
-import { useLoginStore } from '@/stores/auth/store';
-import CryptoJS from 'crypto-js';
+import { addNewAdHocSession, cancelRecurringSession, cancelSession } from './mentors';
+import { BulkMentorshipGroupCreateOrUpdateRequest } from '@/types/admin';
+import { createOrUpdateGroupSession } from './admin';
 
 export class SessionManager {
   private authHeader: string;
@@ -58,7 +59,8 @@ export class SessionManager {
             startTime,
             endTime,
             mentorUsername: 'mentor',
-            mentorName: 'Mentor Name'
+            mentorName: 'Mentor Name',
+            sessionType: SessionType.AD_HOC
           };
           resolve(updatedSession);
         }, 1000);
@@ -72,21 +74,42 @@ export class SessionManager {
   /**
    * Cancel an existing session
    */
-  async cancelSession(sessionId: string): Promise<{ success: boolean }> {
+  async cancelSession(sessionId: string, date: string, type: SessionType): Promise<{ success: boolean }> {
     try {
       // In a real implementation, this would call the actual API
       // For now, we'll use the mock implementation
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({ success: true });
-        }, 1000);
-      });
+      const sessionUpdate: SessionUpdate = {
+        id: sessionId,
+        date: date as DateFormatDDMMYYYY,
+        sessionType: type,
+        updateType: UpdateType.DELETE,
+        isPermanentUpdate: true,
+        menteeUsername: '',
+        menteeFullName: ''
+      }
+      
+      return await cancelSession(sessionUpdate, this.authHeader);
     } catch (error) {
       console.error('Error canceling session:', error);
       throw new Error('Failed to cancel session');
     }
   }
 
+  async cancelRecurringSession(sessionId: string, dayOfWeek: string): Promise<{ success: boolean }> {
+    try {
+      // In a real implementation, this would call the actual API
+      // For now, we'll use the mock implementation
+      const deleteRecurringSessionRequest: DeleteRecurringSessionRequest = {
+        sessionId: sessionId,
+        dayOfWeek: dayOfWeek as DayOfWeek
+      }
+  
+      return await cancelRecurringSession(deleteRecurringSessionRequest, this.authHeader);
+    } catch (error) {
+      console.error('Error canceling recurring session:', error);
+      throw new Error('Failed to cancel recurring session');
+    }
+  }
   /**
    * Add a new session
    */
@@ -100,7 +123,7 @@ export class SessionManager {
   ): Promise<void> {
     try {
       // Generate a unique session ID
-      const sessionId = `session-${Date.now()}`;
+      const sessionId = '';
       
       // Convert the date format from YYYY-MM-DD to DD/MM/YYYY
       const [year, month, day] = date.split('-');
@@ -125,32 +148,21 @@ export class SessionManager {
         sessionType: SessionType.AD_HOC
       };
 
-      // Get the mentor data from the store
-      const mentorResponse = useMentorStore.getState().mentorResponse;
-      
-      if (!mentorResponse || !mentorResponse.mentor) {
-        throw new Error('Mentor information not available');
-      }
+      await addNewAdHocSession(sessionUpdate, this.authHeader, mentorUsername);
 
-      // Call the API to update the mentor with the new session
-      const response = await fetch(`${config.api.url}/v1/mentors/${mentorResponse.username}/sessions`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': this.authHeader
-        },
-        body: JSON.stringify(sessionUpdate)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add new session');
-      }
-
-      // Success - no return value needed as backend handles everything
       console.log('Session added successfully, ID:', sessionId);
     } catch (error) {
       console.error('Error adding new session:', error);
       throw new Error('Failed to add new session');
+    }
+  }
+
+  async createOrUpdateGroupSession(courseId: string, groupId: string, request: BulkMentorshipGroupCreateOrUpdateRequest): Promise<void> {
+    try {
+      await createOrUpdateGroupSession(courseId, groupId, request, this.authHeader);
+    } catch (error) {
+      console.error('Error creating or updating group session:', error);
+      throw new Error('Failed to create or update group session');
     }
   }
 } 

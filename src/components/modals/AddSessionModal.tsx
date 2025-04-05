@@ -2,6 +2,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { XMarkIcon, ClockIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 import { MenteeIdentifier } from '@/types/mentor';
+import { useMentorStore } from '@/stores/mentor/store';
 
 interface AddSessionFormData {
   date: string;
@@ -13,8 +14,6 @@ interface AddSessionFormData {
 interface AddSessionModalProps {
   isOpen: boolean;
   formData: AddSessionFormData;
-  menteeList: MenteeIdentifier[];
-  loadingMentees: boolean;
   isLoading: boolean;
   error: string | null;
   onClose: () => void;
@@ -25,14 +24,15 @@ interface AddSessionModalProps {
 export default function AddSessionModal({
   isOpen,
   formData,
-  menteeList,
-  loadingMentees,
   isLoading,
   error,
   onClose,
   onFormChange,
   onSubmit
 }: AddSessionModalProps) {
+  const { mentorResponse } = useMentorStore();
+  const assignedMentees = mentorResponse?.assignedMentees || [];
+  
   console.log('AddSessionModal render with isOpen:', isOpen);
   console.log('AddSessionModal formData:', formData);
   
@@ -87,31 +87,27 @@ export default function AddSessionModal({
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <UserIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </div>
-                        {loadingMentees ? (
-                          <div className="py-2 pl-10 text-sm text-gray-500">Loading mentees...</div>
-                        ) : (
-                          <select
-                            id="mentee-username"
-                            className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 pr-10 py-2 sm:text-sm border-gray-300 rounded-md"
-                            value={formData.menteeUsername}
-                            onChange={(e) => {
-                              const menteeIdentifier = menteeList.find((mentee) => mentee.phone === e.target.value);
-                              onFormChange('menteeUsername', menteeIdentifier?.phone || '');
-                              onFormChange('menteeFullName', menteeIdentifier?.name || '');
-                            }}
-                            required
-                            disabled={isLoading}
-                          >
-                            <option value="">Select a mentee</option>
-                            {menteeList.map((mentee) => (
-                              <option key={mentee.phone} value={mentee.phone}>
-                                {mentee.phone} ({mentee.name})
-                              </option>
-                            ))}
-                          </select>
-                        )}
+                        <select
+                          id="mentee-username"
+                          className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 pr-10 py-2 sm:text-sm border-gray-300 rounded-md"
+                          value={formData.menteeUsername}
+                          onChange={(e) => {
+                            const mentee = assignedMentees.find((mentee) => mentee.phone === e.target.value);
+                            onFormChange('menteeUsername', mentee?.phone || '');
+                            onFormChange('menteeFullName', mentee?.name || '');
+                          }}
+                          required
+                          disabled={isLoading}
+                        >
+                          <option value="">Select a mentee</option>
+                          {assignedMentees.map((mentee) => (
+                            <option key={mentee.phone} value={mentee.phone}>
+                              {mentee.name} ({mentee.phone})
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                      {menteeList.length === 0 && !loadingMentees && (
+                      {assignedMentees.length === 0 && (
                         <p className="mt-1 text-xs text-gray-500">
                           No mentees available. Please check your mentor assignments.
                         </p>

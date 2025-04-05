@@ -1,8 +1,9 @@
 import { DayOfWeek } from "@/types/mentor";
 
 const timeSlots = {
-    MORNING: '9AM_6PM',
-    EVENING: '6PM_9PM'
+    MORNING: 'MORNING',
+    EVENING: 'EVENING',
+    ALL: 'Available All Day'
   } as const;
 
   const answerWritingLevels = {
@@ -15,8 +16,9 @@ const timeSlots = {
 const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as const;
 
 const formatTimeSlot = (slot: string): string => {
+    if (slot === timeSlots.ALL) return 'Available All Day';
     return slot === timeSlots.MORNING ? '9:00 AM - 6:00 PM' : '6:00 PM - 9:00 PM';
-  };
+};
 
 // Helper function to format time from 24h format (HH:MM:SS) to 12h format
 const formatTimeDisplay = (timeString: string): string => {
@@ -95,7 +97,10 @@ const getNextDayOfWeek = (dayOfWeek: DayOfWeek): Date => {
 };
 
 // Convert from DD/MM/YYYY to YYYY-MM-DD
-const convertDateFormat = (date: string): string => {
+const convertDateFormat = (date: string | null): string => {
+    if (!date) {
+        return '';
+    }
     const dateParts = date.split('/');
     if (dateParts.length === 3) {
         const day = dateParts[0];

@@ -1,13 +1,27 @@
+
+import { Course } from "./course";
+import { ZoomMeetingInfo } from "./meeting";
+import { StrippedDownMentee } from "./mentee";
+import { DayOfWeek } from "./mentor";
+
 export interface MentorshipSession {
   id: string;
   menteeFullName: string;
   menteeUsername: string;
-  isZoomLinkGenerated: boolean;
+  // Can be derived from zoomLink !== null
+  isZoomLinkGenerated?: boolean;
   zoomLink: string | null;
   startTime: string;
   endTime: string;
   mentorUsername: string;
   mentorName: string;
+  recurrence?: Recurrence;
+  sessionType: SessionType;
+}
+
+export interface Recurrence {
+  recurrenceType: string;
+  weekNumber: number;
 }
 
 export interface MentorSessionsByDate {
@@ -24,14 +38,16 @@ export interface MentorSessionsResponse {
  * Maps to the backend GroupMentorshipSession class
  */
 export interface GroupMentorshipSession {
-  groupFriendlyName: string;
   sessionId: string;
   dateOfSession: number; // Day of month (1-31)
+  firstSessionDate: string;
   startTime: string; // 24-hour format HH:mm
   endTime: string; // 24-hour format HH:mm
   mentorUserName: string;
   mentorName: string;
-  zoomLink: string;
+  mentorEmail: string;
+  zoomLink?: string;
+  zoomMeetingInfo?: ZoomMeetingInfo;
 }
 
 /**
@@ -39,8 +55,12 @@ export interface GroupMentorshipSession {
  * Maps to the backend MentorshipGroup class
  */
 export interface MentorshipGroup {
-  id: string;
+  groupId: string;
+  groupFriendlyName: string;
   sessions: GroupMentorshipSession[];
+  deleted: boolean;
+  mentees: StrippedDownMentee[];
+  course: string;
 }
 
 /**
@@ -62,6 +82,11 @@ export interface Session {
   meetingLink?: string;
   recordingLink?: string;
   notes?: string;
+}
+
+export interface SuggestedInterval {
+  start: string;
+  end: string;
 }
 
 /**
@@ -97,6 +122,24 @@ export interface SessionUpdate {
   sessionType?: SessionType;
 }
 
+export interface RecurringMentorshipSchedule {
+
+  sessionId: string;
+  menteeUsername: string;
+  menteeFullName: string;
+  startTime: string;
+  endTime: string;
+  recurrenceType: RecurrenceType;
+  firstSessionDate: string;
+  dayOfWeek: string;
+}
+
+
+export enum RecurrenceType {
+  WEEKLY = 'WEEKLY',
+  BI_WEEKLY = 'BI_WEEKLY',
+}
+
 // Create a string literal type for the date format dd/mm/yyyy
 export type DateFormatDDMMYYYY = string & { __brand: 'DateFormatDDMMYYYY' };
 
@@ -126,4 +169,9 @@ export function createDateDDMMYYYY(date: string): DateFormatDDMMYYYY | null {
   }
   
   return date as DateFormatDDMMYYYY;
-} 
+}
+
+export interface DeleteRecurringSessionRequest {
+  sessionId: string;
+  dayOfWeek: DayOfWeek;
+}

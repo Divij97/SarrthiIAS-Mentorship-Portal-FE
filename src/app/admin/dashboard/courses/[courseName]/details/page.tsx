@@ -2,50 +2,15 @@
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { MentorshipGroup, MentorshipGroupsResponse } from '@/types/session';
-import { UserGroupIcon, ArrowLeftIcon, UserIcon, CheckCircleIcon, XCircleIcon, CalendarIcon, UserPlusIcon, UsersIcon } from '@heroicons/react/24/outline';
-import { fetchCourseGroups, createMentorshipGroup } from '@/services/courses';
-import { useAdminStore } from '@/stores/admin/store';
+import { MentorshipGroup } from '@/types/session';
+import { UserGroupIcon, ArrowLeftIcon, XCircleIcon, UserPlusIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { fetchCourseGroups, createMentorshipGroup, mergeGroups, fetchCourse } from '@/services/courses';
 import GroupForm, { GroupFormData } from '@/components/Admin/GroupForm';
-import { Course } from '@/types/course';
-
-interface GroupCardProps {
-  group: MentorshipGroup;
-  onClick: () => void;
-}
-
-const GroupCard = ({ group, onClick }: GroupCardProps) => (
-  <div 
-    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
-    onClick={onClick}
-  >
-    <div className="p-6">
-      <div className="flex justify-between items-start">
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <UserGroupIcon className="h-5 w-5 text-gray-400" />
-            <h3 className="text-lg font-medium text-gray-900">Group {group.id}</h3>
-          </div>
-          <div className="flex items-center space-x-2 text-gray-500">
-            <CalendarIcon className="h-4 w-4" />
-            <span className="text-sm">{group.sessions.length} sessions</span>
-          </div>
-        </div>
-        {group.sessions.length > 0 ? (
-          <div className="flex items-center text-green-600">
-            <CheckCircleIcon className="h-5 w-5" />
-            <span className="ml-1 text-sm">Sessions Scheduled</span>
-          </div>
-        ) : (
-          <div className="flex items-center text-red-600">
-            <XCircleIcon className="h-5 w-5" />
-            <span className="ml-1 text-sm">No Sessions</span>
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-);
+import GroupCard from '@/components/Admin/courses/GroupCard';
+import { Course, CreateGroupRequest } from '@/types/course';
+import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
+import { RegisterMenteesToCourse } from '@/components/app/admin/mentees/register-multiple-mentees-modal';
+import MergeGroupModal from '@/components/Admin/courses/MergeGroupModal';
 
 export default function CourseDetailsPage({
   params,
@@ -54,7 +19,7 @@ export default function CourseDetailsPage({
 }) {
   const router = useRouter();
   const { courseName } = use(params);
-  const decodedCourseName = decodeURIComponent(courseName);
+  const courseId = decodeURIComponent(courseName);
   const [groups, setGroups] = useState<MentorshipGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,10 +28,17 @@ export default function CourseDetailsPage({
   const [createGroupError, setCreateGroupError] = useState<string | null>(null);
   const [assigningGroups, setAssigningGroups] = useState(false);
   const [groupsAssigned, setGroupsAssigned] = useState(false);
-  const { authHeader, setCourseGroups, getCourseGroups, adminData, assignGroupsToCourse } = useAdminStore();
+  const adminData = useAdminAuthStore.getState().adminData;
+  const { setCourseGroups, getCourseGroups, assignGroupsToCourse } = useAdminAuthStore();
+  const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [isMerging, setIsMerging] = useState(false);
+  const [course, setCourse] = useState<Course | null>(null);
+  const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
   
   // Find the current course to check its type
-  const currentCourse = adminData?.courses?.find(course => course.name === decodedCourseName);
+  const currentCourse = adminData?.courses?.find(course => course.id === courseId);
   const isOneOnOneCourse = currentCourse?.isOneOnOneMentorshipCourse || false;
 
   const fetchGroups = async () => {
@@ -85,13 +57,16 @@ export default function CourseDetailsPage({
     try {
       setLoading(true);
       setError(null);
+
+      const courseResponse = await fetchCourse(courseId, authHeader);
+      setCourse(courseResponse);
       
-      console.log('Fetching mentorship groups for:', decodedCourseName);
-      const response = await fetchCourseGroups(decodedCourseName, authHeader);
-      const mentorshipGroups = response.mentorshipGroups || [];
+      console.log('Fetching mentorship groups for:', courseId);
+      const response = await fetchCourseGroups(courseId, authHeader);
+      const mentorshipGroups: MentorshipGroup[] = response.mentorshipGroups || [];
       
       // Store the groups in the admin store
-      setCourseGroups(decodedCourseName, mentorshipGroups);
+      setCourseGroups(courseId, mentorshipGroups);
       
       // Update local state
       setGroups(mentorshipGroups);
@@ -105,15 +80,16 @@ export default function CourseDetailsPage({
 
   useEffect(() => {
     fetchGroups();
-  }, [decodedCourseName, authHeader, setCourseGroups, getCourseGroups, isOneOnOneCourse]);
+  }, [courseId, authHeader, setCourseGroups, getCourseGroups, isOneOnOneCourse]);
 
   const handleBackToCourses = () => {
     router.push('/admin/dashboard/courses/active');
   };
 
   const handleGroupClick = (groupId: string) => {
+    console.log('handleGroupClick called with groupId:', groupId);
     // Navigate to group details page
-    router.push(`/admin/dashboard/courses/${encodeURIComponent(decodedCourseName)}/groups/${groupId}`);
+    router.push(`/admin/dashboard/courses/${encodeURIComponent(courseId)}/groups/${groupId}`);
   };
 
   const handleCreateGroup = () => {
@@ -127,7 +103,7 @@ export default function CourseDetailsPage({
         throw new Error('Course information not available');
       }
       
-      const response = await assignGroupsToCourse(decodedCourseName, authHeader!, currentCourse);
+      const response = await assignGroupsToCourse(courseId, currentCourse);
       console.log("Response from assignGroupsToCourse: ", response);
       // Notify user about successful request
       setError(null); // Clear any previous errors
@@ -150,23 +126,15 @@ export default function CourseDetailsPage({
     try {
       setCreateGroupLoading(true);
       setCreateGroupError(null);
+
+      const createGroupRequest: CreateGroupRequest = {
+        groupFriendlyName: formData.groupId,
+        groupMentorshipSessions: [],
+        mentees: []
+      }
       
       // Call the API to create a new group
-      await createMentorshipGroup(decodedCourseName, formData.groupId, authHeader);
-      
-      // Create a new group object
-      const newGroup: MentorshipGroup = {
-        id: formData.groupId,
-        sessions: []
-      };
-      
-      // Update local state
-      const updatedGroups = [...groups, newGroup];
-      setGroups(updatedGroups);
-      
-      // Update the store
-      setCourseGroups(decodedCourseName, updatedGroups);
-      
+      await createMentorshipGroup(courseId, createGroupRequest, authHeader);      
       // Close the modal
       setIsCreateModalOpen(false);
       
@@ -176,6 +144,57 @@ export default function CourseDetailsPage({
       setCreateGroupError('Failed to create group. Please try again.');
     } finally {
       setCreateGroupLoading(false);
+    }
+  };
+
+  const handleGroupSelect = (groupId: string) => {
+    console.log('handleGroupSelect called with groupId:', groupId);
+    if (!isSelectionMode) return;
+    
+    setSelectedGroups(prev => {
+      if (prev.includes(groupId)) {
+        return prev.filter(id => id !== groupId);
+      }
+      return [...prev, groupId];
+    });
+  };
+
+  const handleMergeGroups = async (newGroupName: string) => {
+    if (selectedGroups.length < 2) {
+      alert('Please select at least two groups to merge');
+      return;
+    }
+
+    if (!authHeader) {
+      setCreateGroupError('Authentication required');
+      return;
+    }
+
+    setIsMerging(true);
+    try {
+      // Get the selected groups' data
+      const selectedGroupsData = groups.filter(group => selectedGroups.includes(group.groupId));
+      
+      // Combine all sessions from selected groups
+      const allSessions = selectedGroupsData.flatMap(group => group.sessions);
+      
+      // Call mergeGroups with all selected group IDs
+      await mergeGroups(selectedGroups, newGroupName, allSessions, courseName, authHeader);
+      
+      // Reset selection mode
+      setIsSelectionMode(false);
+      setSelectedGroups([]);
+      setIsMergeModalOpen(false);
+      
+      // Refresh the groups list
+      await fetchGroups();
+      
+      alert('Groups merged successfully!');
+    } catch (error) {
+      console.error('Error merging groups:', error);
+      alert('Failed to merge groups. Please try again.');
+    } finally {
+      setIsMerging(false);
     }
   };
 
@@ -199,15 +218,64 @@ export default function CourseDetailsPage({
   const renderGroupContent = () => {
     return (
       <>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center space-x-4">
+            {groups.length > 1 && (
+              <button
+                onClick={() => {
+                  setIsSelectionMode(!isSelectionMode);
+                  setSelectedGroups([]);
+                }}
+                className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                  isSelectionMode 
+                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' 
+                    : 'bg-orange-600 text-white hover:bg-orange-700'
+                }`}
+              >
+                {isSelectionMode ? 'Cancel Selection' : 'Select Groups'}
+              </button>
+            )}
+            {isSelectionMode && selectedGroups.length >= 2 && (
+              <button
+                onClick={() => setIsMergeModalOpen(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200"
+              >
+                Merge Selected Groups
+              </button>
+            )}
+          </div>
+          {isSelectionMode && (
+            <div className="text-sm text-gray-600">
+              {selectedGroups.length} groups selected
+            </div>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {groups.map((group) => (
             <GroupCard
-              key={group.id}
+              key={group.groupId}
               group={group}
-              onClick={() => handleGroupClick(group.id)}
+              onClick={() => {
+                if (isSelectionMode) {
+                  handleGroupSelect(group.groupId);
+                } else {
+                  handleGroupClick(group.groupId);
+                }
+              }}
+              isSelected={isSelectionMode && selectedGroups.includes(group.groupId)}
             />
           ))}
         </div>
+
+        <MergeGroupModal
+          isOpen={isMergeModalOpen}
+          onClose={() => setIsMergeModalOpen(false)}
+          onSubmit={handleMergeGroups}
+          selectedGroups={selectedGroups}
+          groups={groups}
+          isLoading={isMerging}
+        />
 
         {groups.length === 0 && (
           <div className="text-center py-12 bg-white rounded-lg shadow-sm">
@@ -233,7 +301,7 @@ export default function CourseDetailsPage({
             <ArrowLeftIcon className="h-4 w-4 mr-1" />
             Back to Courses
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">{decodedCourseName}</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{course?.name}</h1>
           {isOneOnOneCourse && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-2">
               One-on-One Course
@@ -241,35 +309,40 @@ export default function CourseDetailsPage({
           )}
         </div>
         
-        {/* Only show Assign Groups button for group courses with no groups */}
-        {!loading && !error && !isOneOnOneCourse && groups.length === 0 && !groupsAssigned && (
-          <button
-            onClick={handleAssignGroups}
-            className={`flex items-center px-4 py-2 ${assigningGroups || groupsAssigned ? 'bg-gray-400' : 'bg-orange-600 hover:bg-orange-700'} text-white rounded-md transition-colors duration-200`}
-            disabled={assigningGroups || groupsAssigned}
-          >
-            <UserPlusIcon className="h-5 w-5 mr-2" />
-            {assigningGroups ? 'Assigning...' : 'Assign Groups'}
-          </button>
-        )}
-        
-        {/* Show a message when groups have been assigned but not yet loaded */}
-        {!loading && !error && !isOneOnOneCourse && groups.length === 0 && groupsAssigned && (
-          <div className="text-sm text-green-600 font-medium">
-            Assignment request received. Please refresh after a few minutes.
-          </div>
-        )}
-        
-        {/* Only show Create New Group button for group courses with existing groups */}
-        {!loading && !error && !isOneOnOneCourse && groups.length > 0 && (
-          <button
-            onClick={handleCreateGroup}
-            className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors duration-200"
-            disabled={createGroupLoading}
-          >
-            {createGroupLoading ? 'Creating...' : 'Create New Group'}
-          </button>
-        )}
+        <div className="flex items-center space-x-4">
+          {/* Only show Assign Groups button for group courses with no groups */}
+          {!loading && !error && !isOneOnOneCourse && groups.length === 0 && !groupsAssigned && (
+            <button
+              onClick={handleAssignGroups}
+              className={`flex items-center px-4 py-2 ${assigningGroups || groupsAssigned ? 'bg-gray-400' : 'bg-orange-600 hover:bg-orange-700'} text-white rounded-md transition-colors duration-200`}
+              disabled={assigningGroups || groupsAssigned}
+            >
+              <UserPlusIcon className="h-5 w-5 mr-2" />
+              {assigningGroups ? 'Assigning...' : 'Assign Groups'}
+            </button>
+          )}
+          
+          {/* Show a message when groups have been assigned but not yet loaded */}
+          {!loading && !error && !isOneOnOneCourse && groups.length === 0 && groupsAssigned && (
+            <div className="text-sm text-green-600 font-medium">
+              Assignment request received. Please refresh after a few minutes.
+            </div>
+          )}
+          
+          {/* Only show Create New Group button for group courses with existing groups */}
+          {!loading && !error && !isOneOnOneCourse && (
+            <button
+              onClick={handleCreateGroup}
+              className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors duration-200"
+              disabled={createGroupLoading}
+            >
+              {createGroupLoading ? 'Creating...' : 'Create New Group'}
+            </button>
+          )}
+
+          {/* Add Register Multiple Mentees button */}
+          <RegisterMenteesToCourse courseId={courseId} groups={groups} />
+        </div>
       </div>
 
       {createGroupError && (
@@ -298,7 +371,7 @@ export default function CourseDetailsPage({
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
           onSubmit={handleGroupFormSubmit}
-          courseName={decodedCourseName}
+          courseName={currentCourse?.name || courseId}
         />
       )}
     </div>

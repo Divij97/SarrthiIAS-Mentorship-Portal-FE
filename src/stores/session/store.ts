@@ -2,8 +2,10 @@ import { create } from 'zustand';
 import { MentorshipSession } from '@/types/session';
 import { Meeting } from '@/types/meeting';
 import { SessionManager } from '@/services/session-manager';
-import { MenteeIdentifier, DayOfWeek, MentorResponse } from '@/types/mentor';
+import { DayOfWeek, MentorResponse } from '@/types/mentor';
 import { convertDateFormat, extractTimeFromISOString } from '@/utils/date-time-utils';
+import { useMentorStore } from '@/stores/mentor/store';
+import { SessionType, RecurrenceType } from '@/types/session';
 
 // Define modal state types
 interface ModalState {
@@ -27,7 +29,9 @@ interface AddModalState extends ModalState {
   };
 }
 
-interface CancelModalState extends ModalState {}
+interface CancelModalState extends ModalState {
+  date: string;
+}
 
 interface ModalsState {
   edit: EditModalState;
@@ -44,8 +48,6 @@ interface SessionState {
   error: string | null;
   sessionsByDate: Record<string, MentorshipSession[]>;
   calendarMeetings: Meeting[];
-  menteeList: MenteeIdentifier[];
-  loadingMentees: boolean;
   sessionManager: SessionManager | null;
   
   // UI state - organized into modals
@@ -69,7 +71,7 @@ interface SessionState {
   // Modal actions
   openEditModal: (session: MentorshipSession) => void;
   closeEditModal: () => void;
-  openCancelModal: (session: MentorshipSession) => void;
+  openCancelModal: (session: MentorshipSession, date: string) => void;
   closeCancelModal: () => void;
   openAddModal: () => void;
   closeAddModal: () => void;
@@ -80,12 +82,12 @@ interface SessionState {
   
   // Data handling
   loadSessions: (mentorResponse: MentorResponse) => void;
-  loadMenteeList: () => Promise<void>;
   
   // Session operations
   updateSession: (mentorResponse: MentorResponse, setMentorResponse: (response: MentorResponse) => void) => Promise<void>;
-  cancelSession: (mentorResponse: MentorResponse, setMentorResponse: (response: MentorResponse) => void) => Promise<void>;
-  addNewSession: (mentorResponse: MentorResponse, setMentorResponse: (response: MentorResponse) => void) => Promise<void>;
+  cancelSession: (mentorResponse: MentorResponse, setMentorResponse: (response: MentorResponse) => void, date: string, onSuccess?: () => Promise<void>) => Promise<void>;
+  addNewSession: (mentorResponse: MentorResponse, setMentorResponse: (response: MentorResponse) => void, onSuccess?: () => Promise<void>) => Promise<void>;
+  cancelRecurringSession: (mentorResponse: MentorResponse, setMentorResponse: (response: MentorResponse) => void, sessionId: string, dayOfWeek: DayOfWeek, onSuccess?: () => Promise<void>) => Promise<void>;
 }
 
 export const useSessionStore = create<SessionState>((set, get) => ({
@@ -94,8 +96,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   error: null,
   sessionsByDate: {},
   calendarMeetings: [],
-  menteeList: [],
-  loadingMentees: false,
   sessionManager: null,
   
   // Initial modal states
@@ -118,7 +118,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       }
     },
     cancel: {
-      isOpen: false
+      isOpen: false,
+      date: ''
     },
     selectedSession: null,
     actionLoading: false,
@@ -184,12 +185,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }
   })),
   
-  openCancelModal: (session) => {
+  openCancelModal: (session, date) => {
     set((state) => ({
       modals: {
         ...state.modals,
         cancel: {
-          isOpen: true
+          isOpen: true,
+          date: date
         },
         selectedSession: session,
         actionError: null
@@ -201,9 +203,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     modals: {
       ...state.modals,
       cancel: {
-        ...state.modals.cancel,
-        isOpen: false
-      }
+        isOpen: false,
+        date: ''
+      },
+      selectedSession: null
     }
   })),
   
@@ -228,12 +231,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         actionError: null
       }
     }));
-    
-    // Fetch mentee list if not already loaded
-    const state = get();
-    if (state.menteeList.length === 0 && state.sessionManager) {
-      state.loadMenteeList();
-    }
   },
   
   closeAddModal: () => set((state) => ({
@@ -283,8 +280,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const meetings: Meeting[] = [];
     
     Object.entries(mentorSessions).forEach(([date, sessions]) => {
-      // Convert date format
-      const formattedDate = convertDateFormat(date);
+      // Convert date format for calendar view (yyyy-mm-dd)
+      const calendarDate = convertDateFormat(date);
       
       sessions.forEach(session => {
         // Extract time from ISO string
@@ -294,11 +291,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         meetings.push({
           id: session.id,
           title: `Session with ${session.menteeFullName || session.menteeUsername || 'Mentee'}`,
-          date: formattedDate,
+          date: calendarDate, // Use converted date for calendar view
           startTime: startTime,
           endTime: endTime,
           menteeUsername: session.menteeUsername,
           zoomLink: session.zoomLink,
+          originalDate: date, // Store original date format for cancel modal
+          sessionType: session.sessionType // Include session type
         });
       });
     });
@@ -308,28 +307,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       calendarMeetings: meetings,
       loading: false
     });
-  },
-  
-  loadMenteeList: async () => {
-    const { sessionManager } = get();
-    if (!sessionManager) return;
-    
-    set({ loadingMentees: true });
-    
-    try {
-      const mentees = await sessionManager.fetchMenteeList();
-      set({ menteeList: mentees, loadingMentees: false });
-      console.log('Mentee list loaded:', mentees);
-    } catch (error) {
-      console.error('Failed to load mentee list:', error);
-      set((state) => ({ 
-        modals: {
-          ...state.modals,
-          actionError: 'Failed to load mentee list. Please try again.'
-        },
-        loadingMentees: false
-      }));
-    }
   },
   
   // Session operations
@@ -441,10 +418,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }
   },
   
-  cancelSession: async (mentorResponse, setMentorResponse) => {
-    const { selectedSession, sessionManager } = get();
+  cancelSession: async (mentorResponse, setMentorResponse, date: string, onSuccess?: () => Promise<void>) => {
+    const { sessionManager } = get();
+    const { selectedSession, cancel } = get().modals;
     
-    if (!selectedSession || !sessionManager) return;
+    if (!selectedSession || !sessionManager || !cancel.date) return;
     
     set((state) => ({
       modals: {
@@ -455,8 +433,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }));
     
     try {
-      // Call API to cancel session
-      const result = await sessionManager.cancelSession(selectedSession.id);
+      // Call API to cancel session with date
+      const result = await sessionManager.cancelSession(selectedSession.id, cancel.date, selectedSession.sessionType);
       
       if (result.success) {
         // Remove session from local state
@@ -511,6 +489,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             actionLoading: false
           }
         }));
+
+        // Call the success callback to refresh mentor data
+        if (onSuccess) {
+          await onSuccess();
+        }
       } else {
         throw new Error('Failed to cancel session');
       }
@@ -525,8 +508,67 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       }));
     }
   },
+
+  cancelRecurringSession: async (mentorResponse, setMentorResponse, sessionId: string, dayOfWeek: DayOfWeek, onSuccess?: () => Promise<void>) => {
+    const { sessionManager } = get();
+    
+    if (!sessionManager) return;
+    
+    set((state) => ({
+      modals: {
+        ...state.modals,
+        actionLoading: true,
+        actionError: null
+      }
+    }));
+    
+    try {
+      // Call API to cancel recurring session
+      const result = await sessionManager.cancelRecurringSession(sessionId, dayOfWeek);
+      
+      if (result.success) {
+        // Remove session from local state
+        if (mentorResponse?.sessionsByDayOfWeek) {
+          // Create a safe copy of the mentor response
+          const updatedMentorResponse = { ...mentorResponse } as MentorResponse;
+          
+          // Remove from sessionsByDayOfWeek for the specific day
+          if (updatedMentorResponse.sessionsByDayOfWeek[dayOfWeek]) {
+            updatedMentorResponse.sessionsByDayOfWeek[dayOfWeek] = updatedMentorResponse.sessionsByDayOfWeek[dayOfWeek].filter(
+              s => s.id !== sessionId && s.sessionType === SessionType.SCHEDULED
+            );
+          }
+          
+          setMentorResponse(updatedMentorResponse);
+        }
+        
+        set((state) => ({
+          modals: {
+            ...state.modals,
+            actionLoading: false
+          }
+        }));
+
+        // Call the success callback to refresh mentor data
+        if (onSuccess) {
+          await onSuccess();
+        }
+      } else {
+        throw new Error('Failed to cancel recurring session');
+      }
+    } catch (error) {
+      console.error('Failed to cancel recurring session:', error);
+      set((state) => ({
+        modals: {
+          ...state.modals,
+          actionError: 'Failed to cancel recurring session. Please try again.',
+          actionLoading: false
+        }
+      }));
+    }
+  },
   
-  addNewSession: async (mentorResponse, setMentorResponse) => {
+  addNewSession: async (mentorResponse, setMentorResponse, onSuccess) => {
     const { sessionManager } = get();
     const { formData } = get().modals.add;
     
@@ -593,10 +635,17 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           actionLoading: false
         }
       }));
-      
-      // Force a page refresh to get updated data from the backend
-      if (typeof window !== 'undefined') {
-        window.location.reload();
+
+      // Call the success callback to refresh mentor data
+      if (onSuccess) {
+        await onSuccess();
+      }
+
+      // Get the updated mentor response from the store
+      const updatedMentorResponse = useMentorStore.getState().mentorResponse;
+      if (updatedMentorResponse) {
+        setMentorResponse(updatedMentorResponse);
+        get().loadSessions(updatedMentorResponse);
       }
     } catch (error) {
       console.error('Failed to add session:', error);

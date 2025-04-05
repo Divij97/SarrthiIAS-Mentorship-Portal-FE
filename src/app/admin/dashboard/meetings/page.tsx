@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
-import { useLoginStore } from '@/stores/auth/store';
 import { config } from '@/config/env';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import CalendarView from '@/components/Calendar/CalendarView';
 import { Meeting } from '@/types/meeting';
-import { useAdminStore } from '@/stores/admin/store';
+import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 
 interface MeetingFormData {
   title: string;
@@ -22,7 +21,7 @@ interface MeetingFormData {
 }
 
 export default function MeetingsPage() {
-  const { authHeader } = useAdminStore();
+  const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

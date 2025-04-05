@@ -9,6 +9,7 @@ const getEnvVar = (key: string): string => {
 export const config = {
   auth: {
     salt: process.env.NEXT_PUBLIC_AUTH_SALT,
+    defaultPassword: "sarrthiiasmentorshipplatform",
   },
   api: {
     url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',

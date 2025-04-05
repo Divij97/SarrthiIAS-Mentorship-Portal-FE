@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/Admin/Sidebar';
-import { useAdminStore } from '@/stores/admin/store';
+import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 
 export default function DashboardLayout({
   children,
@@ -10,7 +10,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { logout } = useAdminStore();
+  const { logout } = useAdminAuthStore();
 
   const handleLogout = () => {
     logout();
@@ -20,8 +20,8 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminSidebar onLogout={handleLogout} />
-      <div className="md:pl-64">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div className="md:pt-16">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           {children}
         </div>
       </div>

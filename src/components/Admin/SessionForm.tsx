@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useAdminStore } from '@/stores/admin/store';
+import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 
 interface SessionFormProps {
   isOpen: boolean;
@@ -30,7 +30,7 @@ export default function SessionForm({ isOpen, onClose, onSubmit }: SessionFormPr
   });
   
   // Always call hooks at the top level, before any conditional returns
-  const mentors = useAdminStore((state) => state.adminData?.mentors);
+  const mentors = useAdminAuthStore((state) => state.adminData?.mentors);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

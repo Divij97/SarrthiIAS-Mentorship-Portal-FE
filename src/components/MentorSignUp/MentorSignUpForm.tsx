@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { DayOfWeek, Mentor, MentorWithAuth } from '@/types/mentor';
@@ -13,6 +13,7 @@ import { Gender, OptionalSubject, Region } from '@/types/mentee';
 import { TempMentorData } from '@/types/auth';
 import { signupMentor } from '@/services/mentors';
 import { useMentorStore } from '@/stores/mentor/store';
+import { SHA256 } from 'crypto-js';
 
 export default function MentorSignUpForm() {
   const [step, setStep] = useState(1);
@@ -35,9 +36,28 @@ export default function MentorSignUpForm() {
     offDaysOfWeek: [],
   });
 
+  
+
   const router = useRouter();
   const { setAuthHeader } = useLoginStore();
-  const { setMentor } = useMentorStore();
+  const { setMentor, mentorResponse } = useMentorStore();
+
+
+  useEffect(() => {
+    if (mentorResponse?.mentor) {
+      const mentor = mentorResponse.mentor;
+      
+      // Only set initial values if form fields are empty (to avoid overriding user input)
+      if (!formData.name && mentor.name) {
+        setFormData(prev => ({
+          ...prev,
+          name: mentor.name || '',
+          email: mentor.email || '',
+          phone: mentorResponse.username || '',
+        }));
+      }
+    }
+  }, [mentorResponse]);
 
   // Region options
   const regionOptions = [
@@ -200,15 +220,20 @@ export default function MentorSignUpForm() {
           numberOfMainsAttempts: formData.numberOfMainsAttempts,
           offDaysOfWeek: formData.offDaysOfWeek as DayOfWeek[],
         };
+
+        console.log(mentorObj);
+        console.log("tempMentorData: ", tempMentorData);
   
         const mentorWithAuth: MentorWithAuth = {
           mentor: mentorObj,
           username: tempMentorData.phone,
-          passwordSHA: tempMentorData.password,
+          passwordSHA: SHA256(tempMentorData.password).toString(),
           isTempPassword: false,
           updates: {},
           sessionsByDayOfWeek: {}
         };
+
+        console.log("mentorWithAuth: ", mentorWithAuth);
   
         // The response might be { success: true } if no JSON is returned
         const response = await signupMentor(mentorWithAuth);

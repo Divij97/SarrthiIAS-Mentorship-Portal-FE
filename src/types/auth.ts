@@ -15,3 +15,7 @@ export interface TempMentorData {
   password: string;
   verifiedOtp: string;
 } 
+
+export interface ResetPasswordResponse {
+  otp: string;
+} 
