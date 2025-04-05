@@ -139,7 +139,7 @@ export interface MenteeResponse {
   mentee: Mentee | null;
   otp: string | null;
   username: string | null;
-  enrolledCourses: MenteeEnrolledCourseInfo[];
+  enrolledCourses: CourseGroupInfo[];
   assignedMentorUsername: string | null;
   assignedMentor: StrippedDownMentor | null;
   mentorshipSessions?: {[date: string]: MenteeSession[]};
@@ -150,10 +150,10 @@ export interface MenteeWithAuth {
   username: string;
   passwordSHA: string;
   isTempPassword: boolean;
-  enrolledCourses: MenteeEnrolledCourseInfo[];
+  enrolledCourses: CourseGroupInfo[];
 }
 
-export interface MenteeEnrolledCourseInfo {
+export interface CourseGroupInfo {
   course: Course;
   assignedGroup: string;
 }

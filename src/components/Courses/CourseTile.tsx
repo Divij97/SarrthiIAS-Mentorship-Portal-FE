@@ -1,8 +1,8 @@
-import { MenteeEnrolledCourseInfo } from '@/types/mentee';
+import { CourseGroupInfo } from '@/types/mentee';
 import { UserGroupIcon } from '@heroicons/react/24/outline';
 
 interface CourseTileProps {
-  enrolledCourseInfo: MenteeEnrolledCourseInfo;
+  enrolledCourseInfo: CourseGroupInfo;
   onClick: (courseId: string) => void;
   assignedGroup: string | null;
 }

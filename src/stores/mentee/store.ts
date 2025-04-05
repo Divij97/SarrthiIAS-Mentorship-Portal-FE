@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { MenteeEnrolledCourseInfo, MenteeResponse } from '@/types/mentee';
+import { CourseGroupInfo, MenteeResponse } from '@/types/mentee';
 
 interface MenteeStore {
   mentee: any | null; // Replace 'any' with proper Mentee type when available
   menteeResponse: MenteeResponse | null;
-  courses: MenteeEnrolledCourseInfo[];
+  courses: CourseGroupInfo[];
   setMentee: (mentee: any) => void;
   setMenteeResponse: (response: MenteeResponse) => void;
-  setCourses: (courses: MenteeEnrolledCourseInfo[]) => void;
+  setCourses: (courses: CourseGroupInfo[]) => void;
   clearMentee: () => void;
   clearMenteeOTP: () => void;
   reset: () => void;
