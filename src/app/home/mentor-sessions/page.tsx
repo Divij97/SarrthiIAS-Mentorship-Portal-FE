@@ -59,10 +59,10 @@ export default function MentorSessionsPage() {
   // Fetch group sessions when mentor is available
   useEffect(() => {
     const fetchGroupSessions = async () => {
-      if (!mentor?.phone || !authHeader || !mentorResponse?.courses) return;
+      if (!mentor?.phone || !authHeader || !mentorResponse?.groups) return;
       
       try {
-        const response = await getGroupSessionForMentor(mentor.phone, mentorResponse.courses, authHeader);
+        const response = await getGroupSessionForMentor(mentor.phone, mentorResponse.groups, authHeader);
         setGroupSessions(response.groupSessions);
       } catch (error) {
         console.error('Error fetching group sessions:', error);
@@ -70,7 +70,7 @@ export default function MentorSessionsPage() {
     };
 
     fetchGroupSessions();
-  }, [mentor?.phone, mentorResponse?.courses, authHeader]);
+  }, [mentor?.phone, mentorResponse?.groups, authHeader]);
 
   // Convert group sessions to meetings format
   const groupMeetings = useMemo(() => {

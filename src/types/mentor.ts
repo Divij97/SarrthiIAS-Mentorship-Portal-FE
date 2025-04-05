@@ -36,7 +36,7 @@ export interface MentorResponse {
   otp: string | null;
   sessionsByDayOfWeek: { [key in DayOfWeek]?: MentorshipSession[] };
   sessionsByDate: { [date: string]: MentorshipSession[] };
-  courses: string[];
+  groups: string[];
   unscheduledMenteeDetails: UnscheduledMenteeDetails;
   assignedMentees: StrippedDownMentee[];
 }

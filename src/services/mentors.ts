@@ -224,8 +224,8 @@ export const cancelRecurringSession = async (deleteRecurringSessionRequest: Dele
   return { success: true };
 };
 
-export const getGroupSessionForMentor = async (mentorUsername: string, courses: string[], authHeader: string): Promise<MentorGroupsBulkResponse> => {
-  const response = await fetch(`${config.api.url}/v1/courses/groups?mentorUsername=${mentorUsername}&courses=${courses.join(',')}`, {
+export const getGroupSessionForMentor = async (mentorUsername: string, groups: string[], authHeader: string): Promise<MentorGroupsBulkResponse> => {
+  const response = await fetch(`${config.api.url}/v1/courses/groups?mentorUsername=${mentorUsername}&groups=${groups.join(',')}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
