@@ -127,7 +127,7 @@ export default function GroupDetailsPage({
     } else {
       try {
         const request: BulkMentorshipGroupCreateOrUpdateRequest = {
-          sessions: [...groupSessions, newSession]
+          sessions: [newSession]
         };
         await sessionManager?.createOrUpdateGroupSession(decodedCourseId, decodedGroupId, request);
         setSessions(prev => [...prev, convertToSession(newSession)]);
