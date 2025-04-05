@@ -57,9 +57,10 @@ export interface GroupMentorshipSession {
 export interface MentorshipGroup {
   groupId: string;
   groupFriendlyName: string;
+  criterion: string;
   sessions: GroupMentorshipSession[];
   deleted: boolean;
-  mentees: StrippedDownMentee[];
+  menteeCount: number;
   course: string;
 }
 
