@@ -53,14 +53,14 @@ export default function GroupForm({ isOpen, onClose, onSubmit, courseName }: Gro
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Group ID
+              Group Name
             </label>
             <input
               type="text"
               value={formData.groupId}
               onChange={(e) => setFormData(prev => ({ ...prev, groupId: e.target.value }))}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-gray-900"
-              placeholder="Enter a unique identifier for this group"
+              placeholder="Set a descriptive name for this group"
               required
             />
             {error && <p className="mt-1 text-sm text-red-600">{error}</p>}

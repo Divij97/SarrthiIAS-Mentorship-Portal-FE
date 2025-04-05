@@ -1,4 +1,3 @@
-
 import { Course } from "./course";
 import { ZoomMeetingInfo } from "./meeting";
 import { StrippedDownMentee } from "./mentee";
@@ -39,8 +38,7 @@ export interface MentorSessionsResponse {
  */
 export interface GroupMentorshipSession {
   sessionId: string;
-  dateOfSession: number; // Day of month (1-31)
-  firstSessionDate: string;
+  date: string; // Date in format YYYY-MM-DD
   startTime: string; // 24-hour format HH:mm
   endTime: string; // 24-hour format HH:mm
   mentorUserName: string;
@@ -48,6 +46,8 @@ export interface GroupMentorshipSession {
   mentorEmail: string;
   zoomLink?: string;
   zoomMeetingInfo?: ZoomMeetingInfo;
+  name?: string;
+  description?: string;
 }
 
 /**

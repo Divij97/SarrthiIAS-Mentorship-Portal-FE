@@ -6,35 +6,23 @@ import { Session, GroupMentorshipSession } from '@/types/session';
  * @returns A Session object with the converted data
  */
 export const convertToSession = (groupSession: GroupMentorshipSession): Session => {
+  // Ensure date is in the format expected by the Session component (dd/mm/yyyy)
+  let sessionDate = groupSession.date;
+  
+  // If date is in YYYY-MM-DD format, convert to dd/mm/yyyy
+  if (sessionDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const [year, month, day] = sessionDate.split('-');
+    sessionDate = `${day}/${month}/${year}`;
+  }
+  
   return {
     id: groupSession.sessionId,
-    title: `Group Session ${groupSession.dateOfSession}`,
-    description: `Group mentorship session with ${groupSession.mentorName}`,
-    date: groupSession.firstSessionDate, // This would need to be calculated based on dateOfSession
+    title: groupSession.name || `Group Session`,
+    description: groupSession.description || `Group mentorship session with ${groupSession.mentorName}`,
+    date: sessionDate,
     startTime: groupSession.startTime,
     endTime: groupSession.endTime,
     status: 'scheduled',
     meetingLink: groupSession.zoomLink || undefined,
   };
-};
-
-export const getDateOfNextOccurrence = (dayOfMonth: number): string => {
-  const today = new Date();
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
-  
-  // Create date for the specified day of month
-  let nextDate = new Date(currentYear, currentMonth, dayOfMonth);
-  
-  // If the date has already passed this month, move to next month
-  if (nextDate < today) {
-    nextDate = new Date(currentYear, currentMonth + 1, dayOfMonth);
-  }
-  
-  // Format as dd/mm/yyyy
-  return nextDate.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
 }; 

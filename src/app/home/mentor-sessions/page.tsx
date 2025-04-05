@@ -78,7 +78,7 @@ export default function MentorSessionsPage() {
       group.sessions.map(session => ({
         id: `group-${session.sessionId}`,
         title: `Group Session`,
-        date: convertDateFormat(session.firstSessionDate),
+        date: convertDateFormat(session.date),
         startTime: session.startTime,
         endTime: session.endTime,
         isGroupSession: true as const,

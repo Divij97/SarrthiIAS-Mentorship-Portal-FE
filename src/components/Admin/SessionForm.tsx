@@ -13,17 +13,21 @@ interface SessionFormProps {
 export interface SessionFormData {
   name: string;
   description: string;
-  dayOfMonth: number;
+  date: string; // In dd/mm/yyyy format
   startTime: string;
   endTime: string;
   mentorId: string;
 }
 
 export default function SessionForm({ isOpen, onClose, onSubmit }: SessionFormProps) {
+  // Get the current date in dd/mm/yyyy format
+  const today = new Date();
+  const formattedToday = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+  
   const [formData, setFormData] = useState<SessionFormData>({
     name: 'Monthly Session',
     description: '',
-    dayOfMonth: 1,
+    date: formattedToday,
     startTime: '10:00',
     endTime: '11:00',
     mentorId: ''
@@ -36,6 +40,19 @@ export default function SessionForm({ isOpen, onClose, onSubmit }: SessionFormPr
     e.preventDefault();
     onSubmit(formData);
     onClose();
+  };
+  
+  // Convert dd/mm/yyyy to YYYY-MM-DD for date input
+  const getDateInputValue = (ddmmyyyy: string): string => {
+    const [day, month, year] = ddmmyyyy.split('/');
+    return `${year}-${month}-${day}`;
+  };
+  
+  // Convert YYYY-MM-DD to dd/mm/yyyy for our form data
+  const handleDateChange = (dateInput: string) => {
+    const [year, month, day] = dateInput.split('-');
+    const formattedDate = `${day}/${month}/${year}`;
+    setFormData(prev => ({ ...prev, date: formattedDate }));
   };
 
   if (!isOpen) return null;
@@ -82,20 +99,16 @@ export default function SessionForm({ isOpen, onClose, onSubmit }: SessionFormPr
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Day of Month
+              Session Date (DD/MM/YYYY)
             </label>
-            <div className="flex items-center">
-              <input
-                type="number"
-                min="1"
-                max="30"
-                value={formData.dayOfMonth}
-                onChange={(e) => setFormData(prev => ({ ...prev, dayOfMonth: parseInt(e.target.value) }))}
-                className="w-20 rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-gray-900"
-                required
-              />
-              <span className="ml-2 text-gray-700">th of every month</span>
-            </div>
+            <input
+              type="date"
+              value={getDateInputValue(formData.date)}
+              min={getDateInputValue(formattedToday)}
+              onChange={(e) => handleDateChange(e.target.value)}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-gray-900"
+              required
+            />
           </div>
 
           <div>

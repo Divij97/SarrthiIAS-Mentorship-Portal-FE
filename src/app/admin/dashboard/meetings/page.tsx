@@ -346,7 +346,7 @@ export default function MeetingsPage() {
                       
                       <div>
                         <label htmlFor="groupId" className="block text-sm font-medium text-gray-700">
-                          Group ID
+                          Group Name
                         </label>
                         <input
                           type="text"

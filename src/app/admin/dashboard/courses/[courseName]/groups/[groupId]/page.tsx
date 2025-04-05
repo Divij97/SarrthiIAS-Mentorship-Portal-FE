@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Session, GroupMentorshipSession, MentorshipGroup } from '@/types/session';
 import { ArrowLeftIcon, PlusIcon, VideoCameraIcon, DocumentIcon, ClockIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import SessionForm, { SessionFormData } from '@/components/Admin/SessionForm';
-import { convertToSession, getDateOfNextOccurrence } from '@/utils/session-utils';
+import { convertToSession } from '@/utils/session-utils';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { Course } from '@/types/course';
 import { fetchCourse } from '@/services/courses';
@@ -106,15 +106,20 @@ export default function GroupDetailsPage({
   };
 
   const handleSessionFormSubmit = async (formData: SessionFormData) => {
+    // Convert from dd/mm/yyyy to YYYY-MM-DD format for the backend
+    const [day, month, year] = formData.date.split('/');
+    const formattedDate = `${year}-${month}-${day}`;
+    
     const newSession: GroupMentorshipSession = {
       sessionId: '',
-      firstSessionDate: getDateOfNextOccurrence(formData.dayOfMonth),
       mentorName: getMentorUserNameByPhone(formData.mentorId) || formData.mentorId,
       mentorUserName: formData.mentorId,
       mentorEmail: getMentorEmailByPhone(formData.mentorId) || formData.mentorId,
-      dateOfSession: formData.dayOfMonth,
+      date: formattedDate,
       startTime: formData.startTime,
-      endTime: formData.endTime
+      endTime: formData.endTime,
+      name: formData.name,
+      description: formData.description
     };
 
     if (isEditMode) {

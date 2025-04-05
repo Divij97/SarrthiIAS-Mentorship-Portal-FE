@@ -90,9 +90,24 @@ export default function CourseDetailsPage({
     router.push('/home/courses');
   };
 
-  const formatDate = (dayOfMonth: number) => {
-    const today = new Date();
-    const date = new Date(today.getFullYear(), today.getMonth(), dayOfMonth);
+  const formatDate = (dateStr: string) => {
+    let date;
+    
+    // Check if it's in dd/mm/yyyy format
+    if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      const [day, month, year] = dateStr.split('/').map(Number);
+      date = new Date(year, month - 1, day);
+    } 
+    // Check if it's in YYYY-MM-DD format
+    else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      date = new Date(dateStr);
+    }
+    // Fallback to treating as ISO
+    else {
+      date = new Date(dateStr);
+    }
+    
+    // Format the date
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -196,7 +211,7 @@ export default function CourseDetailsPage({
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center text-sm text-gray-600">
                     <ClockIcon className="h-4 w-4 mr-2" />
-                    <span>{formatDate(session.dateOfSession)} • {session.startTime} - {session.endTime}</span>
+                    <span>{formatDate(session.date)} • {session.startTime} - {session.endTime}</span>
                   </div>
                   {session.zoomLink && (
                     <div className="flex items-center text-sm">

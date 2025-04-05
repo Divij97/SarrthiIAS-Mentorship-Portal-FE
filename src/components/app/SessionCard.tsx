@@ -20,11 +20,21 @@ export default function SessionCard({ session }: SessionCardProps) {
   };
 
   const formatDate = (dateStr: string) => {
-    // Split the date string into day, month, year
-    const [day, month, year] = dateStr.split('/');
+    let date;
     
-    // Create a new Date object (months are 0-based in JavaScript)
-    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    // Check if it's in dd/mm/yyyy format
+    if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      const [day, month, year] = dateStr.split('/').map(Number);
+      date = new Date(year, month - 1, day);
+    } 
+    // Check if it's in YYYY-MM-DD format
+    else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      date = new Date(dateStr);
+    }
+    // Fallback to treating as ISO
+    else {
+      date = new Date(dateStr);
+    }
     
     // Format the date
     return date.toLocaleDateString('en-US', {

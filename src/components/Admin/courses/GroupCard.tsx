@@ -36,10 +36,10 @@ export default function GroupCard({ group, onClick, isSelected, onSelect }: Grou
             </div>
             <div className="flex items-center space-x-2 text-gray-500">
               <CalendarIcon className="h-4 w-4" />
-              <span className="text-sm">{group.sessions.length} sessions</span>
+              <span className="text-sm">{group.sessions?.length || "No"} sessions</span>
             </div>
           </div>
-          {group.sessions.length > 0 ? (
+          {group.sessions?.length || 0 > 0 ? (
             <div className="flex items-center text-green-600">
               <CheckCircleIcon className="h-5 w-5" />
               <span className="ml-1 text-sm">Sessions Scheduled</span>
