@@ -121,3 +121,37 @@ export const bookOnDemandSession = async (mentor: StrippedDownMentor|null, authH
     throw error;
   }
 }
+
+export const requestSessionCancellation = async (
+  sessionId: string,
+  subject: string,
+  mentor: StrippedDownMentor,
+  authHeader: string
+): Promise<void> => {
+  try {
+    // Clean up the API URL to prevent double slashes
+    let apiUrl = config.api.url;
+    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+
+    const response = await fetch(`${apiUrl}/v1/mentees/me/request-cancellation`, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sessionId,
+        subject,
+        mentor
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to request session cancellation');
+    }
+  } catch (error) {
+    console.error('Error requesting session cancellation:', error);
+    throw error;
+  }
+};

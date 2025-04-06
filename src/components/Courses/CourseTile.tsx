@@ -42,7 +42,7 @@ export default function CourseTile({ enrolledCourseInfo, onClick, assignedGroup 
     >
       {assignedGroup && (
         <div className="absolute top-4 right-4">
-          {assignedGroup === "UNASSIGNED" && (
+          {!course.isOneOnOneMentorshipCourse && assignedGroup === "UNASSIGNED" && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
               <UserGroupIcon className="h-3 w-3 mr-1" />
               Unassigned

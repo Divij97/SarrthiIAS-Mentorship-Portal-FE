@@ -121,6 +121,7 @@ export interface SessionUpdate {
   startTime?: string;
   endTime?: string;
   sessionType?: SessionType;
+  mentorEmail?: string;
 }
 
 export interface RecurringMentorshipSchedule {

@@ -190,7 +190,10 @@ export default function CourseDetailsPage({
                 You have {Object.keys(mentorshipSessions).length} mentorship sessions scheduled
               </p>
             </div>
-            <MenteeSessions sessions={mentorshipSessions} />
+            <MenteeSessions 
+              sessions={mentorshipSessions} 
+              mentor={mentor}
+            />
           </div>
         )
       ) : groupSessions.length > 0 ? (

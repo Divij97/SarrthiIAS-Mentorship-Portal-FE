@@ -5,6 +5,7 @@ import { useMentorStore } from '@/stores/mentor/store';
 import { addNewAdHocSession, cancelRecurringSession, cancelSession } from './mentors';
 import { BulkMentorshipGroupCreateOrUpdateRequest, DeleteGroupSessionsRequest } from '@/types/admin';
 import { createOrUpdateGroupSession, deleteGroupSessions } from './admin';
+import { formatTimeToHHMM } from '@/utils/date-time-utils';
 
 export class SessionManager {
   private authHeader: string;
@@ -46,6 +47,9 @@ export class SessionManager {
     endTime: string
   ): Promise<MentorshipSession> {
     try {
+      const formattedStartTime = formatTimeToHHMM(startTime);
+      const formattedEndTime = formatTimeToHHMM(endTime);
+      
       // In a real implementation, this would call the actual API
       // For now, we'll use the mock implementation
       return new Promise((resolve) => {
@@ -56,8 +60,8 @@ export class SessionManager {
             menteeUsername: 'testuser',
             isZoomLinkGenerated: false,
             zoomLink: null,
-            startTime,
-            endTime,
+            startTime: formattedStartTime,
+            endTime: formattedEndTime,
             mentorUsername: 'mentor',
             mentorName: 'Mentor Name',
             sessionType: SessionType.AD_HOC
@@ -124,6 +128,7 @@ export class SessionManager {
     try {
       // Generate a unique session ID
       const sessionId = '';
+      const mentorEmail = useMentorStore.getState().mentor?.email;
       
       // Convert the date format from YYYY-MM-DD to DD/MM/YYYY
       const [year, month, day] = date.split('-');
@@ -135,17 +140,21 @@ export class SessionManager {
         throw new Error('Invalid date format. Expected format is DD/MM/YYYY');
       }
       
+      const formattedStartTime = formatTimeToHHMM(startTime);
+      const formattedEndTime = formatTimeToHHMM(endTime);
+      
       // Create session update object
       const sessionUpdate: SessionUpdate = {
         id: sessionId,
         date: validDate,
         menteeUsername: menteeUsername,
         menteeFullName: menteeFullName || 'New Mentee',
-        startTime: `${startTime}:00`,
-        endTime: `${endTime}:00`,
+        startTime: formattedStartTime,
+        endTime: formattedEndTime,
         updateType: UpdateType.ADD,
         isPermanentUpdate: false,
-        sessionType: SessionType.AD_HOC
+        sessionType: SessionType.AD_HOC,
+        mentorEmail: mentorEmail
       };
 
       await addNewAdHocSession(sessionUpdate, this.authHeader, mentorUsername);

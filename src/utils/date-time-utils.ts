@@ -119,6 +119,15 @@ const extractTimeFromISOString = (timeString: string): string => {
     return timeString;
 };
 
+// Ensure time is in the format HH:MM by removing seconds if present
+const formatTimeToHHMM = (time: string): string => {
+  if (time.includes(':')) {
+    // If time has seconds (HH:MM:SS), remove the seconds part
+    return time.split(':').slice(0, 2).join(':');
+  }
+  return time;
+};
+
 export {
     weekDays,
     timeSlots, 
@@ -130,7 +139,8 @@ export {
     formatDateKey, 
     getNextDayOfWeek,
     convertDateFormat,
-    extractTimeFromISOString
+    extractTimeFromISOString,
+    formatTimeToHHMM
 };
 
 

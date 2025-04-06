@@ -1,14 +1,30 @@
+import { useState } from "react";
 import { MenteeSession } from "@/types/mentee";
+import CancellationRequestModal from "./CancellationRequestModal";
+import { useLoginStore } from "@/stores/auth/store";
+import { StrippedDownMentor } from "@/types/mentor";
 
 interface MenteeSessionsProps {
   sessions: { [date: string]: MenteeSession[] };
+  mentor?: StrippedDownMentor | null;
 }
 
-export default function MenteeSessions({ sessions }: MenteeSessionsProps) {
+export default function MenteeSessions({ sessions, mentor }: MenteeSessionsProps) {
+  const [isCancellationModalOpen, setIsCancellationModalOpen] = useState(false);
+  const authHeader = useLoginStore((state) => state.getAuthHeader());
+  
   // Flatten all sessions from all dates into a single array with their dates
   const allSessions = Object.entries(sessions).flatMap(([date, sessions]) =>
     sessions.map(session => ({ ...session, date }))
   );
+
+  const handleOpenCancellationModal = () => {
+    setIsCancellationModalOpen(true);
+  };
+
+  const handleCloseCancellationModal = () => {
+    setIsCancellationModalOpen(false);
+  };
 
   if (!allSessions.length) {
     return (
@@ -20,7 +36,16 @@ export default function MenteeSessions({ sessions }: MenteeSessionsProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-gray-900">Mentorship Sessions</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-gray-900">Mentorship Sessions</h2>
+        <button
+          onClick={handleOpenCancellationModal}
+          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+        >
+          Request Cancellation
+        </button>
+      </div>
+      
       <div className="space-y-4">
         {allSessions.map((session) => {
           // Parse the date string (assuming format DD/MM/YYYY)
@@ -70,6 +95,14 @@ export default function MenteeSessions({ sessions }: MenteeSessionsProps) {
           );
         })}
       </div>
+      
+      <CancellationRequestModal
+        isOpen={isCancellationModalOpen}
+        onClose={handleCloseCancellationModal}
+        sessions={sessions}
+        authHeader={authHeader || ''}
+        mentor={mentor}
+      />
     </div>
   );
 }

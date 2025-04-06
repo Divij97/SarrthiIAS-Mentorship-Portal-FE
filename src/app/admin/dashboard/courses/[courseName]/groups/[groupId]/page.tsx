@@ -15,6 +15,7 @@ import { BulkMentorshipGroupCreateOrUpdateRequest, DeleteGroupSessionsRequest } 
 import { SessionManager } from '@/services/session-manager';
 import SessionCard from '@/components/app/SessionCard';
 import { toast } from 'react-hot-toast';
+import { formatTimeToHHMM } from '@/utils/date-time-utils';
 
 export default function GroupDetailsPage({
   params,
@@ -123,8 +124,8 @@ export default function GroupDetailsPage({
       mentorUserName: formData.mentorId,
       mentorEmail: getMentorEmailByPhone(formData.mentorId) || formData.mentorId,
       date: formattedDate,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
+      startTime: formatTimeToHHMM(formData.startTime),
+      endTime: formatTimeToHHMM(formData.endTime),
       name: formData.name,
       description: formData.description
     };
