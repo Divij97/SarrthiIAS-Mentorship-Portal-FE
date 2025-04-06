@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Session, GroupMentorshipSession, MentorshipGroup } from '@/types/session';
-import { ArrowLeftIcon, PlusIcon, VideoCameraIcon, DocumentIcon, ClockIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, PlusIcon, VideoCameraIcon, DocumentIcon, ClockIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import SessionForm, { SessionFormData } from '@/components/Admin/SessionForm';
 import { convertToSession } from '@/utils/session-utils';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
@@ -98,11 +98,17 @@ export default function GroupDetailsPage({
   };
 
   const handleAddSession = () => {
-    setIsCreateModalOpen(true);
+    // Adding sessions only allowed when not in edit mode
+    if (!isEditMode) {
+      setIsCreateModalOpen(true);
+    }
   };
 
   const handleDeleteSession = (sessionId: string) => {
-    setEditedSessions(prev => prev.filter(session => session.sessionId !== sessionId));
+    // Delete operation only works in edit mode
+    if (isEditMode) {
+      setEditedSessions(prev => prev.filter(session => session.sessionId !== sessionId));
+    }
   };
 
   const handleSessionFormSubmit = async (formData: SessionFormData) => {
@@ -122,20 +128,22 @@ export default function GroupDetailsPage({
       description: formData.description
     };
 
-    if (isEditMode) {
-      setEditedSessions(prev => [...prev, newSession]);
-    } else {
-      try {
-        const request: BulkMentorshipGroupCreateOrUpdateRequest = {
-          sessions: [newSession]
-        };
-        await sessionManager?.createOrUpdateGroupSession(decodedCourseId, decodedGroupId, request);
-        setSessions(prev => [...prev, convertToSession(newSession)]);
-      } catch (error) {
-        console.error('Error creating session:', error);
-        toast.error('Failed to create session');
-      }
+    try {
+      const request: BulkMentorshipGroupCreateOrUpdateRequest = {
+        sessions: [newSession]
+      };
+      await sessionManager?.createOrUpdateGroupSession(decodedCourseId, decodedGroupId, request);
+      
+      // Update local state with the new session
+      setGroupSessions(prev => [...prev, newSession]);
+      setSessions(prev => [...prev, convertToSession(newSession)]);
+      
+      toast.success('Session created successfully');
+    } catch (error) {
+      console.error('Error creating session:', error);
+      toast.error('Failed to create session');
     }
+    
     setIsCreateModalOpen(false);
   };
 
@@ -195,13 +203,6 @@ export default function GroupDetailsPage({
           {isEditMode ? (
             <>
               <button
-                onClick={handleAddSession}
-                className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-              >
-                <PlusIcon className="h-5 w-5 mr-2" />
-                Add Session
-              </button>
-              <button
                 onClick={handleCancelEdit}
                 className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
               >
@@ -219,23 +220,38 @@ export default function GroupDetailsPage({
           ) : (
             <>
               <button
-                onClick={handleEditModeToggle}
-                className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-              >
-                <PencilIcon className="h-5 w-5 mr-2" />
-                Edit Sessions
-              </button>
-              <button
                 onClick={handleAddSession}
                 className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
                 Add Session
               </button>
+              <button
+                onClick={handleEditModeToggle}
+                className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+              >
+                <PencilIcon className="h-5 w-5 mr-2" />
+                Edit Sessions
+              </button>
             </>
           )}
         </div>
       </div>
+
+      {isEditMode && (
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <InformationCircleIcon className="h-5 w-5 text-blue-400" aria-hidden="true" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-700">
+                You are in edit mode. Click the trash icon to delete sessions, then save your changes.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {(isEditMode ? editedSessions.map(convertToSession) : sessions).map((session) => (
@@ -268,6 +284,15 @@ export default function GroupDetailsPage({
               Add Session
             </button>
           </div>
+        </div>
+      )}
+      
+      {editedSessions.length === 0 && isEditMode && (
+        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+          <h3 className="mt-2 text-sm font-medium text-gray-900">No Sessions</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            You have deleted all sessions. Click "Save Changes" to confirm deletion or "Cancel" to revert.
+          </p>
         </div>
       )}
 
