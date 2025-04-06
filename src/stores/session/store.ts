@@ -276,37 +276,48 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   
   // Data handling
   loadSessions: (mentorResponse) => {
-    const mentorSessions = mentorResponse.sessionsByDate;
-    const meetings: Meeting[] = [];
+    // Set loading state to true at the beginning
+    set({ loading: true, error: null });
     
-    Object.entries(mentorSessions).forEach(([date, sessions]) => {
-      // Convert date format for calendar view (yyyy-mm-dd)
-      const calendarDate = convertDateFormat(date);
+    try {
+      const mentorSessions = mentorResponse.sessionsByDate;
+      const meetings: Meeting[] = [];
       
-      sessions.forEach(session => {
-        // Extract time from ISO string
-        const startTime = extractTimeFromISOString(session.startTime);
-        const endTime = extractTimeFromISOString(session.endTime);
+      Object.entries(mentorSessions).forEach(([date, sessions]) => {
+        // Convert date format for calendar view (yyyy-mm-dd)
+        const calendarDate = convertDateFormat(date);
         
-        meetings.push({
-          id: session.id,
-          title: `Session with ${session.menteeFullName || session.menteeUsername || 'Mentee'}`,
-          date: calendarDate, // Use converted date for calendar view
-          startTime: startTime,
-          endTime: endTime,
-          menteeUsername: session.menteeUsername,
-          zoomLink: session.zoomLink,
-          originalDate: date, // Store original date format for cancel modal
-          sessionType: session.sessionType // Include session type
+        sessions.forEach(session => {
+          // Extract time from ISO string
+          const startTime = extractTimeFromISOString(session.startTime);
+          const endTime = extractTimeFromISOString(session.endTime);
+          
+          meetings.push({
+            id: session.id,
+            title: `Session with ${session.menteeFullName || session.menteeUsername || 'Mentee'}`,
+            date: calendarDate, // Use converted date for calendar view
+            startTime: startTime,
+            endTime: endTime,
+            menteeUsername: session.menteeUsername,
+            zoomLink: session.zoomLink,
+            originalDate: date, // Store original date format for cancel modal
+            sessionType: session.sessionType // Include session type
+          });
         });
       });
-    });
-    
-    set({
-      sessionsByDate: mentorSessions,
-      calendarMeetings: meetings,
-      loading: false
-    });
+      
+      set({
+        sessionsByDate: mentorSessions,
+        calendarMeetings: meetings,
+        loading: false
+      });
+    } catch (error) {
+      console.error('Error loading sessions:', error);
+      set({
+        loading: false,
+        error: 'Failed to load sessions. Please try refreshing the page.'
+      });
+    }
   },
   
   // Session operations

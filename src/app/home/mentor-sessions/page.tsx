@@ -38,6 +38,8 @@ export default function MentorSessionsPage() {
   const authHeader = useLoginStore(state => state.getAuthHeader());
   const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
   const [groupSessions, setGroupSessions] = useState<GroupMentorshipSession[] | null>(null);
+  const [isLoadingGroupSessions, setIsLoadingGroupSessions] = useState(false);
+  const groupSessionsRef = useRef<boolean>(false);
   
   // Initialize the session manager when authHeader is available
   useEffect(() => {
@@ -48,13 +50,22 @@ export default function MentorSessionsPage() {
     }
   }, [authHeader]);
 
-  // Fetch group sessions when mentor is available
+  // Fetch group sessions when mentor is available - using ref to prevent multiple calls
   useEffect(() => {
     const fetchGroupSessions = async () => {
+      // Return early if required data is missing
       if (!mentor?.phone || !authHeader || !mentorResponse?.groups) {
         setGroupSessions(null);
         return;
       }
+      
+      // Return early if we're already loading or have loaded the data
+      if (isLoadingGroupSessions || groupSessionsRef.current) {
+        return;
+      }
+      
+      setIsLoadingGroupSessions(true);
+      groupSessionsRef.current = true;
       
       try {
         const response = await getGroupSessionForMentor(mentor.phone, mentorResponse.groups, authHeader);
@@ -69,11 +80,13 @@ export default function MentorSessionsPage() {
       } catch (error) {
         console.error('Error fetching group sessions:', error);
         setGroupSessions(null);
+      } finally {
+        setIsLoadingGroupSessions(false);
       }
     };
 
     fetchGroupSessions();
-  }, [mentor?.phone, mentorResponse?.groups, authHeader]);
+  }, [mentor?.phone, mentorResponse?.groups, authHeader, isLoadingGroupSessions]);
 
   // Convert group sessions to meetings format
   const groupMeetings = useMemo(() => {
