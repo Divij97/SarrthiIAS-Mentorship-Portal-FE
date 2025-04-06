@@ -8,9 +8,8 @@ import { ArrowTopRightOnSquareIcon as ExternalLinkIcon } from '@heroicons/react/
 import { fetchCourseGroups, createMentorshipGroup, mergeGroups, fetchCourse } from '@/services/courses';
 import GroupForm, { GroupFormData } from '@/components/Admin/GroupForm';
 import GroupCard from '@/components/Admin/courses/GroupCard';
-import { Course, CreateGroupRequest, CourseDocuments } from '@/types/course';
+import { Course, CreateGroupRequest } from '@/types/course';
 import { CreateDocumentRequest } from '@/types/course';
-import { AddDocumentsRequest } from '@/types/admin';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { RegisterMenteesToCourse } from '@/components/app/admin/mentees/register-multiple-mentees-modal';
 import MergeGroupModal from '@/components/Admin/courses/MergeGroupModal';
