@@ -7,21 +7,13 @@ import { PlusIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 import CalendarView from '@/components/Calendar/CalendarView';
 import { SessionManager } from '@/services/session-manager';
 import { useSessionStore } from '@/stores/session/store';
-import { Meeting } from '@/types/meeting';
+import { Meeting, GroupMeeting } from '@/types/meeting';
 import SessionModals from '@/components/app/SessionModals';
 import { convertDateFormat } from '@/utils/date-time-utils';
-import { MentorshipSession, MentorshipGroup, SessionType } from '@/types/session';
+import { MentorshipSession, SessionType, GroupMentorshipSession } from '@/types/session';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { getGroupSessionForMentor } from '@/services/mentors';
 import NotifyMenteeModal from '@/components/app/NotifyMenteeModal';
-
-interface GroupMeeting extends Meeting {
-  isGroupSession: true;
-  groupId: string;
-  courseId: string;
-  courseName: string;
-  groupFriendlyName: string;
-}
 
 export default function MentorSessionsPage() {
   // Create a local state for found sessions to avoid unnecessary recomputation
@@ -44,8 +36,8 @@ export default function MentorSessionsPage() {
   const calendarMeetings = useSessionStore(state => state.calendarMeetings);
   const sessionsByDate = useSessionStore(state => state.sessionsByDate);
   const authHeader = useLoginStore(state => state.getAuthHeader());
-  const [groupSessions, setGroupSessions] = useState<MentorshipGroup[]>([]);
   const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
+  const [groupSessions, setGroupSessions] = useState<GroupMentorshipSession[] | null>(null);
   
   // Initialize the session manager when authHeader is available
   useEffect(() => {
@@ -59,13 +51,24 @@ export default function MentorSessionsPage() {
   // Fetch group sessions when mentor is available
   useEffect(() => {
     const fetchGroupSessions = async () => {
-      if (!mentor?.phone || !authHeader || !mentorResponse?.groups) return;
+      if (!mentor?.phone || !authHeader || !mentorResponse?.groups) {
+        setGroupSessions(null);
+        return;
+      }
       
       try {
         const response = await getGroupSessionForMentor(mentor.phone, mentorResponse.groups, authHeader);
-        setGroupSessions(response.groupSessions);
+        
+        // Check if response and response.groupSessions are valid
+        if (response && Array.isArray(response.groupSessions)) {
+          setGroupSessions(response.groupSessions);
+        } else {
+          console.warn('Received invalid group sessions response:', response);
+          setGroupSessions(null);
+        }
       } catch (error) {
         console.error('Error fetching group sessions:', error);
+        setGroupSessions(null);
       }
     };
 
@@ -74,27 +77,50 @@ export default function MentorSessionsPage() {
 
   // Convert group sessions to meetings format
   const groupMeetings = useMemo(() => {
-    return groupSessions?.flatMap(group => 
-      group.sessions.map(session => ({
-        id: `${session.sessionId}`,
-        title: `${session}`,
-        date: convertDateFormat(session.date),
-        startTime: session.startTime,
-        endTime: session.endTime,
-        isGroupSession: true as const,
-        groupId: group.groupId,
-        courseId: group.course,
-        courseName: group.course,
-        groupFriendlyName: group.groupFriendlyName,
-        zoomLink: session.zoomLink,
+    if (!groupSessions) return [];
+    
+    // Since groupSessions is now GroupMentorshipSession[] directly (not nested)
+    return groupSessions.map((session: GroupMentorshipSession) => {
+      // Safe date conversion - handle potential errors
+      let formattedDate = '';
+      try {
+        formattedDate = session.date ? convertDateFormat(session.date) : '';
+      } catch (error) {
+        console.error('Error converting date format:', error);
+        formattedDate = '';
+      }
+      
+      // Create a meeting object from the session
+      const meeting: GroupMeeting = {
+        id: `${session.sessionId || 'unknown-session'}`,
+        title: session.name || `Group Session`,
+        date: formattedDate,
+        startTime: session.startTime || '00:00',
+        endTime: session.endTime || '00:00',
+        isGroupSession: true,
+        groupId: '',
+        courseId: '',
+        courseName: 'Group Session',
+        groupFriendlyName: '',
+        zoomLink: session.zoomLink || undefined,
         sessionType: SessionType.SCHEDULED
-      }))
-    ) || [];
+      };
+      
+      return meeting;
+    });
   }, [groupSessions]);
 
   // Combine individual and group meetings
   const allMeetings = useMemo(() => {
-    return [...calendarMeetings, ...groupMeetings] as Meeting[];
+    const individualMeetings = Array.isArray(calendarMeetings) ? calendarMeetings : [];
+    const groupMeetingsArray = Array.isArray(groupMeetings) ? groupMeetings : [];
+    
+    // Filter out any potentially invalid meetings
+    const validMeetings = [...individualMeetings, ...groupMeetingsArray].filter(
+      meeting => meeting && typeof meeting === 'object'
+    );
+    
+    return validMeetings;
   }, [calendarMeetings, groupMeetings]);
 
   // Load sessions when mentorResponse changes

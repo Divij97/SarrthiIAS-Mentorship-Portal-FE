@@ -1,5 +1,5 @@
 import { Region, Gender, OptionalSubject, UnscheduledMenteeDetails, StrippedDownMentee } from './mentee';
-import { MentorshipGroup, MentorshipSession, SessionUpdate } from './session';
+import { GroupMentorshipSession, MentorshipSession, SessionUpdate } from './session';
 
 export enum DayOfWeek {
   MONDAY = 'MONDAY',
@@ -58,5 +58,5 @@ export interface StrippedDownMentor {
 }
 
 export interface MentorGroupsBulkResponse {
-  groupSessions: MentorshipGroup[];
+  groupSessions: GroupMentorshipSession[];
 }
