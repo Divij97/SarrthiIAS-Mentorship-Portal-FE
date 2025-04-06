@@ -171,6 +171,15 @@ export interface StrippedDownMentee {
   creationTs?: number;
 }
 
+export interface MenteesForCsvExport {
+  strippedDownMentee: StrippedDownMentee;
+  attemptCount: number;
+  assignedGroupName: string;
+  givenInterview: boolean;
+  givenMains: boolean;
+  menteeUpscExperience: MenteeUpscExperience;
+}
+
 export interface MenteeSession {
   id: string;
   startTime: string;

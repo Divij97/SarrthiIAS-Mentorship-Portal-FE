@@ -1,6 +1,7 @@
 import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
+import { StrippedDownMentee } from '@/types/mentee';
 
 export const loginAdmin = async (authHeader: string): Promise<AdminData> => {
   try {
@@ -264,3 +265,33 @@ export const deleteResource = async (resourceType: ResourceType, resourceId: str
     throw error;
   }
 }
+
+export const fetchCourseAllMentees = async (courseId: string, authHeader: string): Promise<StrippedDownMentee[]> => {
+  try {
+    let apiUrl = config.api.url;
+    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+
+    // Fetch all mentees for a course with a high limit to get everything
+    const queryParams = new URLSearchParams();
+    queryParams.append('courseId', courseId);
+    queryParams.append('limit', '100'); // Use a high limit to get all mentees
+
+    const response = await fetch(`${apiUrl}/v1/admin/mentees?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch course mentees');
+    }
+
+    const data: MenteesResponse = await response.json();
+    return data.mentees;
+  } catch (error) {
+    console.error('Error fetching course mentees:', error);
+    throw error;
+  }
+};
