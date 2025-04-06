@@ -76,8 +76,13 @@ export default function CourseDetailsPage({
   }
 
   const parseDate = (dateStr: string) => {
-    const [day, month, year] = dateStr.split('/');
-    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    // Check if date is in dd/mm/yyyy format
+    if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      const [day, month, year] = dateStr.split('/').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    // Fallback to direct parsing for other formats
+    return new Date(dateStr);
   };
 
   const endDate = parseDate(course.endDate).toLocaleDateString('en-US', {
