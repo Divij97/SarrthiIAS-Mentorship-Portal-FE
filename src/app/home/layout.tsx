@@ -24,7 +24,7 @@ export default function HomeLayout({
   useRefreshMenteeData();
   
   // Set up periodic refresh of mentor data
-  useMentorRefresh();
+  // useMentorRefresh();
 
   // Get the current user based on userType
   const currentUser = userType === UserType.MENTOR ? mentor : mentee;
