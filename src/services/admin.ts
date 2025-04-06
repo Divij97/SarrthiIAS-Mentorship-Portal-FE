@@ -1,4 +1,4 @@
-import { AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, UpdateMenteeCourseRequest } from '@/types/admin';
+import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
 
@@ -217,5 +217,50 @@ export const updateMenteeEnrolledInGroup = async (courseId: string, groupId: str
     });
   } catch(error) {
     console.error(`Failed to update mentee information.`)
+  }
+}
+
+export const addDocumentsToCourse = async (courseId: string, requestBody: AddDocumentsRequest, authHeader: string): Promise<void> => {
+  try {
+    let apiUrl = config.api.url;
+    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+
+    const response = await fetch(`${apiUrl}/v1/courses/${courseId}/documents`, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    }); 
+
+    if (!response.ok) {
+      throw new Error('Failed to add documents to course');
+    }
+  } catch (error) {
+    console.error('Error adding documents to course:', error);
+    throw error;
+  }
+}
+
+export const deleteResource = async (resourceType: ResourceType, resourceId: string, authHeader: string): Promise<void> => {
+  try {
+    let apiUrl = config.api.url;
+    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+
+    const response = await fetch(`${apiUrl}/v1/${resourceType}/${resourceId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete resource');
+    }
+  } catch (error) {
+    console.error('Error deleting resource:', error);
+    throw error;
   }
 }

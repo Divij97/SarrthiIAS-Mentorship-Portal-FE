@@ -3,14 +3,19 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { MentorshipGroup } from '@/types/session';
-import { UserGroupIcon, ArrowLeftIcon, XCircleIcon, UserPlusIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, ArrowLeftIcon, XCircleIcon, UserPlusIcon, UsersIcon, DocumentPlusIcon, DocumentTextIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import { ArrowTopRightOnSquareIcon as ExternalLinkIcon } from '@heroicons/react/24/outline';
 import { fetchCourseGroups, createMentorshipGroup, mergeGroups, fetchCourse } from '@/services/courses';
 import GroupForm, { GroupFormData } from '@/components/Admin/GroupForm';
 import GroupCard from '@/components/Admin/courses/GroupCard';
-import { Course, CreateGroupRequest } from '@/types/course';
+import { Course, CreateGroupRequest, CourseDocuments } from '@/types/course';
+import { CreateDocumentRequest } from '@/types/course';
+import { AddDocumentsRequest } from '@/types/admin';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { RegisterMenteesToCourse } from '@/components/app/admin/mentees/register-multiple-mentees-modal';
 import MergeGroupModal from '@/components/Admin/courses/MergeGroupModal';
+import DocumentModal from '@/components/Admin/courses/DocumentModal';
+import { addDocumentsToCourse } from '@/services/admin';
 import toast from 'react-hot-toast';
 
 export default function CourseDetailsPage({
@@ -37,6 +42,8 @@ export default function CourseDetailsPage({
   const [isMerging, setIsMerging] = useState(false);
   const [course, setCourse] = useState<Course | null>(null);
   const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
+  const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
+  const [addingDocuments, setAddingDocuments] = useState(false);
   
   // Find the current course to check its type
   const currentCourse = adminData?.courses?.find(course => course.id === courseId);
@@ -211,6 +218,33 @@ export default function CourseDetailsPage({
     }
   };
 
+  const handleSubmitDocuments = async (documents: CreateDocumentRequest[]) => {
+    if (!authHeader) {
+      toast.error('Authentication required');
+      return;
+    }
+
+    setAddingDocuments(true);
+    try {
+      await addDocumentsToCourse(courseId, { documents }, authHeader);
+      
+      toast.success('Documents added successfully!');
+      setIsDocumentModalOpen(false);
+      
+      // Refresh course data to show new documents
+      await fetchGroups();
+    } catch (error) {
+      console.error('Error adding documents:', error);
+      toast.error('Failed to add documents. Please try again.');
+    } finally {
+      setAddingDocuments(false);
+    }
+  };
+
+  const handleOpenDocumentModal = () => {
+    setIsDocumentModalOpen(true);
+  };
+
   // Render function to display one-on-one mentorship content
   const renderOneOnOneContent = () => {
     return (
@@ -303,6 +337,68 @@ export default function CourseDetailsPage({
     );
   };
 
+  // Render function to display documents section
+  const renderDocumentsSection = () => {
+    if (!course || !course.documents || course.documents.length === 0) {
+      return (
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="text-center py-6">
+            <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No Documents</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              There are no documents associated with this course.
+            </p>
+            <p className="mt-3 text-sm text-gray-500">
+              Click "Add Documents" to add reference materials for this course.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Course Documents</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {course.documents.map((doc, index) => (
+            <div key={index} className="border border-gray-200 rounded-md p-4 hover:shadow-md transition-shadow duration-200">
+              <div className="flex items-start">
+                <DocumentIcon className="h-8 w-8 text-purple-500 flex-shrink-0 mr-3" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-medium text-gray-900 truncate">{doc.name}</h3>
+                  {doc.description && (
+                    <p className="mt-1 text-xs text-gray-500 line-clamp-2">{doc.description}</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mt-3 flex items-center justify-between">
+                <a 
+                  href={doc.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-xs text-purple-600 hover:text-purple-800"
+                >
+                  View Document
+                  <ExternalLinkIcon className="ml-1 h-3 w-3" />
+                </a>
+                
+                {doc.disclaimer && (
+                  <span className="text-xs text-gray-400 italic truncate ml-2" title={doc.disclaimer}>
+                    {doc.disclaimer.length > 20 ? `${doc.disclaimer.slice(0, 20)}...` : doc.disclaimer}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -323,6 +419,15 @@ export default function CourseDetailsPage({
         </div>
         
         <div className="flex items-center space-x-4">
+          {/* Add Documents button */}
+          <button
+            onClick={handleOpenDocumentModal}
+            className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors duration-200"
+          >
+            <DocumentPlusIcon className="h-5 w-5 mr-2" />
+            Add Documents
+          </button>
+
           {/* Only show Assign Groups button for group courses with no groups */}
           {!loading && !error && !isOneOnOneCourse && groups.length === 0 && !groupsAssigned && (
             <button
@@ -375,8 +480,13 @@ export default function CourseDetailsPage({
           <p className="mt-1 text-sm text-red-500">{error}</p>
         </div>
       ) : (
-        // Conditionally render based on course type
-        isOneOnOneCourse ? renderOneOnOneContent() : renderGroupContent()
+        <>
+          {/* Documents Section */}
+          {renderDocumentsSection()}
+          
+          {/* Conditionally render based on course type */}
+          {isOneOnOneCourse ? renderOneOnOneContent() : renderGroupContent()}
+        </>
       )}
 
       {!isOneOnOneCourse && (
@@ -387,6 +497,14 @@ export default function CourseDetailsPage({
           courseName={currentCourse?.name || courseId}
         />
       )}
+
+      {/* Document Modal */}
+      <DocumentModal
+        isOpen={isDocumentModalOpen}
+        onClose={() => setIsDocumentModalOpen(false)}
+        onSubmit={handleSubmitDocuments}
+        isSubmitting={addingDocuments}
+      />
     </div>
   );
 } 

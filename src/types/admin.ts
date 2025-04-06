@@ -1,4 +1,4 @@
-import { Course } from "./course";
+import { Course, CreateDocumentRequest } from "./course";
 import { StrippedDownMentee } from "./mentee";
 import { Mentor, StrippedDownMentor } from "./mentor";
 import { GroupMentorshipSession } from "./session";
@@ -12,6 +12,13 @@ export interface AdminResponse {
     success: boolean;
     message?: string;
     data?: AdminData;
+}
+
+export enum ResourceType {
+    COURSES = 'COURSES',
+    MENTORS = 'MENTORS',
+    MENTEES = 'MENTEES',
+    GROUPS = 'GROUPS',
 }
 
 export interface CreateMenteeRequest {
@@ -47,4 +54,8 @@ export interface DeleteGroupSessionsRequest {
 
 export interface MenteesResponse {
     mentees: StrippedDownMentee[];
+}
+
+export interface AddDocumentsRequest {
+    documents: CreateDocumentRequest[];
 }
