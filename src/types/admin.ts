@@ -41,6 +41,10 @@ export interface BulkMentorshipGroupCreateOrUpdateRequest {
     sessions: GroupMentorshipSession[];
 }
 
+export interface DeleteGroupSessionsRequest {
+    sessionIds: string[];
+}
+
 export interface MenteesResponse {
     mentees: StrippedDownMentee[];
 }

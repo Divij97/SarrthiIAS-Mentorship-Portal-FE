@@ -1,4 +1,4 @@
-import { AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, UpdateMenteeCourseRequest } from '@/types/admin';
+import { AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
 
@@ -127,6 +127,30 @@ export const createOrUpdateGroupSession = async (courseId: string, groupId: stri
     throw error;
   }
 }
+
+export const deleteGroupSessions = async (groupId: string, request: DeleteGroupSessionsRequest, authHeader: string): Promise<void> => {
+  try {
+    let apiUrl = config.api.url;
+    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+
+    const response = await fetch(`${apiUrl}/v1/courses/groups/${groupId}/sessions`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    }); 
+
+    if (!response.ok) {
+      throw new Error('Failed to delete group session');
+    }
+  } catch (error) {
+    console.error('Error deleting group session:', error);
+    throw error;
+  }
+}
+
 
 export interface MenteesFilters {
   courseId?: string;

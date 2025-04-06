@@ -11,7 +11,7 @@ import { Course } from '@/types/course';
 import { fetchCourse } from '@/services/courses';
 import { getGroupById } from '@/services/mentee';
 import { useSessionStore } from '@/stores/session/store';
-import { BulkMentorshipGroupCreateOrUpdateRequest } from '@/types/admin';
+import { BulkMentorshipGroupCreateOrUpdateRequest, DeleteGroupSessionsRequest } from '@/types/admin';
 import { SessionManager } from '@/services/session-manager';
 import SessionCard from '@/components/app/SessionCard';
 import { toast } from 'react-hot-toast';
@@ -44,7 +44,7 @@ export default function GroupDetailsPage({
   const decodedCourseId = decodeURIComponent(courseId);
   const decodedGroupId = decodeURIComponent(groupId);
   const { getGroupSessions, getMentorUserNameByPhone, getMentorEmailByPhone } = useAdminAuthStore();
-  const [course, setCourse] = useState<Course | null>(null);
+  // const [course, setCourse] = useState<Course | null>(null);
   const [group, setGroup] = useState<MentorshipGroup | null>(null);
   const [groupSessions, setGroupSessions] = useState<GroupMentorshipSession[]>([]);
 
@@ -69,13 +69,13 @@ export default function GroupDetailsPage({
     loadGroupSessions();
   }, [decodedGroupId, decodedCourseId, getGroupSessions]);
 
-  useEffect(() => {
-    const fetchCurrentCourse = async () => {
-      const course = await fetchCourse(decodedCourseId, getAuthHeader()||'');
-      setCourse(course);
-    };
-    fetchCurrentCourse();
-  }, [decodedCourseId]);
+  // useEffect(() => {
+  //   const fetchCurrentCourse = async () => {
+  //     const course = await fetchCourse(decodedCourseId, getAuthHeader()||'');
+  //     setCourse(course);
+  //   };
+  //   fetchCurrentCourse();
+  // }, [decodedCourseId]);
 
   useEffect(() => {
     const fetchCurrentGroup = async () => {
@@ -132,7 +132,7 @@ export default function GroupDetailsPage({
       const request: BulkMentorshipGroupCreateOrUpdateRequest = {
         sessions: [newSession]
       };
-      await sessionManager?.createOrUpdateGroupSession(decodedCourseId, decodedGroupId, request);
+      await sessionManager?.addCourseGroupSessions(decodedCourseId, decodedGroupId, request);
       
       // Update local state with the new session
       setGroupSessions(prev => [...prev, newSession]);
@@ -149,10 +149,10 @@ export default function GroupDetailsPage({
 
   const handleSaveChanges = async () => {
     try {
-      const request: BulkMentorshipGroupCreateOrUpdateRequest = {
-        sessions: editedSessions
+      const request: DeleteGroupSessionsRequest = {
+        sessionIds: editedSessions.map(session => session.sessionId)
       };
-      await sessionManager?.createOrUpdateGroupSession(decodedCourseId, decodedGroupId, request);
+      await sessionManager?.deleteGroupSessions(decodedGroupId, request);
       setGroupSessions(editedSessions);
       setSessions(editedSessions.map(convertToSession));
       setIsEditMode(false);

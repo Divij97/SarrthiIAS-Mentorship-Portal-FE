@@ -52,9 +52,9 @@ export default function SessionCard({ session }: SessionCardProps) {
           <h3 className="text-lg font-semibold text-gray-900">{session.title}</h3>
           <p className="text-sm text-gray-500 mt-1">{session.description}</p>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
+        {/* <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
           {session.status.charAt(0).toUpperCase() + session.status.slice(1)}
-        </span>
+        </span> */}
       </div>
 
       <div className="space-y-2">

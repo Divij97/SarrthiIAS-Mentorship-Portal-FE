@@ -3,8 +3,8 @@ import { MentorshipSession, SessionUpdate, UpdateType, SessionType, DateFormatDD
 import { config } from '@/config/env';
 import { useMentorStore } from '@/stores/mentor/store';
 import { addNewAdHocSession, cancelRecurringSession, cancelSession } from './mentors';
-import { BulkMentorshipGroupCreateOrUpdateRequest } from '@/types/admin';
-import { createOrUpdateGroupSession } from './admin';
+import { BulkMentorshipGroupCreateOrUpdateRequest, DeleteGroupSessionsRequest } from '@/types/admin';
+import { createOrUpdateGroupSession, deleteGroupSessions } from './admin';
 
 export class SessionManager {
   private authHeader: string;
@@ -157,12 +157,21 @@ export class SessionManager {
     }
   }
 
-  async createOrUpdateGroupSession(courseId: string, groupId: string, request: BulkMentorshipGroupCreateOrUpdateRequest): Promise<void> {
+  async addCourseGroupSessions(courseId: string, groupId: string, request: BulkMentorshipGroupCreateOrUpdateRequest): Promise<void> {
     try {
       await createOrUpdateGroupSession(courseId, groupId, request, this.authHeader);
     } catch (error) {
       console.error('Error creating or updating group session:', error);
       throw new Error('Failed to create or update group session');
+    }
+  }
+
+  async deleteGroupSessions(groupId: string, request: DeleteGroupSessionsRequest): Promise<void> {
+    try {
+      await deleteGroupSessions(groupId, request, this.authHeader);
+    } catch (error) {
+      console.error('Error deleting group session:', error);
+      throw new Error('Failed to delete group session');
     }
   }
 } 
