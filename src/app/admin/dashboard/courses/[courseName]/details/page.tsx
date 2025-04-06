@@ -11,6 +11,7 @@ import { Course, CreateGroupRequest } from '@/types/course';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { RegisterMenteesToCourse } from '@/components/app/admin/mentees/register-multiple-mentees-modal';
 import MergeGroupModal from '@/components/Admin/courses/MergeGroupModal';
+import toast from 'react-hot-toast';
 
 export default function CourseDetailsPage({
   params,
@@ -108,10 +109,17 @@ export default function CourseDetailsPage({
       // Notify user about successful request
       setError(null); // Clear any previous errors
       setGroupsAssigned(true);
-      alert("Group assignment request has been received. Please check back after a few minutes about your request.");
+      
+      toast.success("Group assignment request has been received. Groups will be created shortly. Kindly check back after a few minutes.");
+      
+      // Try to fetch groups after a short delay to see if they're available
+      setTimeout(async () => {
+        await fetchGroups();
+      }, 10000);
     } catch (error) {
       console.error('Error assigning groups to course:', error);
       setError('Failed to assign groups. Please try again.');
+      toast.error('Failed to assign groups. Please try again.');
     } finally {
       setAssigningGroups(false);
     }
@@ -139,6 +147,11 @@ export default function CourseDetailsPage({
       setIsCreateModalOpen(false);
       
       console.log('Group created successfully:', formData.groupId);
+      
+      // Refresh the groups list
+      await fetchGroups();
+      
+      toast.success('Group created successfully!');
     } catch (err) {
       console.error('Error creating group:', err);
       setCreateGroupError('Failed to create group. Please try again.');
