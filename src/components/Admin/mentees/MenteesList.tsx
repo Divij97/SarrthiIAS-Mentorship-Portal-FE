@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { StrippedDownMentee } from '@/types/mentee';
 import { fetchMentees, MenteesFilters } from '@/services/admin';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
@@ -18,14 +18,23 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
     skip: 0
   });
   const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
-
-  const fetchMenteesList = async () => {
-    if (!authHeader) {
-      setError('Authentication required');
+  const fetchInProgress = useRef(false);
+  
+  // Using useCallback to memoize the fetch function
+  const fetchMenteesList = useCallback(async () => {
+    // Prevent concurrent fetches
+    if (fetchInProgress.current || !authHeader) {
+      if (!authHeader) {
+        setError('Authentication required');
+      }
       return;
     }
-
+    
+    // Log to verify single fetch
+    console.log('Fetching mentees data...', new Date().toISOString());
+    
     try {
+      fetchInProgress.current = true;
       setLoading(true);
       setError(null);
       const response = await fetchMentees(filters, authHeader);
@@ -35,12 +44,18 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
       setError('Failed to load mentees. Please try again.');
     } finally {
       setLoading(false);
+      fetchInProgress.current = false;
     }
-  };
+  }, [filters, authHeader]);
 
   useEffect(() => {
     fetchMenteesList();
-  }, [filters, authHeader]);
+    
+    // Cleanup function to prevent state updates if component unmounts during fetch
+    return () => {
+      fetchInProgress.current = true; // Prevents any ongoing fetches from completing
+    };
+  }, [fetchMenteesList]); // Dependency is the memoized fetch function
 
   const handleFilterChange = (key: keyof MenteesFilters, value: string | number) => {
     setFilters(prev => ({
@@ -50,7 +65,9 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
   };
 
   const handleRefresh = () => {
-    fetchMenteesList();
+    if (!fetchInProgress.current) {
+      fetchMenteesList();
+    }
   };
 
   return (
