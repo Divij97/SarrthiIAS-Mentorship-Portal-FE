@@ -43,6 +43,7 @@ export default function CourseDetailsPage({
   const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
   const [addingDocuments, setAddingDocuments] = useState(false);
+  const [activeTab, setActiveTab] = useState<'groups' | 'documents'>('groups');
   
   // Find the current course to check its type
   const currentCourse = adminData?.courses?.find(course => course.id === courseId);
@@ -263,8 +264,8 @@ export default function CourseDetailsPage({
   // Render function to display group mentorship content
   const renderGroupContent = () => {
     return (
-      <>
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-4">
             {groups.length > 1 && (
               <button
@@ -290,6 +291,7 @@ export default function CourseDetailsPage({
               </button>
             )}
           </div>
+          
           {isSelectionMode && (
             <div className="text-sm text-gray-600">
               {selectedGroups.length} groups selected
@@ -324,7 +326,7 @@ export default function CourseDetailsPage({
         />
 
         {groups.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+          <div className="text-center py-12">
             <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No Groups</h3>
             <p className="mt-1 text-sm text-gray-500">
@@ -332,142 +334,145 @@ export default function CourseDetailsPage({
             </p>
           </div>
         )}
-      </>
+      </div>
     );
   };
 
   // Render function to display documents section
   const renderDocumentsSection = () => {
-    if (!course || !course.documents || course.documents.length === 0) {
-      return (
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="text-center py-6">
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Course Documents</h2>
+          <button
+            onClick={handleOpenDocumentModal}
+            className="flex items-center px-3 py-1.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors duration-200 text-sm"
+          >
+            <DocumentPlusIcon className="h-4 w-4 mr-1.5" />
+            Add Document
+          </button>
+        </div>
+        
+        {(!course || !course.documents || course.documents.length === 0) ? (
+          <div className="text-center py-10">
             <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No Documents</h3>
             <p className="mt-1 text-sm text-gray-500">
               There are no documents associated with this course.
             </p>
-            <p className="mt-3 text-sm text-gray-500">
-              Click "Add Documents" to add reference materials for this course.
-            </p>
           </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Course Documents</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {course.documents.map((doc, index) => (
-            <div key={index} className="border border-gray-200 rounded-md p-4 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-start">
-                <DocumentIcon className="h-8 w-8 text-purple-500 flex-shrink-0 mr-3" />
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-medium text-gray-900 truncate">{doc.name}</h3>
-                  {doc.description && (
-                    <p className="mt-1 text-xs text-gray-500 line-clamp-2">{doc.description}</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {course.documents.map((doc, index) => (
+              <div key={index} className="border border-gray-200 rounded-md p-4 hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-start">
+                  <DocumentIcon className="h-8 w-8 text-purple-500 flex-shrink-0 mr-3" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-gray-900 truncate">{doc.name}</h3>
+                    {doc.description && (
+                      <p className="mt-1 text-xs text-gray-500 line-clamp-2">{doc.description}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="mt-3 flex items-center justify-between">
+                  <a 
+                    href={doc.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-xs text-purple-600 hover:text-purple-800"
+                  >
+                    View Document
+                    <ExternalLinkIcon className="ml-1 h-3 w-3" />
+                  </a>
+                  
+                  {doc.disclaimer && (
+                    <span className="text-xs text-gray-400 italic truncate ml-2" title={doc.disclaimer}>
+                      {doc.disclaimer.length > 20 ? `${doc.disclaimer.slice(0, 20)}...` : doc.disclaimer}
+                    </span>
                   )}
                 </div>
               </div>
-              
-              <div className="mt-3 flex items-center justify-between">
-                <a 
-                  href={doc.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-xs text-purple-600 hover:text-purple-800"
-                >
-                  View Document
-                  <ExternalLinkIcon className="ml-1 h-3 w-3" />
-                </a>
-                
-                {doc.disclaimer && (
-                  <span className="text-xs text-gray-400 italic truncate ml-2" title={doc.disclaimer}>
-                    {doc.disclaimer.length > 20 ? `${doc.disclaimer.slice(0, 20)}...` : doc.disclaimer}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Course Header with Back Button and Title */}
       <div className="flex items-center justify-between">
         <div>
           <button
             onClick={handleBackToCourses}
-            className="flex items-center text-orange-600 hover:text-orange-700 font-medium mb-4"
+            className="flex items-center text-orange-600 hover:text-orange-700 font-medium mb-2"
           >
             <ArrowLeftIcon className="h-4 w-4 mr-1" />
             Back to Courses
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">{course?.name}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{course?.name}</h1>
+          {course?.description && (
+            <p className="mt-1 text-sm text-gray-500 max-w-3xl">{course.description}</p>
+          )}
           {isOneOnOneCourse && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-2">
               One-on-One Course
             </span>
           )}
         </div>
-        
-        <div className="flex items-center space-x-4">
-          {/* Add Documents button */}
-          <button
-            onClick={handleOpenDocumentModal}
-            className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors duration-200"
-          >
-            <DocumentPlusIcon className="h-5 w-5 mr-2" />
-            Add Documents
-          </button>
 
-          {/* Only show Assign Groups button for group courses with no groups */}
-          {!loading && !error && !isOneOnOneCourse && groups.length === 0 && !groupsAssigned && (
-            <button
-              onClick={handleAssignGroups}
-              className={`flex items-center px-4 py-2 ${assigningGroups || groupsAssigned ? 'bg-gray-400' : 'bg-orange-600 hover:bg-orange-700'} text-white rounded-md transition-colors duration-200`}
-              disabled={assigningGroups || groupsAssigned}
-            >
-              <UserPlusIcon className="h-5 w-5 mr-2" />
-              {assigningGroups ? 'Assigning...' : 'Assign Groups'}
-            </button>
-          )}
-          
-          {/* Show a message when groups have been assigned but not yet loaded */}
-          {!loading && !error && !isOneOnOneCourse && groups.length === 0 && groupsAssigned && (
-            <div className="text-sm text-green-600 font-medium">
-              Assignment request received. Please refresh after a few minutes.
-            </div>
-          )}
-          
-          {/* Only show Create New Group button for group courses with existing groups */}
-          {!loading && !error && !isOneOnOneCourse && (
-            <button
-              onClick={handleCreateGroup}
-              className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors duration-200"
-              disabled={createGroupLoading}
-            >
-              {createGroupLoading ? 'Creating...' : 'Create New Group'}
-            </button>
-          )}
-
-          {/* Add Register Multiple Mentees button */}
-          <RegisterMenteesToCourse courseId={courseId} groups={groups} />
-        </div>
+        {/* Action Buttons for non-one-on-one courses */}
+        {!isOneOnOneCourse && (
+          <div>
+            {/* Only show these buttons when groups tab is active */}
+            {activeTab === 'groups' && !loading && !error && (
+              <div className="flex items-center space-x-3">
+                {/* Assign Groups button (only for empty group courses) */}
+                {groups.length === 0 && !groupsAssigned && (
+                  <button
+                    onClick={handleAssignGroups}
+                    className={`flex items-center px-4 py-2 ${assigningGroups || groupsAssigned ? 'bg-gray-400' : 'bg-orange-600 hover:bg-orange-700'} text-white rounded-md transition-colors duration-200`}
+                    disabled={assigningGroups || groupsAssigned}
+                  >
+                    <UserPlusIcon className="h-5 w-5 mr-2" />
+                    {assigningGroups ? 'Assigning...' : 'Assign Groups'}
+                  </button>
+                )}
+                
+                {/* Create New Group button */}
+                <button
+                  onClick={handleCreateGroup}
+                  className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors duration-200"
+                  disabled={createGroupLoading}
+                >
+                  {createGroupLoading ? 'Creating...' : 'Create New Group'}
+                </button>
+                
+                {/* Register Multiple Mentees button */}
+                <RegisterMenteesToCourse courseId={courseId} groups={groups} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* Show assignment received message if relevant */}
+      {!loading && !error && !isOneOnOneCourse && groups.length === 0 && groupsAssigned && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+          Assignment request received. Groups will be created shortly. Please refresh after a few minutes.
+        </div>
+      )}
+
+      {/* Show any creation errors */}
       {createGroupError && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
           {createGroupError}
         </div>
       )}
 
+      {/* Content Area */}
       {loading ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm">
           <p className="text-gray-500">Loading course details...</p>
@@ -480,14 +485,51 @@ export default function CourseDetailsPage({
         </div>
       ) : (
         <>
-          {/* Documents Section */}
-          {renderDocumentsSection()}
-          
-          {/* Conditionally render based on course type */}
-          {isOneOnOneCourse ? renderOneOnOneContent() : renderGroupContent()}
+          {/* Tab Navigation for non-one-on-one courses */}
+          {!isOneOnOneCourse ? (
+            <div>
+              {/* Tab buttons */}
+              <div className="border-b border-gray-200 mb-6">
+                <nav className="-mb-px flex space-x-8">
+                  <button
+                    onClick={() => setActiveTab('groups')}
+                    className={`${
+                      activeTab === 'groups'
+                        ? 'border-orange-500 text-orange-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  >
+                    Groups
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('documents')}
+                    className={`${
+                      activeTab === 'documents'
+                        ? 'border-orange-500 text-orange-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  >
+                    Documents
+                  </button>
+                </nav>
+              </div>
+
+              {/* Tab content */}
+              {activeTab === 'groups' ? renderGroupContent() : renderDocumentsSection()}
+            </div>
+          ) : (
+            <>
+              {/* For one-on-one courses, show a simpler layout */}
+              {renderOneOnOneContent()}
+              <div className="mt-8">
+                {renderDocumentsSection()}
+              </div>
+            </>
+          )}
         </>
       )}
 
+      {/* Modals */}
       {!isOneOnOneCourse && (
         <GroupForm
           isOpen={isCreateModalOpen}
@@ -497,7 +539,6 @@ export default function CourseDetailsPage({
         />
       )}
 
-      {/* Document Modal */}
       <DocumentModal
         isOpen={isDocumentModalOpen}
         onClose={() => setIsDocumentModalOpen(false)}
