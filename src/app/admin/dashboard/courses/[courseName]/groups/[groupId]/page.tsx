@@ -48,6 +48,9 @@ export default function GroupDetailsPage({
   const [group, setGroup] = useState<MentorshipGroup | null>(null);
   const [groupSessions, setGroupSessions] = useState<GroupMentorshipSession[]>([]);
 
+  // State to track sessions marked for deletion
+  const [sessionsToDelete, setSessionsToDelete] = useState<string[]>([]);
+
   useEffect(() => {
     const loadGroupSessions = () => {
       setLoading(true);
@@ -69,14 +72,6 @@ export default function GroupDetailsPage({
     loadGroupSessions();
   }, [decodedGroupId, decodedCourseId, getGroupSessions]);
 
-  // useEffect(() => {
-  //   const fetchCurrentCourse = async () => {
-  //     const course = await fetchCourse(decodedCourseId, getAuthHeader()||'');
-  //     setCourse(course);
-  //   };
-  //   fetchCurrentCourse();
-  // }, [decodedCourseId]);
-
   useEffect(() => {
     const fetchCurrentGroup = async () => {
       const group = await getGroupById(decodedGroupId, getAuthHeader()||'');
@@ -93,6 +88,8 @@ export default function GroupDetailsPage({
     if (!isEditMode) {
       // Entering edit mode - initialize edited sessions
       setEditedSessions(groupSessions);
+      // Reset sessions to delete
+      setSessionsToDelete([]);
     }
     setIsEditMode(!isEditMode);
   };
@@ -107,6 +104,10 @@ export default function GroupDetailsPage({
   const handleDeleteSession = (sessionId: string) => {
     // Delete operation only works in edit mode
     if (isEditMode) {
+      // Add session ID to the list of sessions to delete
+      setSessionsToDelete(prev => [...prev, sessionId]);
+      
+      // Remove the session from the edited sessions displayed in UI
       setEditedSessions(prev => prev.filter(session => session.sessionId !== sessionId));
     }
   };
@@ -149,22 +150,35 @@ export default function GroupDetailsPage({
 
   const handleSaveChanges = async () => {
     try {
-      const request: DeleteGroupSessionsRequest = {
-        sessionIds: editedSessions.map(session => session.sessionId)
-      };
-      await sessionManager?.deleteGroupSessions(decodedGroupId, request);
-      setGroupSessions(editedSessions);
-      setSessions(editedSessions.map(convertToSession));
+      // Only proceed if there are sessions to delete
+      if (sessionsToDelete.length > 0) {
+        const request: DeleteGroupSessionsRequest = {
+          sessionIds: sessionsToDelete
+        };
+        
+        await sessionManager?.deleteGroupSessions(decodedGroupId, request);
+        
+        // Update local state after successful deletion
+        setGroupSessions(editedSessions);
+        setSessions(editedSessions.map(convertToSession));
+        
+        toast.success(`${sessionsToDelete.length} sessions deleted successfully`);
+      } else {
+        toast.success('No sessions were marked for deletion');
+      }
+      
+      // Reset edit mode and clear deletion tracking
       setIsEditMode(false);
-      toast.success('Sessions updated successfully');
+      setSessionsToDelete([]);
     } catch (error) {
       console.error('Error saving changes:', error);
-      toast.error('Failed to save changes');
+      toast.error('Failed to delete sessions');
     }
   };
 
   const handleCancelEdit = () => {
     setEditedSessions(groupSessions);
+    setSessionsToDelete([]);
     setIsEditMode(false);
   };
 
