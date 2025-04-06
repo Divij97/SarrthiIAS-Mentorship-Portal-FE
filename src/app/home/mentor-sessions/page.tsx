@@ -74,10 +74,10 @@ export default function MentorSessionsPage() {
 
   // Convert group sessions to meetings format
   const groupMeetings = useMemo(() => {
-    return groupSessions.flatMap(group => 
+    return groupSessions?.flatMap(group => 
       group.sessions.map(session => ({
-        id: `group-${session.sessionId}`,
-        title: `Group Session`,
+        id: `${session.sessionId}`,
+        title: `${session}`,
         date: convertDateFormat(session.date),
         startTime: session.startTime,
         endTime: session.endTime,
@@ -89,7 +89,7 @@ export default function MentorSessionsPage() {
         zoomLink: session.zoomLink,
         sessionType: SessionType.SCHEDULED
       }))
-    );
+    ) || [];
   }, [groupSessions]);
 
   // Combine individual and group meetings

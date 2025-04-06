@@ -46,7 +46,7 @@ export function RegisterMenteesToCourse({ courseId, groups = [], onSuccess }: Re
       };
 
       try {
-        if (selectedGroupId != "Don't assign") {
+        if (selectedGroupId != '') {
           await updateMenteeEnrolledInGroup(courseId, selectedGroupId, requestBody, authHeader)
         } else {
           await updateMenteesEnrolledInCourse(courseId, requestBody, authHeader);

@@ -8,11 +8,27 @@ interface CourseListItemProps {
 }
 
 export default function CourseListItem({ course, onSelect }: CourseListItemProps) {
-  const endDate = new Date(course.endDate).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  // Parse dd/mm/yyyy format
+  let endDate: string;
+  
+  if (course.endDate.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+    // Parse date in dd/mm/yyyy format
+    const [day, month, year] = course.endDate.split('/').map(Number);
+    const date = new Date(year, month - 1, day);
+    
+    endDate = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  } else {
+    // Fallback for any other format
+    endDate = new Date(course.endDate).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
 
   return (
     <div 

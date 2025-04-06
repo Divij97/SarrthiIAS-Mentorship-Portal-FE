@@ -66,9 +66,15 @@ export default function CourseForm() {
     const today = new Date();
     
     if (selectedDate > today) {
+      // Format the date as dd/mm/yyyy
+      const day = selectedDate.getDate().toString().padStart(2, '0');
+      const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
+      const year = selectedDate.getFullYear();
+      const formattedDate = `${day}/${month}/${year}`;
+      
       setFormData(prev => ({
         ...prev,
-        endDate: e.target.value
+        endDate: formattedDate
       }));
     }
   };
@@ -183,6 +189,17 @@ export default function CourseForm() {
     );
   };
 
+  const getDateInputValue = (ddmmyyyy: string): string => {
+    // If the date is empty or not in dd/mm/yyyy format, return empty string
+    if (!ddmmyyyy || !ddmmyyyy.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      return '';
+    }
+    
+    // Convert from dd/mm/yyyy to YYYY-MM-DD for the date input
+    const [day, month, year] = ddmmyyyy.split('/');
+    return `${year}-${month}-${day}`;
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
       <div>
@@ -220,14 +237,14 @@ export default function CourseForm() {
         <input
           type="date"
           id="endDate"
-          value={formData.endDate}
+          value={getDateInputValue(formData.endDate)}
           onChange={handleDateChange}
           min={new Date().toISOString().split('T')[0]}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-black"
           required
         />
         <p className="mt-1 text-sm text-gray-500">
-          Course end date must be today or later
+          Course end date must be today or later (DD/MM/YYYY)
         </p>
       </div>
 
