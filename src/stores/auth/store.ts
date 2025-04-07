@@ -10,6 +10,10 @@ import { useMentorStore } from '@/stores/mentor/store';
 import { SHA256 } from 'crypto-js';
 import { SecureStorage } from '@/utils/secure-storage';
 
+// Create a reference to track login request status outside of the store
+// This will prevent multiple login requests even in React StrictMode
+let loginRequestInProgress = false;
+
 interface AuthState {
   phone: string;
   password: string;
@@ -34,6 +38,7 @@ export const useLoginStore = create<AuthState>()(
   persist(
     (set, get) => {
       const handleMenteeLogin = async (phone: string, authHeader: string): Promise<MenteeResponse | null> => {
+        console.log('[Auth] Making mentee login request:', new Date().toISOString());
         const response = await getMenteeByPhone(phone, authHeader);
         if (response.mentee || response.isTempPassword) {
           set({ 
@@ -46,6 +51,7 @@ export const useLoginStore = create<AuthState>()(
       };
 
       const handleMentorLogin = async (phone: string, authHeader: string): Promise<MentorResponse | null> => {
+        console.log('[Auth] Making mentor login request:', new Date().toISOString());
         const response = await getMentorByPhone(phone, authHeader);
         if (response.isTempPassword || response.mentor) {
           set({ 
@@ -78,13 +84,21 @@ export const useLoginStore = create<AuthState>()(
         getAuthHeader: () => SecureStorage.getItem('authHeader'),
 
         handleLogin: async () => {
-          const { phone, password, userType } = get();
+          const { phone, password, userType, loading } = get();
+          
+          // Check if login request is already in progress
+          if (loginRequestInProgress || loading) {
+            console.log('[Auth] Login request already in progress, skipping duplicate request');
+            return null;
+          }
+          
           if (!userType) {
             set({ error: 'Please select user type' });
             return null;
           }
 
           set({ error: '', loading: true });
+          loginRequestInProgress = true;
           
           try {
             const hashedPassword = SHA256(password).toString();
@@ -106,6 +120,7 @@ export const useLoginStore = create<AuthState>()(
             console.error('Login error:', error);
             throw error;
           } finally {
+            loginRequestInProgress = false;
             set({ loading: false });
           }
         },

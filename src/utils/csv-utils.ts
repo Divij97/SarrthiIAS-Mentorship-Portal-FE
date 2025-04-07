@@ -1,27 +1,27 @@
-import { StrippedDownMentee } from "@/types/mentee";
+import { MenteesForCsvExport, StrippedDownMentee } from "@/types/mentee";
 
 /**
  * Converts mentee data to CSV format
  * @param mentees Array of mentees to convert
  * @returns CSV formatted string
  */
-export const menteesToCSV = (mentees: StrippedDownMentee[]): string => {
+export const menteesToCSV = (mentees: MenteesForCsvExport[]): string => {
   // Define the CSV headers
-  const headers = ['Name', 'Email', 'Phone', 'Preferred Slot', 'Creation Date'];
+  const headers = ['Name', 'Email', 'Phone', 'Attempt Count', 'Assigned Group Name', 'Given Interview', 'Given Mains', 'Mentee Upsc Experience'];
   
   // Convert each mentee to CSV row
   const rows = mentees.map(mentee => {
     // Format creation timestamp if available
-    const creationDate = mentee.creationTs
-      ? new Date(mentee.creationTs).toLocaleDateString()
-      : 'N/A';
     
     return [
       mentee.name,
       mentee.email,
       mentee.phone,
-      mentee.preferredSlot,
-      creationDate
+      mentee.attemptCount,
+      mentee.assignedGroupName,
+      mentee.givenInterview,
+      mentee.givenMains,
+      mentee.menteeUpscExperience
     ]
     // Escape any fields with commas by wrapping in quotes
     .map(field => {

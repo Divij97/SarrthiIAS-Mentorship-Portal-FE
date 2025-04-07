@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { StrippedDownMentee } from '@/types/mentee';
+import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
 import { fetchMentees, MenteesFilters } from '@/services/admin';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { MagnifyingGlassIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
@@ -10,7 +10,7 @@ interface MenteesListProps {
 }
 
 export default function MenteesList({ courses, groups }: MenteesListProps) {
-  const [mentees, setMentees] = useState<StrippedDownMentee[]>([]);
+  const [mentees, setMentees] = useState<MenteesForCsvExport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<MenteesFilters>({

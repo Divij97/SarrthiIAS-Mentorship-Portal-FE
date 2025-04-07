@@ -172,13 +172,16 @@ export interface StrippedDownMentee {
 }
 
 export interface MenteesForCsvExport {
-  strippedDownMentee: StrippedDownMentee;
+  name: string;
+  phone: string;
+  email: string;
   attemptCount: number;
   assignedGroupName: string;
   givenInterview: boolean;
   givenMains: boolean;
   menteeUpscExperience: MenteeUpscExperience;
 }
+
 
 export interface MenteeSession {
   id: string;

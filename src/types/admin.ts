@@ -1,5 +1,5 @@
 import { Course, CreateDocumentRequest } from "./course";
-import { StrippedDownMentee } from "./mentee";
+import { MenteesForCsvExport, StrippedDownMentee } from "./mentee";
 import { Mentor, StrippedDownMentor } from "./mentor";
 import { GroupMentorshipSession } from "./session";
 export interface AdminData {
@@ -53,7 +53,7 @@ export interface DeleteGroupSessionsRequest {
 }
 
 export interface MenteesResponse {
-    mentees: StrippedDownMentee[];
+    mentees: MenteesForCsvExport[];
 }
 
 export interface AddDocumentsRequest {

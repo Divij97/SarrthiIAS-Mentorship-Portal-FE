@@ -25,8 +25,7 @@ export default function MentorSessionsPage() {
   // Access auth state
   const { getAuthHeader } = useAdminAuthStore();
   
-  // Access mentor state directly
-  const mentor = useMentorStore(state => state.mentor);
+  const [mentorUsername, groupIds] = useMentorStore(state => [state.mentor?.phone, state.mentorResponse?.groups]);
   const mentorResponse = useMentorStore((state) => state.mentorResponse);
   const setMentorResponse = useMentorStore(state => state.setMentorResponse);
   
@@ -40,27 +39,30 @@ export default function MentorSessionsPage() {
   const [groupSessions, setGroupSessions] = useState<GroupMentorshipSession[] | null>(null);
   const [isLoadingGroupSessions, setIsLoadingGroupSessions] = useState(false);
   const groupSessionsRef = useRef<boolean>(false);
+  // Add a ref to track if we've already loaded the sessions to prevent multiple API calls
+  const sessionsLoadedRef = useRef<boolean>(false);
   
   // Initialize the session manager when authHeader is available
   useEffect(() => {
-    if (authHeader) {
+    if (authHeader && !sessionManager) {
       const manager = new SessionManager(authHeader);
       setSessionManagerState(manager);
       sessionStoreRef.current.setSessionManager(manager);
     }
-  }, [authHeader]);
+  }, [authHeader, sessionManager]);
 
   // Fetch group sessions when mentor is available - using ref to prevent multiple calls
   useEffect(() => {
     const fetchGroupSessions = async () => {
       // Return early if required data is missing
-      if (!mentor?.phone || !authHeader || !mentorResponse?.groups) {
+      if (!mentorUsername || !authHeader || !groupIds) {
         setGroupSessions(null);
         return;
       }
       
       // Return early if we're already loading or have loaded the data
       if (isLoadingGroupSessions || groupSessionsRef.current) {
+        console.log('Group sessions already loading or loaded, skipping fetch');
         return;
       }
       
@@ -68,7 +70,8 @@ export default function MentorSessionsPage() {
       groupSessionsRef.current = true;
       
       try {
-        const response = await getGroupSessionForMentor(mentor.phone, mentorResponse.groups, authHeader);
+        console.log('Fetching group sessions for mentor:', mentorUsername);
+        const response = await getGroupSessionForMentor(mentorUsername, groupIds, authHeader);
         
         // Check if response and response.groupSessions are valid
         if (response && Array.isArray(response.groupSessions)) {
@@ -86,7 +89,7 @@ export default function MentorSessionsPage() {
     };
 
     fetchGroupSessions();
-  }, [mentor?.phone, mentorResponse?.groups, authHeader, isLoadingGroupSessions]);
+  }, [mentorUsername, groupIds, authHeader]); // Remove isLoadingGroupSessions from deps
 
   // Convert group sessions to meetings format
   const groupMeetings = useMemo(() => {
@@ -138,13 +141,15 @@ export default function MentorSessionsPage() {
 
   // Load sessions when mentorResponse changes
   useEffect(() => {
-    if (!mentor || !mentorResponse) {
+    if (!mentorUsername || !mentorResponse || sessionsLoadedRef.current) {
       return;
     }
     
+    console.log('Loading sessions from mentor response');
     sessionStoreRef.current.loadSessions(mentorResponse);
+    sessionsLoadedRef.current = true;
     
-  }, [mentor, mentorResponse]);
+  }, [mentorUsername, mentorResponse]);
   
   // Use useMemo to find sessions only when necessary
   const findSession = useMemo(() => {

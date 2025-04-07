@@ -7,7 +7,8 @@ import { StrippedDownMentee } from '@/types/mentee';
 
 export const getMentorByPhone = async (phone: string, authHeader: string): Promise<MentorResponse> => {
   try {
-    console.log('Fetching mentor by phone:', phone);
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] API Call: getMentorByPhone - Starting request for ${phone}`);
 
     // Clean up the API URL to prevent double slashes
     let apiUrl = config.api.url;
@@ -24,13 +25,16 @@ export const getMentorByPhone = async (phone: string, authHeader: string): Promi
     });
 
     if (!response.ok) {
-      console.error('API Error:', {
+      console.error(`[${timestamp}] API Error:`, {
         status: response.status,
         statusText: response.statusText
       });
       throw new Error(`Failed to fetch mentor data: ${response.statusText}`);
     }
-    return await response.json();
+    
+    const responseData = await response.json();
+    console.log(`[${timestamp}] API Call: getMentorByPhone - Completed successfully`);
+    return responseData;
   } catch (error) {
     console.error('Error fetching mentor:', error);
     throw error;

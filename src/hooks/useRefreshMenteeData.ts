@@ -16,7 +16,7 @@ export const useRefreshMenteeData = (refreshInterval = 10 * 60 * 1000) => {
 
   const authHeader = getAuthHeader();
   const refreshMenteeData = async () => {
-    if (!isAuthenticated || !authHeader || !phone || userType !== 'MENTEE') {
+    if (userType !== 'MENTEE' ||!isAuthenticated || !authHeader || !phone) {
       return;
     }
 

@@ -1,7 +1,7 @@
 import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
-import { StrippedDownMentee } from '@/types/mentee';
+import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
 
 export const loginAdmin = async (authHeader: string): Promise<AdminData> => {
   try {
@@ -266,7 +266,7 @@ export const deleteResource = async (resourceType: ResourceType, resourceId: str
   }
 }
 
-export const fetchCourseAllMentees = async (courseId: string, authHeader: string): Promise<StrippedDownMentee[]> => {
+export const fetchCourseAllMentees = async (courseId: string, authHeader: string): Promise<MenteesForCsvExport[]> => {
   try {
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;

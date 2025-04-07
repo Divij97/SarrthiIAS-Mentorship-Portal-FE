@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { config } from '@/config/env';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -14,6 +14,8 @@ import { MenteeResponse } from '@/types/mentee';
 export default function LoginPage() {
   const router = useRouter();
   const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
+  const formSubmittedRef = useRef(false);
+  const loginInProgressRef = useRef(false);
   const { 
     phone, 
     password, 
@@ -30,14 +32,37 @@ export default function LoginPage() {
   const { setMentor, setMentorResponse } = useMentorStore();
   const { getAuthHeader, setAuthHeader } = useLoginStore();
 
+  // Clear login state on component mount
+  useEffect(() => {
+    loginInProgressRef.current = false;
+    formSubmittedRef.current = false;
+    
+    // Return cleanup function
+    return () => {
+      loginInProgressRef.current = false;
+      formSubmittedRef.current = false;
+    };
+  }, []);
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Prevent multiple simultaneous form submissions
+    if (formSubmittedRef.current || loading || loginInProgressRef.current) {
+      console.log('Form submission or login already in progress, ignoring duplicate request');
+      return;
+    }
+    
     try {
+      formSubmittedRef.current = true;
+      loginInProgressRef.current = true;
+      
       const passwordToUse = isFirstTimeLogin ? config.auth.defaultPassword : password.trim();
       setPassword(passwordToUse);
       
+      console.log('Submitting login form:', new Date().toISOString());
       const response = await handleLogin();
+      
       if (response) {
         if (userType === UserType.MENTOR) {
           const mentorResponse = response as MentorResponse;
@@ -66,6 +91,13 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error('Login error:', error);
+    } finally {
+      // Make sure we clear the flags even if there's an error
+      formSubmittedRef.current = false;
+      setTimeout(() => {
+        // Use a timeout to ensure we don't immediately allow another submission
+        loginInProgressRef.current = false;
+      }, 500);
     }
   };
 
@@ -196,7 +228,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                disabled={loading}
+                disabled={loading || formSubmittedRef.current || loginInProgressRef.current}
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
