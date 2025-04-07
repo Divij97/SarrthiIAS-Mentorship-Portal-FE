@@ -17,7 +17,7 @@ export interface Course {
   isOneOnOneMentorshipCourse: boolean;
   startDate: string;
   endDate: string;
-  retired: boolean;
+  deleted: boolean;
   documents?: CourseDocuments[];
   assignmentStatus: AssigmentStatus;
 }

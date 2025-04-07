@@ -20,7 +20,7 @@ export default function ActiveCourses() {
     // If we already have courses in the admin store, use those
     if (adminData?.courses?.length) {
       // Filter out retired courses
-      const activeCourses = adminData.courses.filter(course => !course.retired && !course.isOneOnOneMentorshipCourse);
+      const activeCourses = adminData.courses.filter(course => !course.deleted && !course.isOneOnOneMentorshipCourse);
       setCourses(activeCourses);
       setLoading(false);
       return;
@@ -43,7 +43,7 @@ export default function ActiveCourses() {
         
         // Ensure coursesData is an array and filter out retired courses
         const validCoursesData = Array.isArray(coursesData) 
-          ? coursesData.filter(course => !course.retired)
+          ? coursesData.filter(course => !course.deleted)
           : [];
         
         // Update local state
