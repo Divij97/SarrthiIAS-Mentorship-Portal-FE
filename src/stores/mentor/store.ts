@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Mentor, MentorResponse } from '@/types/mentor';
+import { MentorshipSession } from '@/types/session';
+import { DateFormatDDMMYYYY } from '@/types/session';
 
 interface MentorStore {
   mentor: Mentor | null;
@@ -9,6 +11,8 @@ interface MentorStore {
   setMentorResponse: (response: MentorResponse | null) => void;
   clearMentor: () => void;
   clearMentorOTP: () => void;
+  addToSessionsByDate: (date: DateFormatDDMMYYYY, session: MentorshipSession) => void;
+  removeFromSessionsByDate: (date: DateFormatDDMMYYYY, sessionId: string) => void;
 }
 
 export const useMentorStore = create<MentorStore>()(
@@ -27,6 +31,22 @@ export const useMentorStore = create<MentorStore>()(
               ...current, 
               otp: null 
             } 
+          });
+        }
+      },
+      addToSessionsByDate: (date: DateFormatDDMMYYYY, session: MentorshipSession) => {
+        const current = get().mentorResponse;
+        if (current) {
+          set({ 
+            mentorResponse: { ...current, sessionsByDate: { ...current.sessionsByDate, [date]: [session] } }
+          });
+        }
+      },
+      removeFromSessionsByDate: (date: DateFormatDDMMYYYY, sessionId: string) => {
+        const current = get().mentorResponse;
+        if (current) {
+          set({ 
+            mentorResponse: { ...current, sessionsByDate: { ...current.sessionsByDate, [date]: current.sessionsByDate[date].filter(s => s.id !== sessionId) } }
           });
         }
       }

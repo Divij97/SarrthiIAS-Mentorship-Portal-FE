@@ -174,8 +174,8 @@ export const createRecurringSchedule = async (
   }
 }; 
 
-export const addNewAdHocSession = async (sessionUpdate: SessionUpdate, authHeader: string, mentorUsername: string) => {
-  const response = await fetch(`${config.api.url}/v1/mentors/${mentorUsername}/sessions`, {
+export const addNewAdHocSession = async (sessionUpdate: SessionUpdate, authHeader: string, mentorUsername: string): Promise<MentorshipSession> => {
+  const response = await fetch(`${config.api.url}/v1/mentors/me/sessions`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -189,7 +189,7 @@ export const addNewAdHocSession = async (sessionUpdate: SessionUpdate, authHeade
     throw new Error(`Failed to add new session: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
   }
 
-  return { success: true };
+  return await response.json();
 };
 
 export const cancelSession = async (sessionUpdate: SessionUpdate, authHeader: string) => {

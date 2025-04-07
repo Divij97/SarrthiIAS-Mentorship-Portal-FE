@@ -8,7 +8,6 @@ export interface MentorshipSession {
   menteeFullName: string;
   menteeUsername: string;
   // Can be derived from zoomLink !== null
-  isZoomLinkGenerated?: boolean;
   zoomLink: string | null;
   startTime: string;
   endTime: string;
@@ -16,6 +15,7 @@ export interface MentorshipSession {
   mentorName: string;
   recurrence?: Recurrence;
   sessionType: SessionType;
+  zoomMeetingInfo?: ZoomMeetingInfo;
 }
 
 export interface Recurrence {

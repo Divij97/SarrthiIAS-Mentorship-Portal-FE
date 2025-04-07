@@ -1,85 +1,73 @@
 'use client';
 
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { PlusIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 import CalendarView from '@/components/Calendar/CalendarView';
-import { SessionManager } from '@/services/session-manager';
-import { useSessionStore } from '@/stores/session/store';
 import { Meeting, GroupMeeting } from '@/types/meeting';
-import SessionModals from '@/components/app/SessionModals';
 import { convertDateFormat } from '@/utils/date-time-utils';
-import { MentorshipSession, SessionType, GroupMentorshipSession } from '@/types/session';
-import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
-import { getGroupSessionForMentor } from '@/services/mentors';
+import { 
+  MentorshipSession, 
+  SessionType, 
+  GroupMentorshipSession,
+  UpdateType,
+  DateFormatDDMMYYYY 
+} from '@/types/session';
+
+import { getGroupSessionForMentor, addNewAdHocSession, cancelSession, getMentorByPhone } from '@/services/mentors';
 import NotifyMenteeModal from '@/components/app/NotifyMenteeModal';
+import AddSessionModal from '@/components/modals/AddSessionModal';
+import CancelSessionModal from '@/components/modals/CancelSessionModal';
 
 export default function MentorSessionsPage() {
-  // Create a local state for found sessions to avoid unnecessary recomputation
-  const [sessionManager, setSessionManagerState] = useState<SessionManager | null>(null);
-  
-  // Store references to avoid recreating functions on each render
-  const sessionStoreRef = useRef(useSessionStore.getState());
-
-  // Access auth state
-  const { getAuthHeader } = useAdminAuthStore();
-  
-  const [mentorUsername, groupIds] = useMentorStore(state => [state.mentor?.phone, state.mentorResponse?.groups]);
-  const mentorResponse = useMentorStore((state) => state.mentorResponse);
-  const setMentorResponse = useMentorStore(state => state.setMentorResponse);
-  
-  // Access session state with individual primitive selectors
-  const loading = useSessionStore(state => state.loading);
-  const error = useSessionStore(state => state.error);
-  const calendarMeetings = useSessionStore(state => state.calendarMeetings);
-  const sessionsByDate = useSessionStore(state => state.sessionsByDate);
-  const authHeader = useLoginStore(state => state.getAuthHeader());
+  // State for modals
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<(MentorshipSession & { originalDate?: DateFormatDDMMYYYY }) | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const addToSessionsByDate = useMentorStore(state => state.addToSessionsByDate);
+  const removeFromSessionsByDate = useMentorStore(state => state.removeFromSessionsByDate);
+
+  // Form state for add session
+  const [addFormData, setAddFormData] = useState({
+    date: '',
+    startTime: '10:00',
+    endTime: '11:00',
+    menteeUsername: '',
+    menteeFullName: ''
+  });
+
+  // Group sessions state
   const [groupSessions, setGroupSessions] = useState<GroupMentorshipSession[] | null>(null);
   const [isLoadingGroupSessions, setIsLoadingGroupSessions] = useState(false);
-  const groupSessionsRef = useRef<boolean>(false);
-  // Add a ref to track if we've already loaded the sessions to prevent multiple API calls
-  const sessionsLoadedRef = useRef<boolean>(false);
-  
-  // Initialize the session manager when authHeader is available
-  useEffect(() => {
-    if (authHeader && !sessionManager) {
-      const manager = new SessionManager(authHeader);
-      setSessionManagerState(manager);
-      sessionStoreRef.current.setSessionManager(manager);
-    }
-  }, [authHeader, sessionManager]);
 
-  // Fetch group sessions when mentor is available - using ref to prevent multiple calls
+  // State for meetings
+  const [groupMeetings, setGroupMeetings] = useState<GroupMeeting[]>([]);
+  const [allMeetings, setAllMeetings] = useState<Meeting[]>([]);
+
+  // Access store state
+  const mentorResponse = useMentorStore((state) => state.mentorResponse);
+  const setMentorResponse = useMentorStore(state => state.setMentorResponse);
+  const authHeader = useLoginStore(state => state.getAuthHeader)();
+
+  // Fetch group sessions when component mounts
   useEffect(() => {
     const fetchGroupSessions = async () => {
-      // Return early if required data is missing
-      if (!mentorUsername || !authHeader || !groupIds) {
-        setGroupSessions(null);
+      if (!mentorResponse?.username || !authHeader || !mentorResponse?.groups) {
         return;
       }
-      
-      // Return early if we're already loading or have loaded the data
-      if (isLoadingGroupSessions || groupSessionsRef.current) {
-        console.log('Group sessions already loading or loaded, skipping fetch');
-        return;
-      }
-      
+
       setIsLoadingGroupSessions(true);
-      groupSessionsRef.current = true;
-      
       try {
-        console.log('Fetching group sessions for mentor:', mentorUsername);
-        const response = await getGroupSessionForMentor(mentorUsername, groupIds, authHeader);
-        
-        // Check if response and response.groupSessions are valid
-        if (response && Array.isArray(response.groupSessions)) {
-          setGroupSessions(response.groupSessions);
-        } else {
-          console.warn('Received invalid group sessions response:', response);
-          setGroupSessions(null);
-        }
+        const response = await getGroupSessionForMentor(
+          mentorResponse.username,
+          mentorResponse.groups,
+          authHeader
+        );
+        setGroupSessions(response.groupSessions);
       } catch (error) {
         console.error('Error fetching group sessions:', error);
         setGroupSessions(null);
@@ -89,15 +77,16 @@ export default function MentorSessionsPage() {
     };
 
     fetchGroupSessions();
-  }, [mentorUsername, groupIds, authHeader]); // Remove isLoadingGroupSessions from deps
+  }, [mentorResponse?.username, mentorResponse?.groups]);
 
-  // Convert group sessions to meetings format
-  const groupMeetings = useMemo(() => {
-    if (!groupSessions) return [];
+  // Convert group sessions to meetings format and update state
+  useEffect(() => {
+    if (!groupSessions) {
+      setGroupMeetings([]);
+      return;
+    }
     
-    // Since groupSessions is now GroupMentorshipSession[] directly (not nested)
-    return groupSessions.map((session: GroupMentorshipSession) => {
-      // Safe date conversion - handle potential errors
+    const meetings = groupSessions.map((session: GroupMentorshipSession) => {
       let formattedDate = '';
       try {
         formattedDate = session.date ? convertDateFormat(session.date) : '';
@@ -106,8 +95,7 @@ export default function MentorSessionsPage() {
         formattedDate = '';
       }
       
-      // Create a meeting object from the session
-      const meeting: GroupMeeting = {
+      return {
         id: `${session.sessionId || 'unknown-session'}`,
         title: session.name || `Group Session`,
         date: formattedDate,
@@ -121,117 +109,161 @@ export default function MentorSessionsPage() {
         zoomLink: session.zoomLink || undefined,
         sessionType: SessionType.SCHEDULED
       };
-      
-      return meeting;
     });
+
+    setGroupMeetings(meetings);
   }, [groupSessions]);
 
-  // Combine individual and group meetings
-  const allMeetings = useMemo(() => {
-    const individualMeetings = Array.isArray(calendarMeetings) ? calendarMeetings : [];
-    const groupMeetingsArray = Array.isArray(groupMeetings) ? groupMeetings : [];
-    
-    // Filter out any potentially invalid meetings
-    const validMeetings = [...individualMeetings, ...groupMeetingsArray].filter(
+  // Combine all meetings and update state when either individual or group meetings change
+  useEffect(() => {
+    const individualMeetings = mentorResponse?.sessionsByDate 
+      ? Object.entries(mentorResponse.sessionsByDate).flatMap(([date, sessions]) =>
+          sessions.map(session => ({
+            id: session.id,
+            title: `Session with ${session.menteeFullName || session.menteeUsername}`,
+            date: convertDateFormat(date),
+            startTime: session.startTime,
+            endTime: session.endTime,
+            menteeUsername: session.menteeUsername,
+            zoomLink: session.zoomMeetingInfo?.joinUrl,
+            originalDate: date,
+            sessionType: session.sessionType
+          }))
+        )
+      : [];
+
+    const meetings = [...individualMeetings, ...groupMeetings].filter(
       meeting => meeting && typeof meeting === 'object'
     );
-    
-    return validMeetings;
-  }, [calendarMeetings, groupMeetings]);
 
-  // Load sessions when mentorResponse changes
-  useEffect(() => {
-    if (!mentorUsername || !mentorResponse || sessionsLoadedRef.current) {
-      return;
-    }
+    setAllMeetings(meetings);
+  }, [mentorResponse?.sessionsByDate, groupMeetings, setMentorResponse]);
+
+  // Handlers
+  const handleAddSessionClick = () => {
+    setIsAddModalOpen(true);
+  };
+
+  const handleCancelClick = (meeting: Meeting) => {
+    if (!mentorResponse?.sessionsByDate || !meeting.originalDate) return;
     
-    console.log('Loading sessions from mentor response');
-    sessionStoreRef.current.loadSessions(mentorResponse);
-    sessionsLoadedRef.current = true;
-    
-  }, [mentorUsername, mentorResponse]);
-  
-  // Use useMemo to find sessions only when necessary
-  const findSession = useMemo(() => {
-    return (meetingId: string | number): MentorshipSession | null => {
-      let foundSession: MentorshipSession | null = null;
+    const session = mentorResponse.sessionsByDate[meeting.originalDate]
+      .find((s: MentorshipSession) => s.id === meeting.id);
       
-      // Remove the 'session-' prefix if it exists
-      const cleanId = typeof meetingId === 'string' && meetingId.startsWith('session-') 
-        ? meetingId.replace('session-', '') 
-        : meetingId;
-      
-      // First try to find in sessionsByDate
-      Object.values(sessionsByDate).forEach(sessions => {
-        const session = sessions.find(s => s.id === cleanId);
-        if (session) {
-          foundSession = {
-            ...session,
-            sessionType: session.sessionType || 'AD_HOC' // Ensure sessionType is set
-          };
-        }
+    if (session) {
+      setSelectedSession({
+        ...session,
+        originalDate: meeting.originalDate as DateFormatDDMMYYYY
       });
-      
-      // If not found, try to find in mentorResponse
-      if (!foundSession && mentorResponse) {
-        Object.values(mentorResponse.sessionsByDate).forEach(sessions => {
-          const session = sessions.find(s => s.id === cleanId);
-          if (session) {
-            foundSession = {
-              ...session,
-              sessionType: session.sessionType || 'AD_HOC' // Ensure sessionType is set
-            };
-          }
-        });
-      }
-      
-      return foundSession;
-    };
-  }, [sessionsByDate, mentorResponse]);
-  
-  
-  const handleCancelClick = useMemo(() => {
-    return (meeting: Meeting) => {
-      const session = findSession(meeting.id);
-      if (session) {
-        console.log('Opening cancel modal with session:', session);
-        console.log('Meeting date:', meeting.originalDate || meeting.date);
-        console.log('Session type:', session.sessionType);
-        sessionStoreRef.current.openCancelModal(session, meeting.originalDate || meeting.date);
-      }
-    };
-  }, [findSession]);
+      setIsCancelModalOpen(true);
+    }
+  };
 
-  // Handler for Add Session button click
-  const handleAddSessionClick = useMemo(() => {
-    return () => {
-      sessionStoreRef.current.openAddModal();
-    };
-  }, []);
+  const handleAddSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mentorResponse?.username || !authHeader) return;
 
-  if (loading) {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Convert date from yyyy-mm-dd to dd/mm/yyyy
+      const [year, month, day] = addFormData.date.split('-');
+      const formattedDate = `${day}/${month}/${year}` as DateFormatDDMMYYYY;
+
+      const newSession = await addNewAdHocSession(
+        {
+          id: '', // Will be generated by the server
+          date: formattedDate,
+          menteeUsername: addFormData.menteeUsername,
+          menteeFullName: addFormData.menteeFullName,
+          startTime: addFormData.startTime,
+          endTime: addFormData.endTime,
+          updateType: UpdateType.ADD,
+          isPermanentUpdate: true,
+          sessionType: SessionType.AD_HOC
+        },
+        authHeader,
+        mentorResponse.username
+      );
+      const updatedSession: MentorshipSession = {
+        id: newSession.id,
+        menteeUsername: addFormData.menteeUsername,
+        menteeFullName: addFormData.menteeFullName,
+        mentorUsername: mentorResponse.username,
+        mentorName: mentorResponse.mentor?.name || 'Mentor',
+        startTime: addFormData.startTime,
+        endTime: addFormData.endTime,
+        sessionType: SessionType.AD_HOC,
+        zoomLink: newSession.zoomLink,
+        zoomMeetingInfo: newSession.zoomMeetingInfo
+      }
+
+      addToSessionsByDate(formattedDate, updatedSession);
+      
+      setIsAddModalOpen(false);
+      setAddFormData({
+        date: '',
+        startTime: '10:00',
+        endTime: '11:00',
+        menteeUsername: '',
+        menteeFullName: ''
+      });
+    } catch (error) {
+      console.error('Failed to add session:', error);
+      setError('Failed to add session. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancelSession = async () => {
+    if (!selectedSession || !authHeader || !mentorResponse?.username || !selectedSession.originalDate) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await cancelSession(
+        {
+          id: selectedSession.id,
+          date: selectedSession.originalDate,
+          updateType: UpdateType.DELETE,
+          isPermanentUpdate: true,
+          sessionType: selectedSession.sessionType,
+          menteeUsername: selectedSession.menteeUsername,
+          menteeFullName: selectedSession.menteeFullName
+        },
+        authHeader
+      );
+
+      // Remove from local state using the same date
+      removeFromSessionsByDate(selectedSession.originalDate, selectedSession.id);
+
+      setIsCancelModalOpen(false);
+      setSelectedSession(null);
+    } catch (error) {
+      console.error('Failed to cancel session:', error);
+      setError('Failed to cancel session. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFormChange = (field: string, value: string) => {
+    setAddFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  if (isLoadingGroupSessions) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-gray-500">Loading sessions...</div>
       </div>
     );
   }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center text-red-600">{error}</div>
-      </div>
-    );
-  }
-
-  // Ensure we have unique IDs for meetings
-  const meetingsWithUniqueIds = calendarMeetings.map(meeting => ({
-    ...meeting,
-    id: typeof meeting.id === 'string' && meeting.id.includes('session-') 
-      ? meeting.id 
-      : `session-${meeting.id}`
-  }));
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
@@ -286,20 +318,36 @@ export default function MentorSessionsPage() {
             </div>
           )}
         </div>
+
+        <AddSessionModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onSubmit={handleAddSession}
+          formData={addFormData}
+          onFormChange={handleFormChange}
+          isLoading={isLoading}
+          error={error}
+        />
+
+        <CancelSessionModal
+          isOpen={isCancelModalOpen}
+          onClose={() => {
+            setIsCancelModalOpen(false);
+            setSelectedSession(null);
+          }}
+          onCancel={handleCancelSession}
+          session={selectedSession}
+          isLoading={isLoading}
+          error={error}
+        />
+
+        <NotifyMenteeModal
+          isOpen={isNotifyModalOpen}
+          onClose={() => setIsNotifyModalOpen(false)}
+          mentees={mentorResponse?.assignedMentees || []}
+          authHeader={authHeader || ''}
+        />
       </div>
-
-      {/* All modals are now managed in the SessionModals component */}
-      <SessionModals 
-        mentorResponse={mentorResponse} 
-        setMentorResponse={setMentorResponse} 
-      />
-
-      <NotifyMenteeModal
-        isOpen={isNotifyModalOpen}
-        onClose={() => setIsNotifyModalOpen(false)}
-        mentees={mentorResponse?.assignedMentees || []}
-        authHeader={authHeader || ''}
-      />
     </div>
   );
 } 
