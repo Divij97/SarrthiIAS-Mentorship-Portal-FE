@@ -3,6 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { MenteeSession } from '@/types/mentee';
 import { StrippedDownMentor } from '@/types/mentor';
+import { useMenteeStore } from '@/stores/mentee/store';
 
 // Define an interface for session items with all the required properties
 interface EligibleSession {
@@ -32,6 +33,8 @@ export default function CancellationRequestModal({
   const [subject, setSubject] = useState('Request to Cancel Mentorship Session');
   const [eligibleSessions, setEligibleSessions] = useState<EligibleSession[]>([]);
   const [selectedSessionDetails, setSelectedSessionDetails] = useState<string>('');
+  const { menteeResponse } = useMenteeStore();
+  const menteeName = menteeResponse?.mentee?.name || '[Your Name]';
 
   useEffect(() => {
     // Function to check if a session is at least 48 hours in the future
@@ -103,7 +106,7 @@ I sincerely apologize for any inconvenience this may cause and would appreciate 
 Thank you for your understanding.
 
 Best regards,
-[Your Name]`;
+${menteeName}`;
 
     setSelectedSessionDetails(emailBody);
   };
