@@ -62,6 +62,11 @@ export function AddMentorModal({ onSuccess }: AddMentorModalProps) {
         onClose={() => setIsOpen(false)}
         title="Register New Mentor"
       >
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+          <p className="text-sm text-yellow-700">
+            <span className="font-medium">Important:</span> Make sure that this Mentor is added to our Zoom Account and an additional License is procured.
+          </p>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">

@@ -7,7 +7,6 @@ import { useLoginStore } from '@/stores/auth/store';
 import { UserType } from '@/types/auth';
 import ResponsiveNavbar from '@/components/Home/ResponsiveNavbar';
 import { useRefreshMenteeData } from '@/hooks/useRefreshMenteeData';
-import { useMentorRefresh } from '@/hooks/useMentorRefresh';
 
 export default function HomeLayout({
   children,

@@ -246,7 +246,7 @@ export const getGroupSessionForMentor = async (mentorUsername: string, groups: s
 };
 
 export const sendEmailToMentor = async (mentee: StrippedDownMentee, authHeader: string) => {
-  const response = await fetch(`${config.api.url}/v1/mentors/me/emails`, {
+  const response = await fetch(`${config.api.url}/v1/mentors/me/emails?template=GET_BACK_ON`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -258,6 +258,24 @@ export const sendEmailToMentor = async (mentee: StrippedDownMentee, authHeader: 
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Failed to send email to mentor: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
+  }
+
+  return { success: true };
+};
+
+export const sendOnBoardingEmail = async (mentee: StrippedDownMentee, authHeader: string) => {
+  const response = await fetch(`${config.api.url}/v1/mentors/me/emails?template=ONBOARDING`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    },
+    body: JSON.stringify(mentee)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to send onboarding email: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
   }
 
   return { success: true };
