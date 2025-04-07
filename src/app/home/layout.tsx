@@ -1,12 +1,8 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-import { useMenteeStore } from '@/stores/mentee/store';
-import { useMentorStore } from '@/stores/mentor/store';
 import { useLoginStore } from '@/stores/auth/store';
-import { UserType } from '@/types/auth';
 import ResponsiveNavbar from '@/components/Home/ResponsiveNavbar';
-import { useRefreshMenteeData } from '@/hooks/useRefreshMenteeData';
 
 export default function HomeLayout({
   children,
@@ -16,19 +12,6 @@ export default function HomeLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { userType, logout } = useLoginStore();
-  const mentee = useMenteeStore((state) => state.mentee);
-  const mentor = useMentorStore((state) => state.mentor);
-  
-  // Set up periodic refresh of mentee data
-  useRefreshMenteeData();
-  
-  // Set up periodic refresh of mentor data
-  // useMentorRefresh();
-
-  // Get the current user based on userType
-  const currentUser = userType === UserType.MENTOR ? mentor : mentee;
-
-  if (!currentUser) return null;
 
   const handleLogout = () => {
     logout();

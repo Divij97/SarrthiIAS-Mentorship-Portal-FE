@@ -12,7 +12,7 @@ import MenteeView from '@/components/Home/MenteeView';
 export default function HomePage() {
   const router = useRouter();
   const { userType, phone } = useLoginStore();
-  const { mentee, menteeResponse } = useMenteeStore();
+  const { menteeResponse } = useMenteeStore();
   const { mentor, mentorResponse } = useMentorStore();
 
   useEffect(() => {
@@ -24,7 +24,11 @@ export default function HomePage() {
     }
 
     // If no password reset needed, redirect to profile
-    router.replace('/home/profile');
+    if (userType === UserType.MENTOR) {
+      router.replace('/home/mentor-sessions');
+    } else {
+      router.replace('/home/profile');
+    }
   }, [router, menteeResponse, mentorResponse, phone]);
 
   // Don't render anything during the redirect checks
@@ -36,8 +40,8 @@ export default function HomePage() {
     return <MentorView mentor={mentor} />;
   }
 
-  if (userType === UserType.MENTEE && mentee) {
-    return <MenteeView mentee={mentee} />;
+  if (userType === UserType.MENTEE && menteeResponse?.mentee) {
+    return <MenteeView mentee={menteeResponse.mentee} />;
   }
 
   return <div className="min-h-screen flex items-center justify-center">Loading...</div>;

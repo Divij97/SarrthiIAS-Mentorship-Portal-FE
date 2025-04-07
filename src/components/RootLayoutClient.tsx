@@ -25,9 +25,7 @@ export default function RootLayoutClient({
   const userType = useLoginStore((state) => state.userType);
   const phone = useLoginStore((state) => state.phone);
   const hasVerifiedOTP = useLoginStore((state) => state.hasVerifiedOTP);
-  const mentee = useMenteeStore((state) => state.mentee);
   const menteeResponse = useMenteeStore((state) => state.menteeResponse);
-  const mentor = useMentorStore((state) => state.mentor);
   const mentorResponse = useMentorStore((state) => state.mentorResponse);
 
   // Check if user has temporary password/OTP
@@ -66,8 +64,8 @@ export default function RootLayoutClient({
 
       // Check for valid user based on userType
       const hasValidUser = userType === UserType.MENTOR 
-                          ? Boolean(mentor) 
-                          : Boolean(mentee);
+                          ? Boolean(mentorResponse?.mentor) 
+                          : Boolean(menteeResponse?.mentee);
 
       // Only redirect to home if user is authenticated, has a valid user, is on a public route, and doesn't have OTP
       // or if they're in signup flow with verified OTP
@@ -80,7 +78,7 @@ export default function RootLayoutClient({
     };
 
     checkAuthAndRedirect();
-  }, [isAuthenticated, mentee, mentor, menteeResponse, mentorResponse, hasOTP, hasVerifiedOTP, userType, pathname, router, phone]);
+  }, [isAuthenticated, menteeResponse, mentorResponse, hasOTP, hasVerifiedOTP, userType, pathname, router, phone]);
 
   if (isLoading) {
     return (

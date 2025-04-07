@@ -43,7 +43,7 @@ const MultiStepForm = () => {
 
   const router = useRouter();
   const { setAuthHeader } = useLoginStore();
-  const { setMentee, menteeResponse } = useMenteeStore();
+  const { menteeResponse, setMenteeResponse } = useMenteeStore();
 
   // Initialize form data with mentee data if available
   useEffect(() => {
@@ -207,18 +207,16 @@ const MultiStepForm = () => {
         const menteeResponse = await getMenteeByPhone(tempMenteeData.phone, newAuthHeader);
         if (menteeResponse && menteeResponse.mentee) {
           // Update the mentee store with the latest data from server
-          setMentee(menteeResponse.mentee);
+          setMenteeResponse(menteeResponse);
           // Also store the full mentee response
           useMenteeStore.getState().setMenteeResponse(menteeResponse);
           useMenteeStore.getState().setCourses(menteeResponse.enrolledCourses);
         } else {
-          // Fallback to the data we already have if the fetch fails
-          setMentee(menteeObj);
+          throw new Error('Failed to fetch updated mentee data');
         }
       } catch (error) {
         console.error('Error fetching updated mentee data:', error);
         // If there's an error fetching updated data, use the data we have
-        setMentee(menteeObj);
       }
       
       localStorage.removeItem('tempMenteeData'); // Clean up

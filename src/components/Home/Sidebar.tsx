@@ -15,7 +15,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeSection, onSectionChange, onLogout, userType }: SidebarProps) {
-  const mentee = useMenteeStore((state) => state.mentee);
+  const mentee = useMenteeStore((state) => state.menteeResponse);
   const mentor = useMentorStore((state) => state.mentor);
 
   const currentUser = userType === UserType.MENTOR ? mentor : mentee;

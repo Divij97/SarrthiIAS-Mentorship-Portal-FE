@@ -4,7 +4,7 @@ import { useMenteeStore } from '@/stores/mentee/store';
 import Courses from '@/components/Home/Courses';
 
 export default function CoursesPage() {
-  const mentee = useMenteeStore((state) => state.mentee);
+  const mentee = useMenteeStore((state) => state.menteeResponse);
 
   if (!mentee) return null;
 

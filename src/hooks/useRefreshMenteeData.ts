@@ -12,7 +12,7 @@ import { getMenteeByPhone } from '@/services/mentee';
  */
 export const useRefreshMenteeData = (refreshInterval = 10 * 60 * 1000) => {
   const { phone, getAuthHeader, userType, isAuthenticated } = useLoginStore();
-  const { setMentee, setMenteeResponse, setCourses } = useMenteeStore();
+  const { setMenteeResponse, setCourses } = useMenteeStore();
 
   const authHeader = getAuthHeader();
   const refreshMenteeData = async () => {
@@ -23,7 +23,7 @@ export const useRefreshMenteeData = (refreshInterval = 10 * 60 * 1000) => {
     try {
       const menteeResponse = await getMenteeByPhone(phone, authHeader);
       if (menteeResponse && menteeResponse.mentee) {
-        setMentee(menteeResponse.mentee);
+        // setMentee(menteeResponse.mentee);
         setMenteeResponse(menteeResponse);
         setCourses(menteeResponse.enrolledCourses);
       }

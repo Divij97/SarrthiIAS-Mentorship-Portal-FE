@@ -2,8 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { useMenteeStore } from '@/stores/mentee/store';
-import { useMentorStore } from '@/stores/mentor/store';
 import { UserType } from '@/types/auth';
 import { Menu, X, User, Book, Calendar, LogOut, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -22,8 +20,8 @@ export default function ResponsiveNavbar({
   userType 
 }: ResponsiveNavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const mentee = useMenteeStore((state) => state.mentee);
-  const mentor = useMentorStore((state) => state.mentor);
+  // const mentee = useMenteeStore((state) => state.menteeResponse);
+  // const mentor = useMentorStore((state) => state.mentor);
   const navRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({
@@ -32,7 +30,7 @@ export default function ResponsiveNavbar({
   });
   const [prevActiveSection, setPrevActiveSection] = useState(activeSection);
 
-  const currentUser = userType === UserType.MENTOR ? mentor : mentee;
+  // const currentUser = userType === UserType.MENTOR ? mentor : mentee;
 
   const menteeNavigation = [
     { name: 'Profile', section: 'profile', icon: <User className="h-5 w-5" /> },
@@ -68,7 +66,7 @@ export default function ResponsiveNavbar({
     setIsOpen(!isOpen);
   };
 
-  if (!currentUser) return null;
+  // if (!currentUser) return null;
 
   return (
     <>

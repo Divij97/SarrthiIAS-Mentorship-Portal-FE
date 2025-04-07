@@ -9,7 +9,6 @@ import { RecurringMentorshipSchedule } from '@/types/session';
 import { createRecurringSchedule } from '@/services/mentors';
 import { toast } from 'react-hot-toast';
 import { useLoginStore } from '@/stores/auth/store';
-import { useMentorRefresh } from '@/hooks/useMentorRefresh';
 import { DayOfWeek } from '@/types/mentor';
 import { WeekDayScheduleCard } from '@/components/Home/WeekDayScheduleCard';
 
@@ -47,7 +46,6 @@ const getDateForDay = (day: DayOfWeek): string => {
 export default function MentorSchedulesPage() {
   const { mentorResponse, setMentorResponse } = useMentorStore();
   const authHeader = useLoginStore((state) => state.getAuthHeader());
-  const { refreshMentorData } = useMentorRefresh();
   const [selectedMentee, setSelectedMentee] = useState<StrippedDownMentee | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -74,9 +72,6 @@ export default function MentorSchedulesPage() {
         }
       );
       console.log("Schedule created successfully: ", createdSession);
-
-      // Refresh mentor data
-      await refreshMentorData();
       
       // Get the updated mentor response and update local state
       const updatedMentorResponse = useMentorStore.getState().mentorResponse;

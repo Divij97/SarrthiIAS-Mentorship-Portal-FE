@@ -9,15 +9,15 @@ import MenteeView from '@/components/Home/MenteeView';
 
 export default function ProfilePage() {
   const { userType } = useLoginStore();
-  const { mentee } = useMenteeStore();
+  const { menteeResponse } = useMenteeStore();
   const { mentor } = useMentorStore();
 
   if (userType === UserType.MENTOR && mentor) {
     return <MentorView mentor={mentor} />;
   }
 
-  if (userType === UserType.MENTEE && mentee) {
-    return <MenteeView mentee={mentee} />;
+  if (userType === UserType.MENTEE && menteeResponse?.mentee) {
+    return <MenteeView mentee={menteeResponse.mentee} />;
   }
 
   return null;

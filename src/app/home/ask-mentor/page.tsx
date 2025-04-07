@@ -4,7 +4,7 @@ import { useMenteeStore } from '@/stores/mentee/store';
 import AskMentor from '@/components/Home/AskMentor';
 
 export default function AskMentorPage() {
-  const mentee = useMenteeStore((state) => state.mentee);
+  const mentee = useMenteeStore((state) => state.menteeResponse);
 
   if (!mentee) return null;
 

@@ -58,7 +58,6 @@ export class SessionManager {
             id: sessionId,
             menteeFullName: 'Test User',
             menteeUsername: 'testuser',
-            isZoomLinkGenerated: false,
             zoomLink: null,
             startTime: formattedStartTime,
             endTime: formattedEndTime,
@@ -124,7 +123,7 @@ export class SessionManager {
     endTime: string,
     menteeUsername: string,
     menteeFullName: string
-  ): Promise<void> {
+  ): Promise<MentorshipSession> {
     try {
       // Generate a unique session ID
       const sessionId = '';
@@ -157,9 +156,10 @@ export class SessionManager {
         mentorEmail: mentorEmail
       };
 
-      await addNewAdHocSession(sessionUpdate, this.authHeader, mentorUsername);
+      const response = await addNewAdHocSession(sessionUpdate, this.authHeader, mentorUsername);
 
       console.log('Session added successfully, ID:', sessionId);
+      return await response;
     } catch (error) {
       console.error('Error adding new session:', error);
       throw new Error('Failed to add new session');
