@@ -196,6 +196,13 @@ export default function CourseDetailsPage({
             />
           </div>
         )
+      ) : getGroupIdByCourseName(courseId) === "UNASSIGNED" ? (
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="border-b border-gray-200 pb-4 mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900">Group Sessions</h2>
+          </div>
+          <p className="text-gray-600">You will be assigned a group shortly.</p>
+        </div>
       ) : groupSessions.length > 0 ? (
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="border-b border-gray-200 pb-4 mb-6">
