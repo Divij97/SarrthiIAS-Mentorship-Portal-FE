@@ -38,6 +38,12 @@ export default function SessionForm({ isOpen, onClose, onSubmit }: SessionFormPr
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate that name and description are not empty
+    if (!formData.name.trim() || !formData.description.trim()) {
+      return;
+    }
+    
     onSubmit(formData);
     onClose();
   };
@@ -73,7 +79,7 @@ export default function SessionForm({ isOpen, onClose, onSubmit }: SessionFormPr
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Session Name
+              Session Name *
             </label>
             <input
               type="text"
@@ -81,12 +87,13 @@ export default function SessionForm({ isOpen, onClose, onSubmit }: SessionFormPr
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-gray-900"
               required
+              minLength={1}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
+              Description *
             </label>
             <textarea
               value={formData.description}
@@ -94,6 +101,8 @@ export default function SessionForm({ isOpen, onClose, onSubmit }: SessionFormPr
               rows={3}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-gray-900"
               placeholder="Enter session description"
+              required
+              minLength={1}
             />
           </div>
 

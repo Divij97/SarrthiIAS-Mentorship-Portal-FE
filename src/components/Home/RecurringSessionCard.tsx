@@ -1,5 +1,4 @@
-import { DateFormatDDMMYYYY, DeleteRecurringSessionRequest, MentorshipSession } from '@/types/session';
-import { useSessionStore } from '@/stores/session/store';
+import { DeleteRecurringSessionRequest, MentorshipSession } from '@/types/session';
 import { useMentorStore } from '@/stores/mentor/store';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
