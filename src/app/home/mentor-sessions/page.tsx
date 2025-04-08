@@ -19,7 +19,7 @@ import { getGroupSessionForMentor, addNewAdHocSession, cancelSession, getMentorB
 import NotifyMenteeModal from '@/components/app/NotifyMenteeModal';
 import AddSessionModal from '@/components/modals/AddSessionModal';
 import CancelSessionModal from '@/components/modals/CancelSessionModal';
-
+import { useRouter } from 'next/navigation';
 export default function MentorSessionsPage() {
   // State for modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -30,7 +30,7 @@ export default function MentorSessionsPage() {
   const [error, setError] = useState<string | null>(null);
   const addToSessionsByDate = useMentorStore(state => state.addToSessionsByDate);
   const removeFromSessionsByDate = useMentorStore(state => state.removeFromSessionsByDate);
-
+  const router = useRouter();
   // Form state for add session
   const [addFormData, setAddFormData] = useState({
     date: '',
@@ -209,6 +209,7 @@ export default function MentorSessionsPage() {
         menteeUsername: '',
         menteeFullName: ''
       });
+      router.refresh();
     } catch (error) {
       console.error('Failed to add session:', error);
       setError('Failed to add session. Please try again.');
