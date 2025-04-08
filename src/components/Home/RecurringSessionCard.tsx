@@ -1,9 +1,12 @@
-import { MentorshipSession } from '@/types/session';
+import { DateFormatDDMMYYYY, DeleteRecurringSessionRequest, MentorshipSession } from '@/types/session';
 import { useSessionStore } from '@/stores/session/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { DayOfWeek } from '@/types/mentor';
+import { useLoginStore } from '@/stores/auth/store';
+import { cancelRecurringSession } from '@/services/mentors';
+import { getMentorByPhone } from '@/services/mentors';
 
 interface RecurringSessionCardProps {
   session: MentorshipSession;
@@ -11,8 +14,8 @@ interface RecurringSessionCardProps {
 }
 
 export function RecurringSessionCard({ session, dayOfWeek }: RecurringSessionCardProps) {
-  const { cancelRecurringSession } = useSessionStore();
-  const { mentorResponse, setMentorResponse } = useMentorStore();
+  const { mentorResponse, setMentorResponse, removeFromSessionsByDayOfWeek, removeFromSessionsByDate } = useMentorStore();
+  const authHeader = useLoginStore((state) => state.getAuthHeader());
   const [isCancelling, setIsCancelling] = useState(false);
 
   const handleCancel = async () => {
@@ -20,7 +23,17 @@ export function RecurringSessionCard({ session, dayOfWeek }: RecurringSessionCar
     
     setIsCancelling(true);
     try {
-      await cancelRecurringSession(mentorResponse, setMentorResponse, session.id, dayOfWeek);
+      const deleteRecurringSessionRequest: DeleteRecurringSessionRequest = {
+        sessionId: session.id,
+        dayOfWeek: dayOfWeek as DayOfWeek
+      }
+      await cancelRecurringSession(deleteRecurringSessionRequest, authHeader||'');
+      if (mentorResponse.username) { 
+        const response = await getMentorByPhone(mentorResponse.username, authHeader||'');
+        setMentorResponse(response);
+      }
+      
+      removeFromSessionsByDayOfWeek(dayOfWeek, session.id);
       toast.success('Recurring session cancelled successfully');
     } catch (error) {
       console.error('Failed to cancel recurring session:', error);

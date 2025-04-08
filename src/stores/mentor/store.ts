@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Mentor, MentorResponse } from '@/types/mentor';
+import { DayOfWeek, Mentor, MentorResponse } from '@/types/mentor';
 import { MentorshipSession } from '@/types/session';
 import { DateFormatDDMMYYYY } from '@/types/session';
 
@@ -13,6 +13,8 @@ interface MentorStore {
   clearMentorOTP: () => void;
   addToSessionsByDate: (date: DateFormatDDMMYYYY, session: MentorshipSession) => void;
   removeFromSessionsByDate: (date: DateFormatDDMMYYYY, sessionId: string) => void;
+  addToSessionsByDayOfWeek: (date: DateFormatDDMMYYYY, schedule: MentorshipSession) => void;
+  removeFromSessionsByDayOfWeek: (dayOfWeek: DayOfWeek, scheduleId: string) => void;
 }
 
 export const useMentorStore = create<MentorStore>()(
@@ -47,6 +49,36 @@ export const useMentorStore = create<MentorStore>()(
         if (current) {
           set({ 
             mentorResponse: { ...current, sessionsByDate: { ...current.sessionsByDate, [date]: current.sessionsByDate[date].filter(s => s.id !== sessionId) } }
+          });
+        }
+      },
+      addToSessionsByDayOfWeek: (date: DateFormatDDMMYYYY, schedule: MentorshipSession) => {
+        const current = get().mentorResponse;
+        const getDayOfWeekFromDate = (dateString: string): DayOfWeek => {
+          if (!dateString) return DayOfWeek.MONDAY;
+          const date = new Date(dateString);
+          const days = [
+            DayOfWeek.SUNDAY,
+            DayOfWeek.MONDAY,
+            DayOfWeek.TUESDAY,
+            DayOfWeek.WEDNESDAY,
+            DayOfWeek.THURSDAY,
+            DayOfWeek.FRIDAY,
+            DayOfWeek.SATURDAY
+          ];
+          return days[date.getDay()];
+        };
+        if (current) {
+          set({ 
+            mentorResponse: { ...current, sessionsByDayOfWeek: { ...current.sessionsByDayOfWeek, [getDayOfWeekFromDate(date)]: [schedule] } }
+          });
+        }
+      },
+      removeFromSessionsByDayOfWeek: (dayOfWeek: DayOfWeek, scheduleId: string) => {
+        const current = get().mentorResponse;
+        if (current) {
+          set({ 
+            mentorResponse: { ...current, sessionsByDayOfWeek: { ...current.sessionsByDayOfWeek, [dayOfWeek]: current.sessionsByDayOfWeek[dayOfWeek]?.filter(s => s.id !== scheduleId) } }
           });
         }
       }

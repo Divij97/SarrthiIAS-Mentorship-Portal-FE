@@ -5,12 +5,13 @@ import { useMentorStore } from '@/stores/mentor/store';
 import { MenteeScheduleTile } from '@/components/Home/MenteeScheduleTile';
 import { AddScheduleForMentee } from '@/components/Home/AddScheduleForMentee';
 import { StrippedDownMentee } from '@/types/mentee';
-import { RecurringMentorshipSchedule } from '@/types/session';
+import { DateFormatDDMMYYYY, RecurringMentorshipSchedule } from '@/types/session';
 import { createRecurringSchedule } from '@/services/mentors';
 import { toast } from 'react-hot-toast';
 import { useLoginStore } from '@/stores/auth/store';
 import { DayOfWeek } from '@/types/mentor';
 import { WeekDayScheduleCard } from '@/components/Home/WeekDayScheduleCard';
+
 
 const DAY_ORDER = [
   DayOfWeek.MONDAY,
@@ -44,7 +45,7 @@ const getDateForDay = (day: DayOfWeek): string => {
 };
 
 export default function MentorSchedulesPage() {
-  const { mentorResponse, setMentorResponse } = useMentorStore();
+  const { mentorResponse, addToSessionsByDayOfWeek, removeFromSessionsByDayOfWeek } = useMentorStore();
   const authHeader = useLoginStore((state) => state.getAuthHeader());
   const [selectedMentee, setSelectedMentee] = useState<StrippedDownMentee | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -72,12 +73,10 @@ export default function MentorSchedulesPage() {
         }
       );
       console.log("Schedule created successfully: ", createdSession);
+
+      addToSessionsByDayOfWeek(schedule.firstSessionDate as DateFormatDDMMYYYY, createdSession);
       
       // Get the updated mentor response and update local state
-      const updatedMentorResponse = useMentorStore.getState().mentorResponse;
-      if (updatedMentorResponse) {
-        setMentorResponse(updatedMentorResponse);
-      }
 
       // Close the modal
       setIsModalOpen(false);
