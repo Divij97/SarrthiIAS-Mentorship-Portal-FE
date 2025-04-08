@@ -4,13 +4,15 @@ import { useState } from 'react';
 import { useMentorStore } from '@/stores/mentor/store';
 import { MenteeScheduleTile } from '@/components/Home/MenteeScheduleTile';
 import { AddScheduleForMentee } from '@/components/Home/AddScheduleForMentee';
-import { StrippedDownMentee } from '@/types/mentee';
+import { StrippedDownMentee, PreferredSlot } from '@/types/mentee';
 import { DateFormatDDMMYYYY, RecurringMentorshipSchedule } from '@/types/session';
-import { createRecurringSchedule } from '@/services/mentors';
+import { createRecurringSchedule, sendOnBoardingEmail } from '@/services/mentors';
 import { toast } from 'react-hot-toast';
 import { useLoginStore } from '@/stores/auth/store';
 import { DayOfWeek } from '@/types/mentor';
 import { WeekDayScheduleCard } from '@/components/Home/WeekDayScheduleCard';
+import { Dialog } from '@headlessui/react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 
 const DAY_ORDER = [
@@ -49,6 +51,8 @@ export default function MentorSchedulesPage() {
   const authHeader = useLoginStore((state) => state.getAuthHeader());
   const [selectedMentee, setSelectedMentee] = useState<StrippedDownMentee | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
 
   const handleScheduleClick = (mentee: StrippedDownMentee) => {
     setSelectedMentee(mentee);
@@ -95,8 +99,48 @@ export default function MentorSchedulesPage() {
     }
   };
 
+  const handleSendOnboardingEmail = async (mentee: StrippedDownMentee) => {
+    if (!authHeader || sendingEmail) return;
+
+    setSendingEmail(mentee.phone);
+
+    try {
+      await sendOnBoardingEmail(mentee, authHeader);
+      toast.success(`Onboarding email sent to ${mentee.name}`, {
+        duration: 3000,
+        position: 'top-right',
+      });
+    } catch (error) {
+      console.error('Failed to send onboarding email:', error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : `Failed to send email to ${mentee.name}`,
+        {
+          duration: 4000,
+          position: 'top-right',
+        }
+      );
+    } finally {
+      setSendingEmail(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header with Send Onboarding Email button */}
+      <div className="max-w-7xl mx-auto pt-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-semibold text-gray-900">Mentor Schedules</h1>
+          <button
+            onClick={() => setIsEmailModalOpen(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+          >
+            Send Onboarding Emails
+          </button>
+        </div>
+      </div>
+
       {/* Unscheduled Mentees Section */}
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
@@ -159,6 +203,82 @@ export default function MentorSchedulesPage() {
           </div>
         </div>
       </div>
+
+      {/* Send Onboarding Email Modal */}
+      <Dialog
+        open={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        className="fixed inset-0 z-10 overflow-y-auto"
+      >
+        <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          <div
+            className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+            aria-hidden="true"
+          />
+
+          {/* This element is to trick the browser into centering the modal contents. */}
+          <span
+            className="hidden sm:inline-block sm:align-middle sm:h-screen"
+            aria-hidden="true"
+          >
+            &#8203;
+          </span>
+
+          <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div className="flex justify-between items-center mb-4">
+                <Dialog.Title className="text-lg font-medium text-gray-900">
+                  Send Onboarding Emails
+                </Dialog.Title>
+                <button
+                  onClick={() => setIsEmailModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {mentorResponse?.assignedMentees?.length ? (
+                  mentorResponse.assignedMentees.map((mentee) => (
+                    <div
+                      key={mentee.phone}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-900">{mentee.name}</h3>
+                        <p className="text-sm text-gray-500">{mentee.email}</p>
+                      </div>
+                      <button
+                        onClick={() => handleSendOnboardingEmail(mentee)}
+                        disabled={sendingEmail === mentee.phone}
+                        className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                          sendingEmail === mentee.phone
+                            ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
+                            : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
+                        }`}
+                      >
+                        {sendingEmail === mentee.phone ? 'Sending...' : 'Send Email'}
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-gray-500 py-4">No assigned mentees found.</p>
+                )}
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setIsEmailModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Dialog>
 
       {selectedMentee && (
         <AddScheduleForMentee

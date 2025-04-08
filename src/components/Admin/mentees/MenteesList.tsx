@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
+import { MenteesForCsvExport, StrippedDownMentee, PreferredSlot } from '@/types/mentee';
 import { fetchMentees, MenteesFilters } from '@/services/admin';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { MagnifyingGlassIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { sendOnBoardingEmail } from '@/services/mentors';
 
 interface MenteesListProps {
   courses: { id: string; name: string }[];
@@ -19,6 +20,8 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
   });
   const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
   const fetchInProgress = useRef(false);
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   
   // Using useCallback to memoize the fetch function
   const fetchMenteesList = useCallback(async () => {
@@ -67,6 +70,31 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
   const handleRefresh = () => {
     if (!fetchInProgress.current) {
       fetchMenteesList();
+    }
+  };
+
+  const handleSendOnboardingEmail = async (mentee: MenteesForCsvExport) => {
+    if (!authHeader || sendingEmail) return;
+
+    setSendingEmail(mentee.phone);
+    setEmailError(null);
+
+    try {
+      // Create a StrippedDownMentee object with required fields
+      const strippedMentee: StrippedDownMentee = {
+        name: mentee.name,
+        phone: mentee.phone,
+        email: mentee.email,
+        preferredSlot: PreferredSlot.ALL // Default
+      };
+
+      await sendOnBoardingEmail(strippedMentee, authHeader);
+      // Show success message (you might want to add a toast notification here)
+    } catch (error) {
+      console.error('Failed to send onboarding email:', error);
+      setEmailError(`Failed to send email to ${mentee.name}`);
+    } finally {
+      setSendingEmail(null);
     }
   };
 
@@ -167,6 +195,11 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
           </div>
         ) : (
           <>
+            {emailError && (
+              <div className="p-2 text-center text-red-500 bg-red-50">
+                <p>{emailError}</p>
+              </div>
+            )}
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -181,6 +214,9 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Phone
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -194,6 +230,19 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {mentee.phone}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <button
+                          onClick={() => handleSendOnboardingEmail(mentee)}
+                          disabled={sendingEmail === mentee.phone}
+                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                            sendingEmail === mentee.phone
+                              ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
+                              : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
+                          }`}
+                        >
+                          {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -212,6 +261,19 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                     </div>
                     <div className="text-sm text-gray-500">
                       <p>{mentee.email}</p>
+                    </div>
+                    <div className="pt-2">
+                      <button
+                        onClick={() => handleSendOnboardingEmail(mentee)}
+                        disabled={sendingEmail === mentee.phone}
+                        className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                          sendingEmail === mentee.phone
+                            ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
+                            : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
+                        }`}
+                      >
+                        {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
+                      </button>
                     </div>
                   </div>
                 </div>
