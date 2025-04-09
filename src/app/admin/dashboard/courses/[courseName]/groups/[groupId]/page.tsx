@@ -134,7 +134,7 @@ export default function GroupDetailsPage({
       const response = await sessionManager?.addCourseGroupSessions(decodedCourseId, decodedGroupId, request);
       if (response) {
         setGroupSessions(prev => [...prev, ...response.sessions]);
-        setSessions(response.sessions.map(convertToSession));
+        setSessions(sessions => [...sessions, ...response.sessions.map(convertToSession)]);
       }
       
       toast.success('Session created successfully');
@@ -157,8 +157,13 @@ export default function GroupDetailsPage({
         await sessionManager?.deleteGroupSessions(decodedGroupId, request);
         
         // Update local state after successful deletion
-        setGroupSessions(editedSessions);
-        setSessions(editedSessions.map(convertToSession));
+        // Filter out deleted sessions from the original groupSessions
+        const updatedGroupSessions = groupSessions.filter(
+          session => !sessionsToDelete.includes(session.sessionId)
+        );
+        
+        setGroupSessions(updatedGroupSessions);
+        setSessions(updatedGroupSessions.map(convertToSession));
         
         toast.success(`${sessionsToDelete.length} sessions deleted successfully`);
       } else {
