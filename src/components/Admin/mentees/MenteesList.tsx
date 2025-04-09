@@ -28,7 +28,7 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
   const [assigningMentor, setAssigningMentor] = useState<string | null>(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedMentee, setSelectedMentee] = useState<MenteesForCsvExport | null>(null);
-  
+
   // Using useCallback to memoize the fetch function
   const fetchMenteesList = useCallback(async () => {
     // Prevent concurrent fetches
@@ -38,10 +38,10 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
       }
       return;
     }
-    
+
     // Log to verify single fetch
     console.log('Fetching mentees data...', new Date().toISOString());
-    
+
     try {
       fetchInProgress.current = true;
       setLoading(true);
@@ -59,7 +59,7 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
 
   useEffect(() => {
     fetchMenteesList();
-    
+
     // Cleanup function to prevent state updates if component unmounts during fetch
     return () => {
       fetchInProgress.current = true; // Prevents any ongoing fetches from completing
@@ -114,9 +114,9 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
 
     setAssigningMentor(selectedMentee.phone);
     try {
-      await assignMentorToMentee(selectedMentee.phone, { mentorUserName: mentorPhone }, authHeader);
+      const response = await assignMentorToMentee(selectedMentee.phone, { mentorUserName: mentorPhone, mentee: { name: selectedMentee.name, phone: selectedMentee.phone, email: selectedMentee.email, preferredSlot: PreferredSlot.ALL } }, authHeader);
+
       toast.success(`Mentor assigned successfully to ${selectedMentee.name}`);
-      handleRefresh(); // Refresh the list to show updated data
       setShowAssignModal(false);
       setSelectedMentee(null);
     } catch (error) {
@@ -136,11 +136,10 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md w-full sm:w-auto ${
-              loading
+            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md w-full sm:w-auto ${loading
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-            }`}
+              }`}
           >
             <ArrowPathIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -264,22 +263,20 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                         <button
                           onClick={() => handleSendOnboardingEmail(mentee)}
                           disabled={sendingEmail === mentee.phone}
-                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                            sendingEmail === mentee.phone
+                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${sendingEmail === mentee.phone
                               ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
                               : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
-                          }`}
+                            }`}
                         >
                           {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
                         </button>
                         <button
                           onClick={() => handleAssignMentor(mentee)}
                           disabled={assigningMentor === mentee.phone}
-                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                            assigningMentor === mentee.phone
+                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
                               ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
                               : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
-                          }`}
+                            }`}
                         >
                           <UserPlusIcon className="h-4 w-4 mr-1" />
                           {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
@@ -307,22 +304,20 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                       <button
                         onClick={() => handleSendOnboardingEmail(mentee)}
                         disabled={sendingEmail === mentee.phone}
-                        className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                          sendingEmail === mentee.phone
+                        className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${sendingEmail === mentee.phone
                             ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
                             : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
-                        }`}
+                          }`}
                       >
                         {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
                       </button>
                       <button
                         onClick={() => handleAssignMentor(mentee)}
                         disabled={assigningMentor === mentee.phone}
-                        className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                          assigningMentor === mentee.phone
+                        className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
                             ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
                             : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
-                        }`}
+                          }`}
                       >
                         <UserPlusIcon className="h-4 w-4 mr-1" />
                         {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}

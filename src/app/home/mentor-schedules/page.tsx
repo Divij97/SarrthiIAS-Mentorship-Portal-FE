@@ -105,7 +105,7 @@ export default function MentorSchedulesPage() {
     setSendingEmail(mentee.phone);
 
     try {
-      await sendOnBoardingEmail(mentee, authHeader);
+      await sendOnBoardingEmail(mentee, authHeader, 'MENTOR_ASSIGNED');
       toast.success(`Onboarding email sent to ${mentee.name}`, {
         duration: 3000,
         position: 'top-right',
@@ -136,7 +136,7 @@ export default function MentorSchedulesPage() {
             onClick={() => setIsEmailModalOpen(true)}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
           >
-            Send Onboarding Emails
+            Email Mentee about new scheduled session
           </button>
         </div>
       </div>
@@ -228,7 +228,7 @@ export default function MentorSchedulesPage() {
             <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div className="flex justify-between items-center mb-4">
                 <Dialog.Title className="text-lg font-medium text-gray-900">
-                  Send Onboarding Emails
+                  Email Mentee
                 </Dialog.Title>
                 <button
                   onClick={() => setIsEmailModalOpen(false)}

@@ -310,6 +310,10 @@ export const assignMentorToMentee = async (menteeUserName: string, request: Ment
       },
       body: JSON.stringify(request),
     });
+    
+    if (!response.ok) {
+      throw new Error('Error assigning mentor to mentee');
+    }
   } catch (error) {
     console.error('Error assigning mentor to mentee:', error);
     throw error;

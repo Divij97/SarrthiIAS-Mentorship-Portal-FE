@@ -263,8 +263,8 @@ export const sendEmailToMentor = async (mentee: StrippedDownMentee, authHeader: 
   return { success: true };
 };
 
-export const sendOnBoardingEmail = async (mentee: StrippedDownMentee, authHeader: string) => {
-  const response = await fetch(`${config.api.url}/v1/mentors/me/emails?template=ONBOARDING`, {
+export const sendOnBoardingEmail = async (mentee: StrippedDownMentee, authHeader: string, template: string = 'ONBOARDING') => {
+  const response = await fetch(`${config.api.url}/v1/mentors/me/emails?template=${template}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

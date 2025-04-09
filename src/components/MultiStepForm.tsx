@@ -16,6 +16,7 @@ import { useMenteeStore } from '@/stores/mentee/store';
 import { useLoginStore } from '@/stores/auth/store';
 import { TempMenteeData } from '@/types/auth';
 import { SHA256 } from 'crypto-js';
+import { fetchCourse } from '@/services/courses';
 
 const MultiStepForm = () => {
   const [step, setStep] = useState(1);
@@ -188,10 +189,12 @@ const MultiStepForm = () => {
         username: tempMenteeData.phone,
         passwordSHA: SHA256(tempMenteeData.password).toString(),
         isTempPassword: false,
-        enrolledCourses: []
+        enrolledCourses: menteeResponse.enrolledCourses
       };
 
-      await signupMentee(menteeWithAuth);
+
+      const assignMentor =  false;
+      await signupMentee(menteeWithAuth, assignMentor);
       
       // After successful signup, create new auth header with the updated password
       const newAuthHeader = `Basic ${btoa(`${tempMenteeData.phone}:${tempMenteeData.password}`)}`;

@@ -11,7 +11,7 @@ import { UserType } from '@/types/auth';
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const phone = searchParams.get('phone');
-  const { error, setError, userType, authHeader, setHasVerifiedOTP } = useLoginStore();
+  const { error, setError, userType, getAuthHeader, setHasVerifiedOTP } = useLoginStore();
   const { mentorResponse, clearMentorOTP } = useMentorStore();
   const { menteeResponse, clearMenteeOTP } = useMenteeStore();
   
@@ -127,7 +127,7 @@ export default function ResetPasswordPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...(authHeader ? { Authorization: authHeader } : {})
+          'Authorization': getAuthHeader() || ''
         },
         body: JSON.stringify({ phone })
       });

@@ -91,4 +91,5 @@ export interface MentorshipSessionsResponse {
 
 export interface MentorAssignmentRequest {
     mentorUserName: string;
+    mentee: StrippedDownMentee;
 }

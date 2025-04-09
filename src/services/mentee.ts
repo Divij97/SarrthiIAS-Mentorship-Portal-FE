@@ -40,7 +40,7 @@ export const getMenteeByPhone = async (phone: string, authHeader: string): Promi
   }
 };
 
-export const signupMentee = async (menteeData: MenteeWithAuth): Promise<void> => {
+export const signupMentee = async (menteeData: MenteeWithAuth, assignMentor: boolean): Promise<void> => {
   try {
     // Clean up the API URL to prevent double slashes
     let apiUrl = config.api.url;
