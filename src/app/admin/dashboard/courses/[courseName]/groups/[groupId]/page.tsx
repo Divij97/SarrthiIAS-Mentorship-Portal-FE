@@ -114,16 +114,13 @@ export default function GroupDetailsPage({
   };
 
   const handleSessionFormSubmit = async (formData: SessionFormData) => {
-    // Convert from dd/mm/yyyy to YYYY-MM-DD format for the backend
-    const [day, month, year] = formData.date.split('/');
-    const formattedDate = `${year}-${month}-${day}`;
     
     const newSession: GroupMentorshipSession = {
       sessionId: '',
       mentorName: getMentorUserNameByPhone(formData.mentorId) || formData.mentorId,
       mentorUserName: formData.mentorId,
       mentorEmail: getMentorEmailByPhone(formData.mentorId) || formData.mentorId,
-      date: formattedDate,
+      date: formData.date,
       startTime: formatTimeToHHMM(formData.startTime),
       endTime: formatTimeToHHMM(formData.endTime),
       name: formData.name,
@@ -134,11 +131,11 @@ export default function GroupDetailsPage({
       const request: BulkMentorshipGroupCreateOrUpdateRequest = {
         sessions: [newSession]
       };
-      await sessionManager?.addCourseGroupSessions(decodedCourseId, decodedGroupId, request);
-      
-      // Update local state with the new session
-      setGroupSessions(prev => [...prev, newSession]);
-      setSessions(prev => [...prev, convertToSession(newSession)]);
+      const response = await sessionManager?.addCourseGroupSessions(decodedCourseId, decodedGroupId, request);
+      if (response) {
+        setGroupSessions(prev => [...prev, ...response.sessions]);
+        setSessions(response.sessions.map(convertToSession));
+      }
       
       toast.success('Session created successfully');
     } catch (error) {

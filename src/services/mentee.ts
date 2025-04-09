@@ -50,7 +50,9 @@ export const signupMentee = async (menteeData: MenteeWithAuth): Promise<void> =>
 
     console.log("menteeData: ", menteeData);
 
-    const response = await fetch(`${apiUrl}/v1/mentees`, {
+    //TODO: check if mentee has 1-1 course assigned if then assign mentor = true
+
+    const response = await fetch(`${apiUrl}/v1/mentees?assignMentor=false`, {
       method: 'PUT',
       headers: {
         'Authorization': authHeader,

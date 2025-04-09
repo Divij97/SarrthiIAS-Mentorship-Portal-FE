@@ -3,7 +3,7 @@ import { MentorshipSession, SessionUpdate, UpdateType, SessionType, DateFormatDD
 import { config } from '@/config/env';
 import { useMentorStore } from '@/stores/mentor/store';
 import { addNewAdHocSession, cancelRecurringSession, cancelSession } from './mentors';
-import { BulkMentorshipGroupCreateOrUpdateRequest, DeleteGroupSessionsRequest } from '@/types/admin';
+import { BulkMentorshipGroupCreateOrUpdateRequest, DeleteGroupSessionsRequest, MentorshipSessionsResponse } from '@/types/admin';
 import { createOrUpdateGroupSession, deleteGroupSessions } from './admin';
 import { formatTimeToHHMM } from '@/utils/date-time-utils';
 
@@ -166,9 +166,9 @@ export class SessionManager {
     }
   }
 
-  async addCourseGroupSessions(courseId: string, groupId: string, request: BulkMentorshipGroupCreateOrUpdateRequest): Promise<void> {
+  async addCourseGroupSessions(courseId: string, groupId: string, request: BulkMentorshipGroupCreateOrUpdateRequest): Promise<MentorshipSessionsResponse> {
     try {
-      await createOrUpdateGroupSession(courseId, groupId, request, this.authHeader);
+      return await createOrUpdateGroupSession(courseId, groupId, request, this.authHeader);
     } catch (error) {
       console.error('Error creating or updating group session:', error);
       throw new Error('Failed to create or update group session');

@@ -59,3 +59,32 @@ export interface MenteesResponse {
 export interface AddDocumentsRequest {
     documents: CreateDocumentRequest[];
 }
+
+export enum CriterionCategory {
+    INTERVIEW = 'INTERVIEW',
+    MAINS_OR_INTERVIEW = 'MAINS_OR_INTERVIEW',
+    MAINS_WITHOUT_INTERVIEW = 'MAINS_WITHOUT_INTERVIEW',
+    ATTEMPTS = 'ATTEMPTS',
+    DEFAULT = 'DEFAULT',
+    GROUP_INTERVIEW = 'GROUP_INTERVIEW',
+}
+
+export interface CriterionSubCategory {
+    name: string;
+    value?: string;
+    range: number;
+}
+
+export interface Criterion {
+    category: CriterionCategory;
+    subCategories: CriterionSubCategory[];
+}
+
+export interface CriterionSubCategoryRequest {
+    category: CriterionCategory;  
+    subCategories: string[] | null;
+};
+
+export interface MentorshipSessionsResponse {
+    sessions: GroupMentorshipSession[];
+}

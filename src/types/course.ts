@@ -1,5 +1,5 @@
-import { Mentee } from "./mentee";
 import { GroupMentorshipSession } from "./session";
+import { CriterionSubCategoryRequest } from "./admin";
 
 export interface CreateCourseRequest {
   name: string;
@@ -33,7 +33,7 @@ export interface CourseGroup {
 export interface CreateGroupRequest {
   groupFriendlyName: string;
   groupMentorshipSessions: GroupMentorshipSession[];
-  mentees: Mentee[];
+  criterion: CriterionSubCategoryRequest;
 }
 
 export interface MergeGroupRequest {

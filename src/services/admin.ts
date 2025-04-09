@@ -1,4 +1,4 @@
-import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
+import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorshipSessionsResponse, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
 import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
@@ -105,7 +105,7 @@ export const registerMentor = async (mentor: CreateMentorRequest, authHeader: st
   }
 }
 
-export const createOrUpdateGroupSession = async (courseId: string, groupId: string, request: BulkMentorshipGroupCreateOrUpdateRequest, authHeader: string): Promise<void> => {
+export const createOrUpdateGroupSession = async (courseId: string, groupId: string, request: BulkMentorshipGroupCreateOrUpdateRequest, authHeader: string): Promise<MentorshipSessionsResponse> => {
   try {
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
@@ -123,6 +123,7 @@ export const createOrUpdateGroupSession = async (courseId: string, groupId: stri
       throw new Error('Failed to create group session');
     }
 
+    return await response.json();
   } catch (error) {
     console.error('Error creating group session:', error);
     throw error;

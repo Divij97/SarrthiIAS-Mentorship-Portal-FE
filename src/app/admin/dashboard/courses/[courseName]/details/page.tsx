@@ -145,7 +145,7 @@ export default function CourseDetailsPage({
       const createGroupRequest: CreateGroupRequest = {
         groupFriendlyName: formData.groupId,
         groupMentorshipSessions: [],
-        mentees: []
+        criterion: formData.criterion
       }
       
       // Call the API to create a new group

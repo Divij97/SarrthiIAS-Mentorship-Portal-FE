@@ -181,7 +181,8 @@ export default function MentorSessionsPage() {
           endTime: addFormData.endTime,
           updateType: UpdateType.ADD,
           isPermanentUpdate: true,
-          sessionType: SessionType.AD_HOC
+          sessionType: SessionType.AD_HOC,
+          mentorEmail: mentorResponse.mentor?.email
         },
         authHeader,
         mentorResponse.username
