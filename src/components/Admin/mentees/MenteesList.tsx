@@ -1,13 +1,83 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { MenteesForCsvExport, StrippedDownMentee, PreferredSlot } from '@/types/mentee';
-import { fetchMentees, MenteesFilters } from '@/services/admin';
+import { fetchMentees, MenteesFilters, assignMentorToMentee } from '@/services/admin';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
-import { MagnifyingGlassIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, ArrowPathIcon, UserPlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { sendOnBoardingEmail } from '@/services/mentors';
+import { toast } from 'react-hot-toast';
 
 interface MenteesListProps {
   courses: { id: string; name: string }[];
   groups: { groupId: string; groupFriendlyName: string; course: string }[];
+}
+
+interface AssignMentorModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (mentorPhone: string) => void;
+  mentors: { phone: string; name: string }[];
+  loading: boolean;
+}
+
+function AssignMentorModal({ isOpen, onClose, onSubmit, mentors, loading }: AssignMentorModalProps) {
+  const [selectedMentor, setSelectedMentor] = useState<string>('');
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Assign Mentor</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-500"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Select Mentor
+            </label>
+            <select
+              value={selectedMentor}
+              onChange={(e) => setSelectedMentor(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-gray-900"
+              disabled={loading}
+            >
+              <option value="">Select a mentor</option>
+              {mentors.map(mentor => (
+                <option key={mentor.phone} value={mentor.phone}>
+                  {mentor.name} ({mentor.phone})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => onSubmit(selectedMentor)}
+              disabled={!selectedMentor || loading}
+              className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Assigning...' : 'Assign Mentor'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function MenteesList({ courses, groups }: MenteesListProps) {
@@ -19,9 +89,13 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
     skip: 0
   });
   const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
+  const adminData = useAdminAuthStore((state) => state.adminData);
   const fetchInProgress = useRef(false);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [assigningMentor, setAssigningMentor] = useState<string | null>(null);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedMentee, setSelectedMentee] = useState<MenteesForCsvExport | null>(null);
   
   // Using useCallback to memoize the fetch function
   const fetchMenteesList = useCallback(async () => {
@@ -95,6 +169,29 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
       setEmailError(`Failed to send email to ${mentee.name}`);
     } finally {
       setSendingEmail(null);
+    }
+  };
+
+  const handleAssignMentor = async (mentee: MenteesForCsvExport) => {
+    setSelectedMentee(mentee);
+    setShowAssignModal(true);
+  };
+
+  const handleAssignSubmit = async (mentorPhone: string) => {
+    if (!authHeader || !selectedMentee || !mentorPhone) return;
+
+    setAssigningMentor(selectedMentee.phone);
+    try {
+      await assignMentorToMentee(selectedMentee.phone, { mentorUserName: mentorPhone }, authHeader);
+      toast.success(`Mentor assigned successfully to ${selectedMentee.name}`);
+      handleRefresh(); // Refresh the list to show updated data
+      setShowAssignModal(false);
+      setSelectedMentee(null);
+    } catch (error) {
+      console.error('Failed to assign mentor:', error);
+      toast.error(`Failed to assign mentor to ${selectedMentee.name}`);
+    } finally {
+      setAssigningMentor(null);
     }
   };
 
@@ -231,7 +328,7 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {mentee.phone}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
                         <button
                           onClick={() => handleSendOnboardingEmail(mentee)}
                           disabled={sendingEmail === mentee.phone}
@@ -242,6 +339,18 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                           }`}
                         >
                           {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
+                        </button>
+                        <button
+                          onClick={() => handleAssignMentor(mentee)}
+                          disabled={assigningMentor === mentee.phone}
+                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                            assigningMentor === mentee.phone
+                              ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                              : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                          }`}
+                        >
+                          <UserPlusIcon className="h-4 w-4 mr-1" />
+                          {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
                         </button>
                       </td>
                     </tr>
@@ -262,7 +371,7 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                     <div className="text-sm text-gray-500">
                       <p>{mentee.email}</p>
                     </div>
-                    <div className="pt-2">
+                    <div className="pt-2 space-y-2">
                       <button
                         onClick={() => handleSendOnboardingEmail(mentee)}
                         disabled={sendingEmail === mentee.phone}
@@ -274,6 +383,18 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                       >
                         {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
                       </button>
+                      <button
+                        onClick={() => handleAssignMentor(mentee)}
+                        disabled={assigningMentor === mentee.phone}
+                        className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                          assigningMentor === mentee.phone
+                            ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                            : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                        }`}
+                      >
+                        <UserPlusIcon className="h-4 w-4 mr-1" />
+                        {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -282,6 +403,17 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
           </>
         )}
       </div>
+
+      <AssignMentorModal
+        isOpen={showAssignModal}
+        onClose={() => {
+          setShowAssignModal(false);
+          setSelectedMentee(null);
+        }}
+        onSubmit={handleAssignSubmit}
+        mentors={adminData?.mentors || []}
+        loading={!!assigningMentor}
+      />
     </div>
   );
 } 

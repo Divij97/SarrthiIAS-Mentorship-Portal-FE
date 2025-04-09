@@ -7,8 +7,6 @@ import { ArrowLeftIcon, PlusIcon, VideoCameraIcon, DocumentIcon, ClockIcon, Penc
 import SessionForm, { SessionFormData } from '@/components/Admin/SessionForm';
 import { convertToSession } from '@/utils/session-utils';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
-import { Course } from '@/types/course';
-import { fetchCourse } from '@/services/courses';
 import { getGroupById } from '@/services/mentee';
 import { useSessionStore } from '@/stores/session/store';
 import { BulkMentorshipGroupCreateOrUpdateRequest, DeleteGroupSessionsRequest } from '@/types/admin';

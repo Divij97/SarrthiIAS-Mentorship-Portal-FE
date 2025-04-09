@@ -88,3 +88,7 @@ export interface CriterionSubCategoryRequest {
 export interface MentorshipSessionsResponse {
     sessions: GroupMentorshipSession[];
 }
+
+export interface MentorAssignmentRequest {
+    mentorUserName: string;
+}

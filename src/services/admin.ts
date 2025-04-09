@@ -1,4 +1,4 @@
-import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorshipSessionsResponse, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
+import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorshipSessionsResponse, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
 import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
@@ -296,3 +296,22 @@ export const fetchCourseAllMentees = async (courseId: string, authHeader: string
     throw error;
   }
 };
+
+export const assignMentorToMentee = async (menteeUserName: string, request: MentorAssignmentRequest, authHeader: string): Promise<void> => {
+  try {
+    let apiUrl = config.api.url;
+    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+
+    const response = await fetch(`${apiUrl}/v1/admin/${menteeUserName}/assignMentor`, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+  } catch (error) {
+    console.error('Error assigning mentor to mentee:', error);
+    throw error;
+  }
+}

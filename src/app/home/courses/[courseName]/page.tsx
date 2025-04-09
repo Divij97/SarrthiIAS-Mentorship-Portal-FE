@@ -217,11 +217,11 @@ export default function CourseDetailsPage({
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="text-lg font-medium text-gray-900">Group Session</h3>
-                    <p className="text-sm text-gray-500 mt-1">Mentor: {session.mentorUserName}</p>
+                    <p className="text-sm text-gray-500 mt-1">Mentor Email: {session.mentorName}</p>
                   </div>
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {/* <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     Scheduled
-                  </span>
+                  </span> */}
                 </div>
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center text-sm text-gray-600">
