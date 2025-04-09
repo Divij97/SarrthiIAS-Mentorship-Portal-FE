@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Course } from '@/types/course';
 import CourseListItem from './CourseListItem';
+import { OneOnOneCourseListItem } from './OneOnOneCourseListItem';
 import { fetchCourses } from '@/services/courses';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 
@@ -14,14 +15,19 @@ export default function ActiveCourses() {
   const { addCourse } = useAdminAuthStore();
   const adminData = useAdminAuthStore.getState().adminData;
   const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [groupCourses, setGroupCourses] = useState<Course[]>([]);
+  const [oneOnOneCourses, setOneOnOneCourses] = useState<Course[]>([]);
 
   useEffect(() => {
     // If we already have courses in the admin store, use those
     if (adminData?.courses?.length) {
-      // Filter out retired courses
-      const activeCourses = adminData.courses.filter(course => !course.deleted && !course.isOneOnOneMentorshipCourse);
-      setCourses(activeCourses);
+      // Filter out retired courses and separate one-on-one courses
+      const activeCourses = adminData.courses.filter(course => !course.deleted);
+      const oneOnOne = activeCourses.filter(course => course.isOneOnOneMentorshipCourse);
+      const group = activeCourses.filter(course => !course.isOneOnOneMentorshipCourse);
+      
+      setGroupCourses(group);
+      setOneOnOneCourses(oneOnOne);
       setLoading(false);
       return;
     }
@@ -46,8 +52,13 @@ export default function ActiveCourses() {
           ? coursesData.filter(course => !course.deleted)
           : [];
         
+        // Separate one-on-one and group courses
+        const oneOnOne = validCoursesData.filter(course => course.isOneOnOneMentorshipCourse);
+        const group = validCoursesData.filter(course => !course.isOneOnOneMentorshipCourse);
+        
         // Update local state
-        setCourses(validCoursesData);
+        setGroupCourses(group);
+        setOneOnOneCourses(oneOnOne);
         
         // Update admin store if needed
         if (!adminData || !adminData.courses) {
@@ -87,7 +98,7 @@ export default function ActiveCourses() {
     );
   }
 
-  if (!courses.length) {
+  if (!groupCourses.length && !oneOnOneCourses.length) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-gray-500">No active courses found</div>
@@ -96,14 +107,37 @@ export default function ActiveCourses() {
   }
 
   return (
-    <div className="space-y-6">
-      {courses.map((course) => (
-        <CourseListItem
-          key={course.id || Math.random().toString()}
-          course={course}
-          onSelect={() => handleCourseSelect(course)}
-        />
-      ))}
+    <div className="space-y-8">
+      {/* Group Courses Section */}
+      {groupCourses.length > 0 && (
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Group Courses</h2>
+          <div className="space-y-6">
+            {groupCourses.map((course) => (
+              <CourseListItem
+                key={course.id || Math.random().toString()}
+                course={course}
+                onSelect={() => handleCourseSelect(course)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* One-on-One Courses Section */}
+      {oneOnOneCourses.length > 0 && (
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">One-on-One Mentorship Courses</h2>
+          <div className="space-y-6">
+            {oneOnOneCourses.map((course) => (
+              <OneOnOneCourseListItem
+                key={course.id || Math.random().toString()}
+                course={course}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
