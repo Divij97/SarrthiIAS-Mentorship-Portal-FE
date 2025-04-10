@@ -180,6 +180,7 @@ export interface MenteesForCsvExport {
   givenInterview: boolean;
   givenMains: boolean;
   menteeUpscExperience: MenteeUpscExperience;
+  assignedMentor?: StrippedDownMentor;
 }
 
 

@@ -10,11 +10,14 @@ import { AssignMentorModal } from './assign-mentor-modal';
 interface MenteesListProps {
   courses: { id: string; name: string }[];
   groups: { groupId: string; groupFriendlyName: string; course: string }[];
+  mentees: MenteesForCsvExport[];
+  loading: boolean;
+  onRefresh: () => Promise<void>;
 }
 
-export default function MenteesList({ courses, groups }: MenteesListProps) {
-  const [mentees, setMentees] = useState<MenteesForCsvExport[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function MenteesList({ courses, groups, mentees: initialMentees, loading: initialLoading, onRefresh }: MenteesListProps) {
+  const [mentees, setMentees] = useState<MenteesForCsvExport[]>(initialMentees);
+  const [loading, setLoading] = useState(initialLoading);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<MenteesFilters>({
     limit: 10,
@@ -29,35 +32,21 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedMentee, setSelectedMentee] = useState<MenteesForCsvExport | null>(null);
 
-  const fetchMenteesList = async () => {
-    // Prevent concurrent fetches
-    if (fetchInProgress.current || !authHeader) {
-      if (!authHeader) {
-        setError('Authentication required');
-      }
-      return;
-    }
-
-    console.log('Fetching mentees data...', new Date().toISOString());
-
-    try {
-      fetchInProgress.current = true;
-      setLoading(true);
-      setError(null);
-      const response = await fetchMentees(filters, authHeader);
-      setMentees(response.mentees);
-    } catch (err) {
-      console.error('Error fetching mentees:', err);
-      setError('Failed to load mentees. Please try again.');
-    } finally {
-      setLoading(false);
-      fetchInProgress.current = false;
-    }
-  };
+  useEffect(() => {
+    setMentees(initialMentees);
+  }, [initialMentees]);
 
   useEffect(() => {
-    fetchMenteesList();
-  }, [filters]); // Depend on filters directly
+    setLoading(initialLoading);
+  }, [initialLoading]);
+
+  const handleRefresh = async () => {
+    console.log('request to Refresh mentees list');
+    if (!fetchInProgress.current) {
+      console.log('Refreshing mentees list...');
+      await onRefresh();
+    }
+  };
 
   const handleFilterChange = (key: keyof MenteesFilters, value: string | number) => {
     setFilters(prev => ({
@@ -65,14 +54,6 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
       [key]: value || undefined,
       skip: 0 // Reset skip to 0 when filters change
     }));
-  };
-
-  const handleRefresh = () => {
-    console.log('request to Refresh mentees list');
-    if (!fetchInProgress.current) {
-      console.log('Refreshing mentees list...');
-      fetchMenteesList();
-    }
   };
 
   const handleSendOnboardingEmail = async (mentee: MenteesForCsvExport) => {
@@ -115,6 +96,7 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
       toast.success(`Mentor assigned successfully to ${selectedMentee.name}`);
       setShowAssignModal(false);
       setSelectedMentee(null);
+      await onRefresh();
     } catch (error) {
       console.error('Failed to assign mentor:', error);
       toast.error(`Failed to assign mentor to ${selectedMentee.name}`);
@@ -125,6 +107,9 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900">Mentees</h2>
+      </div>
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
@@ -239,6 +224,9 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                       Phone
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Assigned Mentor
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -255,6 +243,9 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {mentee.phone}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
                         <button
                           onClick={() => handleSendOnboardingEmail(mentee)}
@@ -266,17 +257,19 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                         >
                           {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
                         </button>
-                        <button
-                          onClick={() => handleAssignMentor(mentee)}
-                          disabled={assigningMentor === mentee.phone}
-                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
-                              ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
-                              : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
-                            }`}
-                        >
-                          <UserPlusIcon className="h-4 w-4 mr-1" />
-                          {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
-                        </button>
+                        {!mentee.assignedMentor && (
+                          <button
+                            onClick={() => handleAssignMentor(mentee)}
+                            disabled={assigningMentor === mentee.phone}
+                            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
+                                ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                                : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                              }`}
+                          >
+                            <UserPlusIcon className="h-4 w-4 mr-1" />
+                            {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -296,6 +289,9 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                     <div className="text-sm text-gray-500">
                       <p>{mentee.email}</p>
                     </div>
+                    <div className="text-sm text-gray-500">
+                      <p>Assigned Mentor: {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}</p>
+                    </div>
                     <div className="pt-2 space-y-2">
                       <button
                         onClick={() => handleSendOnboardingEmail(mentee)}
@@ -307,17 +303,19 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
                       >
                         {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
                       </button>
-                      <button
-                        onClick={() => handleAssignMentor(mentee)}
-                        disabled={assigningMentor === mentee.phone}
-                        className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
-                            ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
-                            : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
-                          }`}
-                      >
-                        <UserPlusIcon className="h-4 w-4 mr-1" />
-                        {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
-                      </button>
+                      {!mentee.assignedMentor && (
+                        <button
+                          onClick={() => handleAssignMentor(mentee)}
+                          disabled={assigningMentor === mentee.phone}
+                          className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
+                              ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                              : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                            }`}
+                        >
+                          <UserPlusIcon className="h-4 w-4 mr-1" />
+                          {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

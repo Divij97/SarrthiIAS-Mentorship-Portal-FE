@@ -93,3 +93,16 @@ export interface MentorAssignmentRequest {
     mentorUserName: string;
     mentee: StrippedDownMentee;
 }
+
+export interface GroupMentee {
+    name: string;
+    phone: string;
+    email: string;
+    attemptCount: number;
+    menteeUpscExperience: string;
+    assignedGroupName: string;
+    optionalSubject: string;
+    givenInterview: boolean;
+    givenMains: boolean;
+    assignedMentor: StrippedDownMentor;
+}
