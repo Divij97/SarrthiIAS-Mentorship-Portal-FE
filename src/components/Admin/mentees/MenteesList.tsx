@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MenteesForCsvExport, StrippedDownMentee, PreferredSlot } from '@/types/mentee';
 import { fetchMentees, MenteesFilters, assignMentorToMentee } from '@/services/admin';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
@@ -29,8 +29,7 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedMentee, setSelectedMentee] = useState<MenteesForCsvExport | null>(null);
 
-  // Using useCallback to memoize the fetch function
-  const fetchMenteesList = useCallback(async () => {
+  const fetchMenteesList = async () => {
     // Prevent concurrent fetches
     if (fetchInProgress.current || !authHeader) {
       if (!authHeader) {
@@ -39,7 +38,6 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
       return;
     }
 
-    // Log to verify single fetch
     console.log('Fetching mentees data...', new Date().toISOString());
 
     try {
@@ -55,26 +53,24 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
       setLoading(false);
       fetchInProgress.current = false;
     }
-  }, [filters, authHeader]);
+  };
 
   useEffect(() => {
     fetchMenteesList();
-
-    // Cleanup function to prevent state updates if component unmounts during fetch
-    return () => {
-      fetchInProgress.current = true; // Prevents any ongoing fetches from completing
-    };
-  }, [fetchMenteesList]); // Dependency is the memoized fetch function
+  }, [filters]); // Depend on filters directly
 
   const handleFilterChange = (key: keyof MenteesFilters, value: string | number) => {
     setFilters(prev => ({
       ...prev,
-      [key]: value || undefined
+      [key]: value || undefined,
+      skip: 0 // Reset skip to 0 when filters change
     }));
   };
 
   const handleRefresh = () => {
+    console.log('request to Refresh mentees list');
     if (!fetchInProgress.current) {
+      console.log('Refreshing mentees list...');
       fetchMenteesList();
     }
   };

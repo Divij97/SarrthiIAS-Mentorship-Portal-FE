@@ -30,7 +30,7 @@ interface AdminAuthState {
   logout: () => void;
   // New functions for mentorship groups
   setCourseGroups: (courseName: string, groups: MentorshipGroup[]) => void;
-  getCourseGroups: (courseName: string) => MentorshipGroup[] | null;
+  getCourseGroups: (courseId: string) => MentorshipGroup[];
   clearCourseGroups: (courseName: string) => void;
   getGroupSessions: (courseName: string, groupId: string) => GroupMentorshipSession[] | null;
   getMentorUserNameByPhone: (phone: string) => string | null;
@@ -64,6 +64,7 @@ const initialState: AdminAuthState = {
   loading: false,
   _authHeader: null,
   courseGroups: {},
+  // Function placeholders required by the interface
   getAuthHeader: () => null,
   setUsername: () => {},
   setError: () => {},
@@ -73,7 +74,7 @@ const initialState: AdminAuthState = {
   refreshAdmin: async () => false,
   logout: () => {},
   setCourseGroups: () => {},
-  getCourseGroups: () => null,
+  getCourseGroups: () => [],
   clearCourseGroups: () => {},
   getGroupSessions: () => null,
   getMentorUserNameByPhone: () => null,
@@ -155,9 +156,9 @@ export const useAdminAuthStore = create<AdminAuthState>()(
         }
       })),
 
-      getCourseGroups: (courseName) => {
+      getCourseGroups: (courseId) => {
         const state = get();
-        return state.courseGroups[courseName] || null;
+        return state.courseGroups[courseId];
       },
 
       getMentorUserNameByPhone: (phone) => {
