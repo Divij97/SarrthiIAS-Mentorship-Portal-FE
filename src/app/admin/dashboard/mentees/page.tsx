@@ -12,6 +12,7 @@ export default function MenteesPage() {
   const { adminData, getCourseGroups, getAuthHeader } = useAdminAuthStore();
   const [mentees, setMentees] = useState<MenteesForCsvExport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
   const [filters, setFilters] = useState<MenteesFilters>({
     limit: 10,
     skip: 0
@@ -26,6 +27,8 @@ export default function MenteesPage() {
       setLoading(true);
       const response = await fetchMentees(filters, getAuthHeader());
       setMentees(response.mentees);
+      // If we get fewer mentees than the limit, there are no more to fetch
+      setHasMore(response.mentees.length === filters.limit);
     } catch (error) {
       toast.error('Error fetching mentees:', error);
     } finally {
@@ -58,6 +61,8 @@ export default function MenteesPage() {
   });
 
   const handleRefresh = async () => {
+    // Reset to first page on refresh
+    setFilters(prev => ({ ...prev, skip: 0 }));
     await fetchMenteesData();
   };
 
@@ -66,6 +71,20 @@ export default function MenteesPage() {
       ...prev,
       [key]: value || undefined,
       skip: 0 // Reset skip to 0 when filters change
+    }));
+  };
+
+  const handleNextPage = () => {
+    setFilters(prev => ({
+      ...prev,
+      skip: prev.skip + prev.limit
+    }));
+  };
+
+  const handlePrevPage = () => {
+    setFilters(prev => ({
+      ...prev,
+      skip: Math.max(0, prev.skip - prev.limit)
     }));
   };
 
@@ -84,6 +103,10 @@ export default function MenteesPage() {
         onRefresh={handleRefresh}
         filters={filters}
         onFilterChange={handleFilterChange}
+        onNextPage={handleNextPage}
+        onPrevPage={handlePrevPage}
+        hasMore={hasMore}
+        currentPage={Math.floor(filters.skip / filters.limit) + 1}
       />
     </div>
   );

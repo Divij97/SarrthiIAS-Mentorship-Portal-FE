@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { MenteesForCsvExport, StrippedDownMentee, PreferredSlot } from '@/types/mentee';
 import { fetchMentees, MenteesFilters, assignMentorToMentee } from '@/services/admin';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
-import { MagnifyingGlassIcon, ArrowPathIcon, UserPlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, ArrowPathIcon, UserPlusIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { sendOnBoardingEmail } from '@/services/mentors';
 import { toast } from 'react-hot-toast';
 import { AssignMentorModal } from './assign-mentor-modal';
@@ -15,6 +15,10 @@ interface MenteesListProps {
   onRefresh: () => Promise<void>;
   filters: MenteesFilters;
   onFilterChange: (key: keyof MenteesFilters, value: string | number) => void;
+  onNextPage: () => void;
+  onPrevPage: () => void;
+  hasMore: boolean;
+  currentPage: number;
 }
 
 export default function MenteesList({ 
@@ -24,7 +28,11 @@ export default function MenteesList({
   loading: initialLoading, 
   onRefresh,
   filters,
-  onFilterChange
+  onFilterChange,
+  onNextPage,
+  onPrevPage,
+  hasMore,
+  currentPage
 }: MenteesListProps) {
   const [mentees, setMentees] = useState<MenteesForCsvExport[]>(initialMentees);
   const [loading, setLoading] = useState(initialLoading);
@@ -341,6 +349,69 @@ export default function MenteesList({
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Add pagination controls */}
+            <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200 sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <button
+                  onClick={onPrevPage}
+                  disabled={currentPage === 1 || loading}
+                  className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                    currentPage === 1 || loading
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={onNextPage}
+                  disabled={!hasMore || loading}
+                  className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                    !hasMore || loading
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Showing page <span className="font-medium">{currentPage}</span>
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button
+                      onClick={onPrevPage}
+                      disabled={currentPage === 1 || loading}
+                      className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                        currentPage === 1 || loading
+                          ? 'text-gray-300 cursor-not-allowed'
+                          : 'text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="sr-only">Previous</span>
+                      <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                    <button
+                      onClick={onNextPage}
+                      disabled={!hasMore || loading}
+                      className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                        !hasMore || loading
+                          ? 'text-gray-300 cursor-not-allowed'
+                          : 'text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="sr-only">Next</span>
+                      <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  </nav>
+                </div>
+              </div>
             </div>
           </>
         )}
