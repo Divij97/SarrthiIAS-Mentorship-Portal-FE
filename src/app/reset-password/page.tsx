@@ -75,12 +75,15 @@ export default function ResetPasswordPage() {
     
     // Mark that OTP has been verified
     setHasVerifiedOTP?.(true);
+
+    const hasOneOnOneMentorship = menteeResponse?.enrolledCourses.some((course) => course.course.isOneOnOneMentorshipCourse);
     
     // Store necessary information for signup
     localStorage.setItem('tempMenteeData', JSON.stringify({
       phone,
       password: newPassword,
-      verifiedOtp: otp
+      verifiedOtp: otp,
+      hasOneOnOneMentorship: hasOneOnOneMentorship || false 
     }));
     
     console.log("Redirecting to signup from handleMenteeSignup");

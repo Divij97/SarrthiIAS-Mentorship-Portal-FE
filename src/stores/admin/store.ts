@@ -23,7 +23,7 @@ interface AdminState {
   clearCourseGroups: (courseName: string) => void;
   getMentorUserNameByPhone: (phone: string) => string | null;
   getGroupFriendlyName: (courseName: string, groupId: string) => string | null;
-  assignGroupsToCourse: (courseId: string, course: any) => Promise<any>;
+  assignGroupsToCourse: (courseId: string, course: any) => Promise<void>;
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -68,13 +68,13 @@ export const useAdminStore = create<AdminState>()(
         return group?.groupFriendlyName || null;
       },
 
-      assignGroupsToCourse: async (courseId: string, course: any) => {
+      assignGroupsToCourse: async (courseId: string, course: any): Promise<void> => {
         try {
           const authHeader = useAdminAuthStore.getState().getAuthHeader();
           if (!authHeader) {
             throw new Error('No authentication header available');
           }
-          return await assignGroupsToCourse(courseId, authHeader, course);
+          await assignGroupsToCourse(courseId, authHeader, course);
         } catch (error) {
           console.error('Error in store assignGroupsToCourse:', error);
           throw error;

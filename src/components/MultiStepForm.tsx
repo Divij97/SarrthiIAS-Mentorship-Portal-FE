@@ -9,7 +9,7 @@ import PreparationJourney from '@/components/Onboarding/PreparationJourney';
 import CurrentPreparation from '@/components/Onboarding/CurrentPreparation';
 import Expectations from '@/components/Onboarding/Expectations';
 import { Button } from '@/components/ui/Button';
-import { Region, Gender, OptionalSubject, Mentee, MenteeWithAuth, ReservationCategory, PreferredSlot, AnswerWritingLevel, MenteeUpscExperience } from '@/types/mentee';
+import { Region, Gender, OptionalSubject, Mentee, MenteeWithAuth, ReservationCategory, PreferredSlot, AnswerWritingLevel, MenteeUpscExperience, MenteeResponse } from '@/types/mentee';
 import { signupMentee, getMenteeByPhone } from '@/services/mentee';
 import { validateStep, FormErrors } from '@/utils/mentee-signup-form-validator';
 import { useMenteeStore } from '@/stores/mentee/store';
@@ -193,7 +193,7 @@ const MultiStepForm = () => {
       };
 
 
-      const assignMentor =  false;
+      const assignMentor =  tempMenteeData.hasOneOnOneMentorship;
       await signupMentee(menteeWithAuth, assignMentor);
       
       // After successful signup, create new auth header with the updated password
@@ -201,26 +201,39 @@ const MultiStepForm = () => {
       
       // Update the auth store with auth header
       setAuthHeader(newAuthHeader);
+      const newMenteeResponse: MenteeResponse = {
+        isTempPassword: false,
+        mentee: menteeObj,
+        otp: null,
+        username: tempMenteeData.phone,
+        enrolledCourses: menteeWithAuth.enrolledCourses,
+        assignedMentorUsername: menteeResponse.assignedMentorUsername,
+        assignedMentor: menteeResponse.assignedMentor,
+        mentorshipSessions: menteeResponse.mentorshipSessions
+      };
+      
+      
+      setMenteeResponse(newMenteeResponse);
       
       // Set the phone number in the auth store
-      useLoginStore.getState().setPhone(tempMenteeData.phone);
+    //   useLoginStore.getState().setPhone(tempMenteeData.phone);
       
-      // Fetch latest mentee data from server to get any updates (like enrolled courses)
-      try {
-        const menteeResponse = await getMenteeByPhone(tempMenteeData.phone, newAuthHeader);
-        if (menteeResponse && menteeResponse.mentee) {
-          // Update the mentee store with the latest data from server
-          setMenteeResponse(menteeResponse);
-          // Also store the full mentee response
-          useMenteeStore.getState().setMenteeResponse(menteeResponse);
-          useMenteeStore.getState().setCourses(menteeResponse.enrolledCourses);
-        } else {
-          throw new Error('Failed to fetch updated mentee data');
-        }
-      } catch (error) {
-        console.error('Error fetching updated mentee data:', error);
-        // If there's an error fetching updated data, use the data we have
-      }
+    //   // Fetch latest mentee data from server to get any updates (like enrolled courses)
+    //   try {
+    //     const menteeResponse = await getMenteeByPhone(tempMenteeData.phone, newAuthHeader);
+    //     if (menteeResponse && menteeResponse.mentee) {
+    //       // Update the mentee store with the latest data from server
+    //       setMenteeResponse(menteeResponse);
+    //       // Also store the full mentee response
+    //       useMenteeStore.getState().setMenteeResponse(menteeResponse);
+    //       useMenteeStore.getState().setCourses(menteeResponse.enrolledCourses);
+    //     } else {
+    //       throw new Error('Failed to fetch updated mentee data');
+    //     }
+    //   } catch (error) {
+    //     console.error('Error fetching updated mentee data:', error);
+    //     // If there's an error fetching updated data, use the data we have
+    //   }
       
       localStorage.removeItem('tempMenteeData'); // Clean up
       router.push('/home');

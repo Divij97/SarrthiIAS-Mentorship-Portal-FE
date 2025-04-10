@@ -111,8 +111,8 @@ export default function CourseDetailsPage({
         throw new Error('Course information not available');
       }
       
-      const response = await assignGroupsToCourse(courseId, currentCourse);
-      console.log("Response from assignGroupsToCourse: ", response);
+      await assignGroupsToCourse(courseId, currentCourse);
+      // console.log("Response from assignGroupsToCourse: ", response);
       // Notify user about successful request
       setError(null); // Clear any previous errors
       setGroupsAssigned(true);
@@ -143,7 +143,7 @@ export default function CourseDetailsPage({
       setCreateGroupError(null);
 
       const createGroupRequest: CreateGroupRequest = {
-        groupFriendlyName: formData.groupId,
+        groupFriendlyName: formData.groupFriendlyName,
         groupMentorshipSessions: [],
         criterion: formData.criterion
       }
@@ -153,7 +153,7 @@ export default function CourseDetailsPage({
       // Close the modal
       setIsCreateModalOpen(false);
       
-      console.log('Group created successfully:', formData.groupId);
+      console.log('Group created successfully:', formData.groupFriendlyName);
       
       // Refresh the groups list
       await fetchGroups();
@@ -430,7 +430,7 @@ export default function CourseDetailsPage({
             {activeTab === 'groups' && !loading && !error && (
               <div className="flex items-center space-x-3">
                 {/* Assign Groups button (only for empty group courses) */}
-                {groups.length === 0 && !groupsAssigned && (
+                {!groupsAssigned && (
                   <button
                     onClick={handleAssignGroups}
                     className={`flex items-center px-4 py-2 ${assigningGroups || groupsAssigned ? 'bg-gray-400' : 'bg-orange-600 hover:bg-orange-700'} text-white rounded-md transition-colors duration-200`}

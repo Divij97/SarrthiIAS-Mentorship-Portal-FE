@@ -29,7 +29,7 @@ export const loginAdmin = async (authHeader: string): Promise<AdminData> => {
   }
 };
 
-export const assignGroupsToCourse = async (courseId: string, authHeader: string, course: any): Promise<any> => {
+export const assignGroupsToCourse = async (courseId: string, authHeader: string, course: any): Promise<void> => {
   try {
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
@@ -48,8 +48,6 @@ export const assignGroupsToCourse = async (courseId: string, authHeader: string,
     if (!response.ok) {
       throw new Error('Failed to assign groups to course');
     }
-
-    return await response.json();
   } catch (error) {
     console.error('Error assigning groups to course:', error);
     throw error;

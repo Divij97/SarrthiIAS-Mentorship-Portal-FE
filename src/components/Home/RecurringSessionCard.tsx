@@ -64,7 +64,7 @@ export function RecurringSessionCard({ session, dayOfWeek }: RecurringSessionCar
           disabled={isCancelling}
           className="text-sm text-red-600 hover:text-red-800 disabled:opacity-50"
         >
-          {isCancelling ? 'Cancelling...' : 'Cancel Session'}
+          {isCancelling ? 'Cancelling...' : 'Cancel Schedule'}
         </button>
       </div>
     </div>

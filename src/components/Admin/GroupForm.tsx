@@ -13,7 +13,7 @@ interface GroupFormProps {
 }
 
 export interface GroupFormData {
-  groupId: string;
+  groupFriendlyName: string;
   criterion: CriterionSubCategoryRequest;
 }
 
@@ -83,7 +83,7 @@ export default function GroupForm({ isOpen, onClose, onSubmit, courseName }: Gro
 
     // Format the data for submission
     const submissionData: GroupFormData = {
-      groupId: formData.groupId,
+      groupFriendlyName: formData.groupId,
       criterion: {
         category: formData.criterion.category,
         subCategories: formatSubCategories(formData.criterion.subCategories)

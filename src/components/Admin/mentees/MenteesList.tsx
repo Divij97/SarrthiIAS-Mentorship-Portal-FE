@@ -114,7 +114,7 @@ export default function MenteesList({ courses, groups }: MenteesListProps) {
 
     setAssigningMentor(selectedMentee.phone);
     try {
-      const response = await assignMentorToMentee(selectedMentee.phone, { mentorUserName: mentorPhone, mentee: { name: selectedMentee.name, phone: selectedMentee.phone, email: selectedMentee.email, preferredSlot: PreferredSlot.ALL } }, authHeader);
+      await assignMentorToMentee(selectedMentee.phone, { mentorUserName: mentorPhone, mentee: { name: selectedMentee.name, phone: selectedMentee.phone, email: selectedMentee.email } }, authHeader);
 
       toast.success(`Mentor assigned successfully to ${selectedMentee.name}`);
       setShowAssignModal(false);

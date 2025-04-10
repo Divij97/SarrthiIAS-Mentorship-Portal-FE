@@ -8,6 +8,7 @@ export interface TempMenteeData {
   phone: string;
   password: string;
   verifiedOtp: string;
+  hasOneOnOneMentorship: boolean;
 } 
 
 export interface TempMentorData {

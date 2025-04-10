@@ -167,7 +167,7 @@ export interface StrippedDownMentee {
   name: string;
   phone: string;
   email: string;
-  preferredSlot: PreferredSlot;
+  preferredSlot?: PreferredSlot;
   creationTs?: number;
 }
 

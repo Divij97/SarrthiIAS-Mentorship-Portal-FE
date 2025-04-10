@@ -1,6 +1,6 @@
 import { Course, CreateDocumentRequest } from "./course";
 import { MenteesForCsvExport, StrippedDownMentee } from "./mentee";
-import { Mentor, StrippedDownMentor } from "./mentor";
+import { StrippedDownMentor } from "./mentor";
 import { GroupMentorshipSession } from "./session";
 export interface AdminData {
     username: string;
