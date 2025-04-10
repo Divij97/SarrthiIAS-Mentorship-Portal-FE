@@ -1,4 +1,4 @@
-import { UserGroupIcon, CalendarIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, UserIcon } from '@heroicons/react/24/outline';
 import { MentorshipGroup } from '@/types/session';
 
 interface GroupCardProps {
@@ -34,9 +34,15 @@ export default function GroupCard({ group, onClick, isSelected, onSelect }: Grou
               <UserGroupIcon className="h-5 w-5 text-gray-400" />
               <h3 className="text-lg font-medium text-gray-900">{group.groupFriendlyName}</h3>
             </div>
-            <div className="flex items-center space-x-2 text-gray-500">
-              <CalendarIcon className="h-4 w-4" />
-              <span className="text-sm">{group.sessions?.length || "No"} sessions</span>
+            <div className="flex items-center space-x-4 text-gray-500">
+              <div className="flex items-center space-x-2">
+                <CalendarIcon className="h-4 w-4" />
+                <span className="text-sm">{group.sessions?.length || "No"} sessions</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <UserIcon className="h-4 w-4" />
+                <span className="text-sm">{group.menteeCount || 0} mentees</span>
+              </div>
             </div>
           </div>
           {group.sessions?.length || 0 > 0 ? (
