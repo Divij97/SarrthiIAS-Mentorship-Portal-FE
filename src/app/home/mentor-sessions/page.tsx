@@ -20,6 +20,8 @@ import NotifyMenteeModal from '@/components/app/NotifyMenteeModal';
 import AddSessionModal from '@/components/modals/AddSessionModal';
 import CancelSessionModal from '@/components/modals/CancelSessionModal';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
+
 export default function MentorSessionsPage() {
   // State for modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -69,7 +71,7 @@ export default function MentorSessionsPage() {
         );
         setGroupSessions(response.groupSessions);
       } catch (error) {
-        console.error('Error fetching group sessions:', error);
+        toast.error('Failed to fetch group sessions. Please try again.');
         setGroupSessions(null);
       } finally {
         setIsLoadingGroupSessions(false);
@@ -91,7 +93,7 @@ export default function MentorSessionsPage() {
       try {
         formattedDate = session.date ? convertDateFormat(session.date) : '';
       } catch (error) {
-        console.error('Error converting date format:', error);
+        toast.error('Error processing session date. Please try again.');
         formattedDate = '';
       }
       
@@ -212,7 +214,7 @@ export default function MentorSessionsPage() {
       });
       router.refresh();
     } catch (error) {
-      console.error('Failed to add session:', error);
+      toast.error('Failed to add session. Please try again.');
       setError('Failed to add session. Please try again.');
     } finally {
       setIsLoading(false);
@@ -245,7 +247,7 @@ export default function MentorSessionsPage() {
       setIsCancelModalOpen(false);
       setSelectedSession(null);
     } catch (error) {
-      console.error('Failed to cancel session:', error);
+      toast.error('Failed to cancel session. Please try again.');
       setError('Failed to cancel session. Please try again.');
     } finally {
       setIsLoading(false);

@@ -135,6 +135,11 @@ export default function CourseDetailsPage({
         <div className="mt-6 space-y-2">
           <p className="text-sm text-gray-500">
             Course Type: {course.isOneOnOneMentorshipCourse ? 'One-on-One Mentorship' : 'Group Mentorship'}
+            {course.isOneOnOneMentorshipCourse && mentor && (
+              <span className="block mt-1">
+                Your Mentor: {mentor.name} ({mentor.email})
+              </span>
+            )}
           </p>
           <p className="text-sm text-gray-500">
             Course ends at: {endDate}

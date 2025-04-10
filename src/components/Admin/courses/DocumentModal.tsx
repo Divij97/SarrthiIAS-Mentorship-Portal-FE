@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import { CreateDocumentRequest } from '@/types/course';
 import toast from 'react-hot-toast';
@@ -18,6 +18,19 @@ export default function DocumentModal({ isOpen, onClose, onSubmit, isSubmitting 
     disclaimer: ''
   });
   const [documents, setDocuments] = useState<CreateDocumentRequest[]>([]);
+
+  // Reset documents when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setDocuments([]);
+      setDocumentFormData({
+        name: '',
+        description: '',
+        url: '',
+        disclaimer: ''
+      });
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -129,7 +142,7 @@ export default function DocumentModal({ isOpen, onClose, onSubmit, isSubmitting 
                 onClick={handleDocumentFormSubmit}
                 className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
-                Add to List
+                Add
               </button>
             </div>
           </div>
@@ -144,11 +157,11 @@ export default function DocumentModal({ isOpen, onClose, onSubmit, isSubmitting 
                     <li key={index} className="py-3 flex justify-between items-start">
                       <div>
                         <h5 className="text-sm font-medium">{doc.name}</h5>
-                        {doc.description && <p className="text-xs text-gray-500">{doc.description}</p>}
+                        {/* {doc.description && <p className="text-xs text-gray-500">{doc.description}</p>} */}
                         <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">
                           {doc.url}
                         </a>
-                        {doc.disclaimer && <p className="text-xs italic text-gray-500 mt-1">{doc.disclaimer}</p>}
+                        {/* {doc.disclaimer && <p className="text-xs italic text-gray-500 mt-1">{doc.disclaimer}</p>} */}
                       </div>
                       <button
                         onClick={() => handleRemoveDocument(index)}
