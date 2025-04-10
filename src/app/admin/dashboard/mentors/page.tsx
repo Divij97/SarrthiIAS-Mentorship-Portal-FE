@@ -3,15 +3,17 @@
 import { useState } from 'react';
 import { StrippedDownMentor } from '@/types/mentor';
 import MentorListItem from '@/components/Admin/MentorListItem';
-import { TrashIcon, CheckIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { AddMentorModal } from '@/components/Admin/mentors/AddMentorModal';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
+import { deleteResource } from '@/services/admin';
+import { ResourceType } from '@/types/admin';
+import { toast } from 'react-hot-toast';
 
 export default function MentorsPage() {
-  const { adminData, refreshAdmin } = useAdminAuthStore();
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedMentors, setSelectedMentors] = useState<Set<string>>(new Set());
+  const { adminData, refreshAdmin, getAuthHeader } = useAdminAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const [deletingMentor, setDeletingMentor] = useState<string | null>(null);
 
   if (!adminData) {
     return (
@@ -33,30 +35,25 @@ export default function MentorsPage() {
     );
   });
 
-  const handleMentorSelect = (mentor: StrippedDownMentor) => {
-    if (isSelectionMode) {
-      setSelectedMentors(prev => {
-        const newSelected = new Set(prev);
-        if (newSelected.has(mentor.email)) {
-          newSelected.delete(mentor.email);
-        } else {
-          newSelected.add(mentor.email);
-        }
-        return newSelected;
-      });
+  const handleDeleteMentor = async (mentor: StrippedDownMentor) => {
+    if (!mentor.phone) return;
+    
+    setDeletingMentor(mentor.phone);
+    try {
+      const authHeader = getAuthHeader();
+      if (!authHeader) {
+        throw new Error('No auth header found');
+      }
+      
+      await deleteResource(ResourceType.MENTORS, mentor.phone, authHeader);
+      await refreshAdmin();
+      toast.success(`Mentor ${mentor.name} deleted successfully`);
+    } catch (error) {
+      console.error('Error deleting mentor:', error);
+      toast.error('Failed to delete mentor. Please try again.');
+    } finally {
+      setDeletingMentor(null);
     }
-  };
-
-  const handleDeleteSelected = () => {
-    // TODO: Implement delete functionality
-    console.log('Delete selected mentors:', Array.from(selectedMentors));
-    setSelectedMentors(new Set());
-    setIsSelectionMode(false);
-  };
-
-  const exitSelectionMode = () => {
-    setIsSelectionMode(false);
-    setSelectedMentors(new Set());
   };
 
   const handleModalSuccess = async () => {
@@ -85,43 +82,7 @@ export default function MentorsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-2xl font-semibold text-gray-900">Mentors Management</h2>
-          {isSelectionMode ? (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">
-                Selected: {selectedMentors.size}
-              </span>
-              <button
-                onClick={handleDeleteSelected}
-                disabled={selectedMentors.size === 0}
-                className={`flex items-center px-3 py-1.5 rounded-md transition-colors duration-200 ${
-                  selectedMentors.size === 0 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                    : 'bg-red-50 text-red-600 hover:bg-red-100'
-                }`}
-              >
-                <TrashIcon className="h-4 w-4 mr-1" />
-                Delete
-              </button>
-              <button
-                onClick={exitSelectionMode}
-                className="flex items-center px-3 py-1.5 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors duration-200"
-              >
-                <XMarkIcon className="h-4 w-4 mr-1" />
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setIsSelectionMode(true)}
-              className="flex items-center px-3 py-1.5 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors duration-200"
-            >
-              <CheckIcon className="h-4 w-4 mr-1" />
-              Select Mentors
-            </button>
-          )}
-        </div>
+        <h2 className="text-2xl font-semibold text-gray-900">Mentors Management</h2>
         <AddMentorModal onSuccess={handleModalSuccess} />
       </div>
 
@@ -141,12 +102,21 @@ export default function MentorsPage() {
 
       <div className="space-y-4">
         {filteredMentors.map((mentor: StrippedDownMentor) => (
-          <MentorListItem
-            key={mentor.phone}
-            mentor={mentor}
-            onSelect={() => handleMentorSelect(mentor)}
-            isSelected={isSelectionMode && selectedMentors.has(mentor.email)}
-          />
+          <div key={mentor.phone} className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+            <MentorListItem mentor={mentor} />
+            <button
+              onClick={() => handleDeleteMentor(mentor)}
+              disabled={deletingMentor === mentor.phone}
+              className={`flex items-center px-3 py-1.5 rounded-md transition-colors duration-200 ${
+                deletingMentor === mentor.phone
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-red-50 text-red-600 hover:bg-red-100'
+              }`}
+            >
+              <TrashIcon className="h-4 w-4 mr-1" />
+              {deletingMentor === mentor.phone ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
         ))}
       </div>
 
