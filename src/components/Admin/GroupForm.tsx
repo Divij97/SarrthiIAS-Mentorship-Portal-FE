@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { CriterionCategory, CriterionSubCategoryRequest } from '@/types/admin';
-import { OptionalSubject } from '@/types/mentee';
 
 interface GroupFormProps {
   isOpen: boolean;
@@ -244,7 +243,7 @@ export default function GroupForm({ isOpen, onClose, onSubmit, courseName }: Gro
                   required
                 >
                   <option value="">Select Optional Subject</option>
-                  {Object.values(OptionalSubject).map(subject => (
+                  {Object.values(OptionalSubCategoryList).map(subject => (
                     <option key={subject} value={subject}>
                       {subject}
                     </option>
