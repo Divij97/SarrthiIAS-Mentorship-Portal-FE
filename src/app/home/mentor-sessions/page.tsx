@@ -108,7 +108,7 @@ export default function MentorSessionsPage() {
         courseId: '',
         courseName: 'Group Session',
         groupFriendlyName: '',
-        zoomLink: session.zoomLink || undefined,
+        zoomLink: session.zoomMeetingInfo?.joinUrl || session.zoomLink || undefined,
         sessionType: SessionType.SCHEDULED
       };
     });

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useMentorStore } from '@/stores/mentor/store';
 import { MenteeScheduleTile } from '@/components/Home/MenteeScheduleTile';
 import { AddScheduleForMentee } from '@/components/Home/AddScheduleForMentee';
-import { StrippedDownMentee, PreferredSlot } from '@/types/mentee';
+import { StrippedDownMentee } from '@/types/mentee';
 import { DateFormatDDMMYYYY, RecurringMentorshipSchedule } from '@/types/session';
 import { createRecurringSchedule, sendOnBoardingEmail } from '@/services/mentors';
 import { toast } from 'react-hot-toast';
@@ -47,7 +47,7 @@ const getDateForDay = (day: DayOfWeek): string => {
 };
 
 export default function MentorSchedulesPage() {
-  const { mentorResponse, addToSessionsByDayOfWeek, removeFromSessionsByDayOfWeek } = useMentorStore();
+  const { mentorResponse, addToSessionsByDayOfWeek, removeFromSessionsByDayOfWeek, addToSessionsByDate, setMentorResponse } = useMentorStore();
   const authHeader = useLoginStore((state) => state.getAuthHeader());
   const [selectedMentee, setSelectedMentee] = useState<StrippedDownMentee | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -79,6 +79,31 @@ export default function MentorSchedulesPage() {
       console.log("Schedule created successfully: ", createdSession);
 
       addToSessionsByDayOfWeek(schedule.firstSessionDate as DateFormatDDMMYYYY, createdSession);
+
+      // Get the day of week from firstSessionDate
+      const firstSessionDate = new Date(schedule.firstSessionDate);
+      const dayOfWeek = firstSessionDate.getDay();
+      
+      // Create dates for this week and next week
+      const today = new Date();
+      const daysUntilNextSession = (dayOfWeek - today.getDay() + 7) % 7;
+      const nextSessionDate = new Date(today);
+      nextSessionDate.setDate(today.getDate() + daysUntilNextSession);
+      
+      const nextWeekSessionDate = new Date(nextSessionDate);
+      nextWeekSessionDate.setDate(nextSessionDate.getDate() + 7);
+      
+      // Format dates as DD/MM/YYYY
+      const formatDate = (date: Date): DateFormatDDMMYYYY => {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}` as DateFormatDDMMYYYY;
+      };
+      
+      // Add sessions to sessionsByDate for both dates
+      addToSessionsByDate(formatDate(nextSessionDate), createdSession);
+      addToSessionsByDate(formatDate(nextWeekSessionDate), createdSession);
       
       // Get the updated mentor response and update local state
 

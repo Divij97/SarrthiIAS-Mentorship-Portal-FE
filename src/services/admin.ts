@@ -317,3 +317,11 @@ export const assignMentorToMentee = async (menteeUserName: string, request: Ment
     throw error;
   }
 }
+
+export const getCourseDetails = async (courseName: string) => {
+  const response = await fetch(`/api/admin/courses/${courseName}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch course details');
+  }
+  return response.json();
+};

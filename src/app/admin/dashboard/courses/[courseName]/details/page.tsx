@@ -16,6 +16,10 @@ import MergeGroupModal from '@/components/Admin/courses/MergeGroupModal';
 import DocumentModal from '@/components/Admin/courses/DocumentModal';
 import { addDocumentsToCourse } from '@/services/admin';
 import toast from 'react-hot-toast';
+import { useQuery } from '@tanstack/react-query';
+import { getCourseDetails, deleteResource } from '@/services/admin';
+import { ResourceType } from '@/types/admin';
+import { DeleteGroupModal } from '@/components/Admin/courses/DeleteGroupModal';
 
 export default function CourseDetailsPage({
   params,
@@ -44,6 +48,9 @@ export default function CourseDetailsPage({
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
   const [addingDocuments, setAddingDocuments] = useState(false);
   const [activeTab, setActiveTab] = useState<'groups' | 'documents'>('groups');
+  const [selectedGroup, setSelectedGroup] = useState<MentorshipGroup | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Find the current course to check its type
   const currentCourse = adminData?.courses?.find(course => course.id === courseId);
@@ -95,9 +102,29 @@ export default function CourseDetailsPage({
   };
 
   const handleGroupClick = (groupId: string) => {
-    console.log('handleGroupClick called with groupId:', groupId);
-    // Navigate to group details page
     router.push(`/admin/dashboard/courses/${encodeURIComponent(courseId)}/groups/${groupId}`);
+  };
+
+  const handleDeleteClick = (group: MentorshipGroup) => {
+    setSelectedGroup(group);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedGroup) return;
+
+    try {
+      setIsDeleting(true);
+      await deleteResource(ResourceType.GROUPS, selectedGroup.groupId, authHeader);
+      setIsDeleteModalOpen(false);
+      // Refresh the groups list
+      await fetchGroups();
+    } catch (error) {
+      console.error('Failed to delete group:', error);
+      toast.error('Failed to delete group. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleCreateGroup = () => {
@@ -312,6 +339,7 @@ export default function CourseDetailsPage({
                 }
               }}
               isSelected={isSelectionMode && selectedGroups.includes(group.groupId)}
+              onDelete={() => handleDeleteClick(group)}
             />
           ))}
         </div>
@@ -544,6 +572,14 @@ export default function CourseDetailsPage({
         onClose={() => setIsDocumentModalOpen(false)}
         onSubmit={handleSubmitDocuments}
         isSubmitting={addingDocuments}
+      />
+
+      <DeleteGroupModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        groupName={selectedGroup?.groupFriendlyName || ''}
+        isLoading={isDeleting}
       />
     </div>
   );
