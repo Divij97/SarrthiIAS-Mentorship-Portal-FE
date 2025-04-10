@@ -13,16 +13,22 @@ interface MenteesListProps {
   mentees: MenteesForCsvExport[];
   loading: boolean;
   onRefresh: () => Promise<void>;
+  filters: MenteesFilters;
+  onFilterChange: (key: keyof MenteesFilters, value: string | number) => void;
 }
 
-export default function MenteesList({ courses, groups, mentees: initialMentees, loading: initialLoading, onRefresh }: MenteesListProps) {
+export default function MenteesList({ 
+  courses, 
+  groups, 
+  mentees: initialMentees, 
+  loading: initialLoading, 
+  onRefresh,
+  filters,
+  onFilterChange
+}: MenteesListProps) {
   const [mentees, setMentees] = useState<MenteesForCsvExport[]>(initialMentees);
   const [loading, setLoading] = useState(initialLoading);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<MenteesFilters>({
-    limit: 10,
-    skip: 0
-  });
   const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
   const adminData = useAdminAuthStore((state) => state.adminData);
   const fetchInProgress = useRef(false);
@@ -69,14 +75,6 @@ export default function MenteesList({ courses, groups, mentees: initialMentees, 
       console.log('Refreshing mentees list...');
       await onRefresh();
     }
-  };
-
-  const handleFilterChange = (key: keyof MenteesFilters, value: string | number) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value || undefined,
-      skip: 0 // Reset skip to 0 when filters change
-    }));
   };
 
   const handleSendOnboardingEmail = async (mentee: MenteesForCsvExport) => {
@@ -157,7 +155,7 @@ export default function MenteesList({ courses, groups, mentees: initialMentees, 
             <select
               id="courseFilter"
               value={filters.courseId || ''}
-              onChange={(e) => handleFilterChange('courseId', e.target.value)}
+              onChange={(e) => onFilterChange('courseId', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               <option value="">All Courses</option>
@@ -176,7 +174,7 @@ export default function MenteesList({ courses, groups, mentees: initialMentees, 
             <select
               id="groupFilter"
               value={filters.groupId || ''}
-              onChange={(e) => handleFilterChange('groupId', e.target.value)}
+              onChange={(e) => onFilterChange('groupId', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
               disabled={!filters.courseId}
             >
@@ -198,7 +196,7 @@ export default function MenteesList({ courses, groups, mentees: initialMentees, 
             <select
               id="limitFilter"
               value={filters.limit}
-              onChange={(e) => handleFilterChange('limit', parseInt(e.target.value))}
+              onChange={(e) => onFilterChange('limit', parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               <option value="10">10</option>

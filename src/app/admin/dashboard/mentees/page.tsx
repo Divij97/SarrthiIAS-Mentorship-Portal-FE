@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { RegisterMenteeModal } from '@/components/app/admin/mentees/register-mentee-modal';
 import MenteesList from '@/components/Admin/mentees/MenteesList';
-import { fetchMentees } from '@/services/admin';
+import { fetchMentees, MenteesFilters } from '@/services/admin';
 import { toast } from 'react-hot-toast';
 import { MenteesForCsvExport } from '@/types/mentee';
 
@@ -12,15 +12,19 @@ export default function MenteesPage() {
   const { adminData, getCourseGroups, getAuthHeader } = useAdminAuthStore();
   const [mentees, setMentees] = useState<MenteesForCsvExport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<MenteesFilters>({
+    limit: 10,
+    skip: 0
+  });
 
   useEffect(() => {
     fetchMenteesData();
-  }, []);
+  }, [filters]); // Add filters as dependency
 
   const fetchMenteesData = async () => {
     try {
       setLoading(true);
-      const response = await fetchMentees({limit: 10, skip: 0}, getAuthHeader());
+      const response = await fetchMentees(filters, getAuthHeader());
       setMentees(response.mentees);
     } catch (error) {
       toast.error('Error fetching mentees:', error);
@@ -55,7 +59,15 @@ export default function MenteesPage() {
 
   const handleRefresh = async () => {
     await fetchMenteesData();
-  }
+  };
+
+  const handleFilterChange = (key: keyof MenteesFilters, value: string | number) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value || undefined,
+      skip: 0 // Reset skip to 0 when filters change
+    }));
+  };
 
   return (
     <div className="space-y-6">
@@ -70,6 +82,8 @@ export default function MenteesPage() {
         mentees={mentees}
         loading={loading}
         onRefresh={handleRefresh}
+        filters={filters}
+        onFilterChange={handleFilterChange}
       />
     </div>
   );
