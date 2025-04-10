@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage, PersistOptions } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { AdminData } from '@/types/admin';
 import { loginAdmin, assignGroupsToCourse } from '@/services/admin';
 import { Course } from '@/types/course';
@@ -39,23 +39,6 @@ interface AdminAuthState {
   assignGroupsToCourse: (courseId: string, course: Course) => Promise<{ success: boolean; message?: string }>;
 }
 
-// Define the persisted state type
-type PersistedState = Pick<AdminAuthState, 'isAuthenticated' | 'username' | 'adminData' | 'courseGroups'>;
-
-// Define the persist options type
-type AdminAuthPersistOptions = PersistOptions<AdminAuthState, PersistedState>;
-
-const persistOptions: AdminAuthPersistOptions = {
-  name: 'admin-auth-storage',
-  storage: createJSONStorage(() => sessionStorage),
-  partialize: (state) => ({
-    isAuthenticated: state.isAuthenticated,
-    username: state.username,
-    adminData: state.adminData,
-    courseGroups: state.courseGroups
-  })
-};
-
 const initialState: AdminAuthState = {
   username: '',
   isAuthenticated: false,
@@ -84,7 +67,7 @@ const initialState: AdminAuthState = {
 };
 
 export const useAdminAuthStore = create<AdminAuthState>()(
-  persist<AdminAuthState, [], [], PersistedState>(
+  persist(
     (set, get) => ({
       ...initialState,
       getAuthHeader: () => get()._authHeader,
@@ -205,6 +188,9 @@ export const useAdminAuthStore = create<AdminAuthState>()(
         }
       }
     }),
-    persistOptions
+    {
+      name: 'admin-auth-storage',
+      storage: createJSONStorage(() => sessionStorage)
+    }
   )
 ); 
