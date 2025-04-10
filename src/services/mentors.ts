@@ -36,7 +36,7 @@ export const getMentorByPhone = async (phone: string, authHeader: string): Promi
     console.log(`[${timestamp}] API Call: getMentorByPhone - Completed successfully`);
     return responseData;
   } catch (error) {
-    console.error('Error fetching mentor:', error);
+    // console.error('Error fetching mentor:', error);
     throw error;
   }
 };

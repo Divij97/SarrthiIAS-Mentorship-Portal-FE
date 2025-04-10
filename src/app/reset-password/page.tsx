@@ -7,6 +7,7 @@ import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { UserType } from '@/types/auth';
+import { useRouter } from 'next/navigation';
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
@@ -22,8 +23,7 @@ export default function ResetPasswordPage() {
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [resending, setResending] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
-
+  const router = useRouter();
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (countdown > 0 && !canResend) {
@@ -68,7 +68,6 @@ export default function ResetPasswordPage() {
   };
 
   const handleMenteeSignup = () => {
-    if (redirecting) return;
     
     // Clear OTP to prevent future redirects back to reset-password
     clearMenteeOTP?.();
@@ -87,17 +86,13 @@ export default function ResetPasswordPage() {
     }));
     
     console.log("Redirecting to signup from handleMenteeSignup");
-    setRedirecting(true);
-    
-    // Use window.location for a hard redirect to avoid Next.js router interception
-    window.location.href = '/signup';
+    router.push('/signup');
   };
 
   const handleMentorSignup = () => {
-    if (redirecting) return;
     
     // Clear OTP to prevent future redirects back to reset-password
-    clearMentorOTP?.();
+    // clearMentorOTP?.();
     
     // Mark that OTP has been verified
     setHasVerifiedOTP?.(true);
@@ -109,11 +104,8 @@ export default function ResetPasswordPage() {
       verifiedOtp: otp
     }));
     
-    console.log("Redirecting to mentor-signup from handleMentorSignup");
-    setRedirecting(true);
-    
-    // Use window.location for a hard redirect to avoid Next.js router interception
-    window.location.href = '/mentor-signup';
+    console.log("Redirecting to mentor-signup");
+    router.push('/mentor-signup');
   };
 
   const handleResendOtp = async () => {
@@ -189,15 +181,11 @@ export default function ResetPasswordPage() {
       if (userType === UserType.MENTOR) {
         localStorage.setItem('tempMentorData', JSON.stringify(navigateData));
         console.log("Setting up mentor navigation to /mentor-signup");
-        setTimeout(() => {
-          window.location.href = '/mentor-signup';
-        }, 500);
+        router.push('/mentor-signup');
       } else {
         localStorage.setItem('tempMenteeData', JSON.stringify(navigateData));
         console.log("Setting up mentee navigation to /signup");
-        setTimeout(() => {
-          window.location.href = '/signup';
-        }, 500);
+        router.push('/signup');
       }
 
       // Still try the normal navigation functions

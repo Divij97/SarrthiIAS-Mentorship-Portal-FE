@@ -40,6 +40,29 @@ export default function MenteesList({ courses, groups, mentees: initialMentees, 
     setLoading(initialLoading);
   }, [initialLoading]);
 
+  useEffect(() => {
+    const fetchMenteesList = async () => {
+      if (!authHeader || fetchInProgress.current) return;
+
+      fetchInProgress.current = true;
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetchMentees(filters, authHeader);
+        setMentees(response.mentees);
+      } catch (error) {
+        console.error('Failed to fetch mentees:', error);
+        setError('Failed to fetch mentees. Please try again.');
+      } finally {
+        setLoading(false);
+        fetchInProgress.current = false;
+      }
+    };
+
+    fetchMenteesList();
+  }, [filters, authHeader]);
+
   const handleRefresh = async () => {
     console.log('request to Refresh mentees list');
     if (!fetchInProgress.current) {

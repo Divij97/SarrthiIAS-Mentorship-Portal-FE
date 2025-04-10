@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { useMentorStore } from '@/stores/mentor/store';
-import { UserType } from '@/types/auth';
+import { TempMenteeData, TempMentorData, UserType } from '@/types/auth';
 import { Inter } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
 
@@ -27,9 +27,7 @@ export default function RootLayoutClient({
   const hasVerifiedOTP = useLoginStore((state) => state.hasVerifiedOTP);
   const menteeResponse = useMenteeStore((state) => state.menteeResponse);
   const mentorResponse = useMentorStore((state) => state.mentorResponse);
-
-  // Check if user has temporary password/OTP
-  const hasOTP = Boolean(menteeResponse?.otp || mentorResponse?.otp);
+  
 
   useEffect(() => {
     const checkAuthAndRedirect = () => {
@@ -37,6 +35,15 @@ export default function RootLayoutClient({
       if (pathname.startsWith('/admin') || pathname.startsWith('/update-password')) {
         setIsLoading(false);
         return;
+      }
+
+      var hasOTP = Boolean(menteeResponse?.otp || mentorResponse?.otp);
+      if (userType === UserType.MENTOR) {
+        const tempMentorData: TempMentorData = JSON.parse(localStorage.getItem('tempMentorData') || '{}');
+        hasOTP = Boolean(hasOTP || tempMentorData?.verifiedOtp);
+      } else if (userType === UserType.MENTEE) {
+        const tempMenteeData: TempMenteeData = JSON.parse(localStorage.getItem('tempMenteeData') || '{}');
+        hasOTP = Boolean(hasOTP || tempMenteeData?.verifiedOtp);
       }
 
       const publicRoutes = ['/login', '/signup', '/reset-password', '/mentor-signup', '/update-password'];
@@ -78,7 +85,7 @@ export default function RootLayoutClient({
     };
 
     checkAuthAndRedirect();
-  }, [isAuthenticated, menteeResponse, mentorResponse, hasOTP, hasVerifiedOTP, userType, pathname, router, phone]);
+  }, [isAuthenticated, menteeResponse, mentorResponse, hasVerifiedOTP, userType, pathname, router, phone]);
 
   if (isLoading) {
     return (

@@ -24,11 +24,7 @@ export default function HomePage() {
     }
 
     // If no password reset needed, redirect to profile
-    if (userType === UserType.MENTOR) {
-      router.replace('/home/mentor-sessions');
-    } else {
-      router.replace('/home/profile');
-    }
+    router.replace('/home/profile');
   }, [router, menteeResponse, mentorResponse, phone]);
 
   // Don't render anything during the redirect checks

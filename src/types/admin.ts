@@ -65,8 +65,7 @@ export enum CriterionCategory {
     MAINS_OR_INTERVIEW = 'MAINS_OR_INTERVIEW',
     MAINS_WITHOUT_INTERVIEW = 'MAINS_WITHOUT_INTERVIEW',
     ATTEMPTS = 'ATTEMPTS',
-    DEFAULT = 'DEFAULT',
-    GROUP_INTERVIEW = 'GROUP_INTERVIEW',
+    DEFAULT = 'DEFAULT'
 }
 
 export interface CriterionSubCategory {

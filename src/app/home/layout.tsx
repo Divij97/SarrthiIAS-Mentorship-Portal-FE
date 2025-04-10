@@ -53,7 +53,7 @@ export default function HomeLayout({
         console.log('Successfully fetched mentor data');
         setMentorResponse(mentorData);
       } catch (error) {
-        console.error('Failed to refresh mentor data:', error);
+        // console.error('Failed to refresh mentor data:', error);
       } finally {
         refreshInProgress.current = false;
       }

@@ -8,7 +8,6 @@ import { UserType } from '@/types/auth';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { useMentorStore } from '@/stores/mentor/store';
 import { SHA256 } from 'crypto-js';
-import { SecureStorage } from '@/utils/secure-storage';
 
 // Create a reference to track login request status outside of the store
 // This will prevent multiple login requests even in React StrictMode
@@ -22,6 +21,7 @@ interface AuthState {
   isAuthenticated: boolean;
   userType: UserType | null;
   hasVerifiedOTP: boolean;
+  authHeader: string | null;
   setPhone: (phone: string) => void;
   setPassword: (password: string) => void;
   setError: (error: string) => void;
@@ -71,17 +71,15 @@ export const useLoginStore = create<AuthState>()(
         isAuthenticated: false,
         userType: UserType.MENTEE,
         hasVerifiedOTP: false,
+        authHeader: null,
 
         setPhone: (phone) => set({ phone }),
         setPassword: (password) => set({ password }),
         setError: (error) => set({ error }),
         setUserType: (type) => set({ userType: type }),
         setHasVerifiedOTP: (value) => set({ hasVerifiedOTP: value }),
-        setAuthHeader: (header) => {
-          SecureStorage.setItem('authHeader', header);
-          set({ isAuthenticated: true });
-        },
-        getAuthHeader: () => SecureStorage.getItem('authHeader'),
+        setAuthHeader: (header) => set({ authHeader: header, isAuthenticated: true }),
+        getAuthHeader: () => get().authHeader,
 
         handleLogin: async () => {
           const { phone, password, userType, loading } = get();
@@ -128,7 +126,6 @@ export const useLoginStore = create<AuthState>()(
         logout: () => {
           useMenteeStore.getState().clearMentee();
           useMentorStore.getState().clearMentor();
-          SecureStorage.removeItem('authHeader');
           set({
             isAuthenticated: false,
             phone: '',
@@ -136,12 +133,12 @@ export const useLoginStore = create<AuthState>()(
             error: '',
             loading: false,
             userType: UserType.MENTEE,
-            hasVerifiedOTP: false
+            hasVerifiedOTP: false,
+            authHeader: null
           });
         },
 
         reset: () => {
-          SecureStorage.clear();
           set({
             phone: '',
             password: '',
@@ -149,7 +146,8 @@ export const useLoginStore = create<AuthState>()(
             loading: false,
             isAuthenticated: false,
             userType: UserType.MENTEE,
-            hasVerifiedOTP: false
+            hasVerifiedOTP: false,
+            authHeader: null
           });
         }
       };
@@ -160,7 +158,8 @@ export const useLoginStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         phone: state.phone,
         userType: state.userType,
-        hasVerifiedOTP: state.hasVerifiedOTP
+        hasVerifiedOTP: state.hasVerifiedOTP,
+        authHeader: state.authHeader
       })
     }
   )

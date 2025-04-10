@@ -58,7 +58,7 @@ export default function MentorSessionsPage() {
   // Fetch group sessions when component mounts
   useEffect(() => {
     const fetchGroupSessions = async () => {
-      if (!mentorResponse?.username || !authHeader || !mentorResponse?.groups) {
+      if (!mentorResponse?.username || !authHeader || !mentorResponse?.groups || mentorResponse.groups.length === 0) {
         return;
       }
 
@@ -71,7 +71,6 @@ export default function MentorSessionsPage() {
         );
         setGroupSessions(response.groupSessions);
       } catch (error) {
-        toast.error('Failed to fetch group sessions. Please try again.');
         setGroupSessions(null);
       } finally {
         setIsLoadingGroupSessions(false);
