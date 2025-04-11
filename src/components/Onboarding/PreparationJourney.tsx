@@ -30,40 +30,30 @@ const PreparationJourney = ({ formData, handleChange }: PreparationJourneyProps)
           <label htmlFor="preliminaryAttempts" className="block text-sm font-medium text-gray-700">
             Number of UPSC Preliminary Examination Attempts
           </label>
-          <select
+          <input
+            type="number"
             id="preliminaryAttempts"
             value={formData.preliminaryAttempts}
             onChange={handleChange('preliminaryAttempts')}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
+            min="0"
             required
-          >
-            <option value="0">None</option>
-            {[1, 2, 3, 4, 5].map((num) => (
-              <option key={num} value={num}>
-                {num}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div>
           <label htmlFor="mainExamAttempts" className="block text-sm font-medium text-gray-700">
             Number of Civil Services Main Examination Attempts
           </label>
-          <select
+          <input
+            type="number"
             id="mainExamAttempts"
             value={formData.mainExamAttempts}
             onChange={handleChange('mainExamAttempts')}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
+            min="0"
             required
-          >
-            <option value="0">None</option>
-            {[1, 2, 3, 4, 5].map((num) => (
-              <option key={num} value={num}>
-                {num}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div>

@@ -92,8 +92,9 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
             id="name"
             value={formData.name}
             onChange={handleChange('name')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 bg-gray-100"
             required
+            disabled
           />
         </div>
 
@@ -106,8 +107,9 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
             id="email"
             value={formData.email}
             onChange={handleChange('email')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 bg-gray-100"
             required
+            disabled
           />
         </div>
 

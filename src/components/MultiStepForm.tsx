@@ -16,7 +16,6 @@ import { useMenteeStore } from '@/stores/mentee/store';
 import { useLoginStore } from '@/stores/auth/store';
 import { TempMenteeData } from '@/types/auth';
 import { SHA256 } from 'crypto-js';
-import { fetchCourse } from '@/services/courses';
 
 const MultiStepForm = () => {
   const [step, setStep] = useState(1);
