@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { RegisterMenteeModal } from '@/components/app/admin/mentees/register-mentee-modal';
 import MenteesList from '@/components/Admin/mentees/MenteesList';
@@ -9,7 +9,7 @@ import { toast } from 'react-hot-toast';
 import { MenteesForCsvExport } from '@/types/mentee';
 
 export default function MenteesPage() {
-  const { adminData, getCourseGroups, getAuthHeader } = useAdminAuthStore();
+  const { adminData, getCourseGroups, getAuthHeader, refreshAdmin } = useAdminAuthStore();
   const [mentees, setMentees] = useState<MenteesForCsvExport[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
@@ -21,6 +21,10 @@ export default function MenteesPage() {
   useEffect(() => {
     fetchMenteesData();
   }, [filters]); // Add filters as dependency
+
+  useMemo(() => {
+    refreshAdmin(); 
+  }, [])
 
   const fetchMenteesData = async () => {
     try {
