@@ -46,10 +46,6 @@ export const validateEducationBackground = (formData: FormData): FormErrors => {
     errors.reservationCategory = 'Please select your reservation category';
   }
 
-  if (!formData.optionalSubject) {
-    errors.optionalSubject = 'Please select your optional subject';
-  }
-
   return errors;
 };
 
@@ -80,10 +76,6 @@ export const validateCurrentPreparation = (formData: FormData): FormErrors => {
 
   if (!formData.menteeUpscExperience) {
     errors.upscExperience = 'Please select your UPSC experience level';
-  }
-
-  if (!formData.preferredSlotsOnWeekdays.length) {
-    errors.preferredSlotsOnWeekdays = 'Please select at least one preferred time slot';
   }
 
   if (!formData.weakSubjects.length) {

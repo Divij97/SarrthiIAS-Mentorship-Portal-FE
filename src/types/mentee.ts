@@ -27,6 +27,7 @@ export enum ReservationCategory {
 
 export enum OptionalSubject {
   // Science and Engineering
+  NOT_DECIDED = 'Not Decided yet',
   AGRICULTURE = 'Agriculture',
   ANIMAL_HUSBANDRY_AND_VETERINARY_SCIENCE = 'Animal Husbandry and Veterinary Science',
   ANTHROPOLOGY = 'Anthropology',

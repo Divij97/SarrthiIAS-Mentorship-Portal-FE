@@ -215,26 +215,6 @@ const MultiStepForm = () => {
       
       setMenteeResponse(newMenteeResponse);
       
-      // Set the phone number in the auth store
-    //   useLoginStore.getState().setPhone(tempMenteeData.phone);
-      
-    //   // Fetch latest mentee data from server to get any updates (like enrolled courses)
-    //   try {
-    //     const menteeResponse = await getMenteeByPhone(tempMenteeData.phone, newAuthHeader);
-    //     if (menteeResponse && menteeResponse.mentee) {
-    //       // Update the mentee store with the latest data from server
-    //       setMenteeResponse(menteeResponse);
-    //       // Also store the full mentee response
-    //       useMenteeStore.getState().setMenteeResponse(menteeResponse);
-    //       useMenteeStore.getState().setCourses(menteeResponse.enrolledCourses);
-    //     } else {
-    //       throw new Error('Failed to fetch updated mentee data');
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching updated mentee data:', error);
-    //     // If there's an error fetching updated data, use the data we have
-    //   }
-      
       localStorage.removeItem('tempMenteeData'); // Clean up
       router.push('/home');
     } catch (error) {

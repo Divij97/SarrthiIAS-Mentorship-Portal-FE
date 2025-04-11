@@ -31,9 +31,9 @@ const optionalSubjects: Array<{key: string, value: OptionalSubject, label: strin
 const EducationBackground = ({ formData, handleChange, errors }: EducationBackgroundProps) => {
   // Find the display label for the current optionalSubject value
   const getCurrentSubjectLabel = () => {
-    if (!formData.optionalSubject) return '';
+    if (!formData.optionalSubject) return OptionalSubject.NOT_DECIDED;
     const subject = optionalSubjects.find(s => s.key === formData.optionalSubject || s.value === formData.optionalSubject);
-    return subject ? subject.label : '';
+    return subject ? subject.label : OptionalSubject.NOT_DECIDED;
   };
 
   const [subjectInput, setSubjectInput] = useState(getCurrentSubjectLabel());
@@ -175,9 +175,12 @@ const EducationBackground = ({ formData, handleChange, errors }: EducationBackgr
             required
             autoComplete="off"
           />
+          <div className="px-4 py-2 text-sm text-gray-500 border-t border-gray-200">
+            If your Optional subject is not decided, leave this field as is.
+          </div>
           {!isValidSubject && (
             <p className="mt-1 text-sm text-red-600">
-              Please select a valid optional subject from the suggestions
+              Please select a valid optional subject from the suggestions.
             </p>
           )}
           
@@ -193,6 +196,7 @@ const EducationBackground = ({ formData, handleChange, errors }: EducationBackgr
                   {subject.label}
                 </div>
               ))}
+              
             </div>
           )}
         </div>
