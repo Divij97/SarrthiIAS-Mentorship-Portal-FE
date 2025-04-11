@@ -56,7 +56,6 @@ const CurrentPreparation = ({
             onChange={handleChange('menteeUpscExperience')}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
           >
-            <option value="">Select your UPSC experience level</option>
             {upscExperienceOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}

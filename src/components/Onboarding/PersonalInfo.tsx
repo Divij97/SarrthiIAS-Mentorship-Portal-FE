@@ -149,7 +149,6 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
             onChange={handleRegionChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
           >
-            <option value="">Select a region</option>
             {region.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -160,7 +159,7 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
             <p className="mt-1 text-sm text-gray-700">{errors.region}</p>
           )}
         </div>
-
+        {/*TODO: remove */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Mode of Mentorship</label>
           <RadioGroup

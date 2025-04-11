@@ -29,7 +29,7 @@ const MultiStepForm = () => {
     region: Region.NORTH,
     mode: MenteeMode.ONLINE,
     reservationCategory: ReservationCategory.GENERAL,
-    optionalSubject: '',
+    optionalSubject: OptionalSubject.NOT_DECIDED,
     isWorkingProfessional: false,
     preliminaryAttempts: 0,
     mainExamAttempts: 0,
@@ -87,7 +87,6 @@ const MultiStepForm = () => {
 
   const nextStep = () => {
     if (step === 2 && !isOptionalSubjectValid) {
-      setErrors({ optionalSubject: 'Please select a valid optional subject from the suggestions' });
       return;
     }
     setStep(step + 1);

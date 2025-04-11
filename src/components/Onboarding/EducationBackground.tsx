@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { FormData } from '@/types/multistep-form';
 import { OptionalSubject, OptionalSubjectLabels, ReservationCategory } from '@/types/mentee';
 import { FormErrors } from '@/utils/mentee-signup-form-validator';
@@ -46,7 +46,10 @@ const EducationBackground = ({ formData, handleChange, errors, setErrors, onVali
           label
         }));
       setFilteredSubjects(filtered);
-      setShowSuggestions(true);
+      if (subjectInput !== "Not Decided yet") {
+        setShowSuggestions(true);
+      }
+      
     } else {
       setFilteredSubjects([]);
       setShowSuggestions(false);
@@ -128,7 +131,6 @@ const EducationBackground = ({ formData, handleChange, errors, setErrors, onVali
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
             required
           >
-            <option value="">Select Category</option>
             {reservationCategories.map((category) => (
               <option key={category.value} value={category.value}>
                 {category.label}
