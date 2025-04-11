@@ -63,7 +63,6 @@ export default function MenteesPage() {
   const handleRefresh = async () => {
     // Reset to first page on refresh
     setFilters(prev => ({ ...prev, skip: 0 }));
-    await fetchMenteesData();
   };
 
   const handleFilterChange = (key: keyof MenteesFilters, value: string | number) => {
