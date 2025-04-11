@@ -5,6 +5,9 @@ import { DayOfWeek, StrippedDownMentor } from '@/types/mentor';
 import ScheduleEmailModal from './ScheduleEmailModal';
 import { StrippedDownMentee } from '@/types/mentee';
 import { RecurrenceType } from '@/types/session';
+import { useMentorStore } from '@/stores/mentor/store';
+
+
 interface AddScheduleForMenteeProps {
   isOpen: boolean;
   onClose: () => void;
@@ -37,6 +40,7 @@ export default function AddScheduleForMentee({
   const [dayOfWeek, setDayOfWeek] = useState<DayOfWeek>(DayOfWeek.SUNDAY);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const unscheduledMenteeEmail = useMentorStore(state => state.getUnscheduledMenteeEmail(menteeUsername));
 
   useEffect(() => {
     if (firstSessionDate) {
@@ -278,6 +282,7 @@ export default function AddScheduleForMentee({
         onClose={handleCloseEmailModal}
         mentor={mentor}
         menteeName={menteeFullName}
+        menteeEmail={unscheduledMenteeEmail}
         scheduleDetails={{
           startTime,
           endTime,

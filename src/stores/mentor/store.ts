@@ -17,6 +17,7 @@ interface MentorStore {
   addToSessionsByDayOfWeek: (date: DateFormatDDMMYYYY, schedule: MentorshipSession) => void;
   removeFromSessionsByDayOfWeek: (dayOfWeek: DayOfWeek, scheduleId: string) => void;
   onMenteeScheduled: (menteeUserName: string) => void;
+  getUnscheduledMenteeEmail: (menteeUserName: string) => string | null;
 }
 
 export const useMentorStore = create<MentorStore>()(
@@ -100,6 +101,12 @@ export const useMentorStore = create<MentorStore>()(
               } 
             } 
           });
+        }
+      },
+      getUnscheduledMenteeEmail: (menteeUserName: string) => {
+        const current = get().mentorResponse;
+        if (current) {
+          return current.unscheduledMenteeDetails.strippedDownMentees.find(m => m.phone === menteeUserName)?.email || null;
         }
       }
     }),
