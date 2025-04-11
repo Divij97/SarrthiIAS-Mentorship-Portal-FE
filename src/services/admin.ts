@@ -273,7 +273,7 @@ export const fetchCourseAllMentees = async (courseId: string, authHeader: string
     // Fetch all mentees for a course with a high limit to get everything
     const queryParams = new URLSearchParams();
     queryParams.append('courseId', courseId);
-    queryParams.append('limit', '100'); // Use a high limit to get all mentees
+    queryParams.append('limit', '1200'); // Use a high limit to get all mentees
 
     const response = await fetch(`${apiUrl}/v1/admin/mentees?${queryParams.toString()}`, {
       method: 'GET',

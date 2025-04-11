@@ -20,25 +20,26 @@ import { SHA256 } from 'crypto-js';
 const MultiStepForm = () => {
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [isOptionalSubjectValid, setIsOptionalSubjectValid] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     phoneNumber: '',
-    gender: '',
-    region: '',
+    gender: Gender.MALE,
+    region: Region.NORTH,
     mode: MenteeMode.ONLINE,
-    reservationCategory: '',
-    optionalSubject: OptionalSubject.NOT_DECIDED,
+    reservationCategory: ReservationCategory.GENERAL,
+    optionalSubject: '',
     isWorkingProfessional: false,
     preliminaryAttempts: 0,
     mainExamAttempts: 0,
     isSaarthiStudent: false,
-    menteeUpscExperience: '',
-    answerWritingLevel: '',
+    menteeUpscExperience: MenteeUpscExperience.JUST_STARTED_PREPARATION,
+    answerWritingLevel: AnswerWritingLevel.BEGINNER,
     weakSubjects: [],
     strongSubjects: [],
     previouslyEnrolledCourses: '',
-    currentAffairsSource: '',
+    currentAffairsSource: 'Newspaper',
     expectations: ''
   });
 
@@ -51,30 +52,27 @@ const MultiStepForm = () => {
     if (menteeResponse?.mentee) {
       const mentee = menteeResponse.mentee;
       
-      // Only set initial values if form fields are empty (to avoid overriding user input)
-      if (!formData.name && mentee.name) {
-        setFormData(prev => ({
-          ...prev,
-          name: mentee.name || '',
-          email: mentee.email || '',
-          phoneNumber: menteeResponse.username || '',
-          gender: mentee.gender || '',
-          region: mentee.region || '',
-          reservationCategory: mentee.category || '',
-          optionalSubject: mentee.optionalSubject || '',
-          isWorkingProfessional: mentee.isWorkingProfessional || false,
-          preliminaryAttempts: mentee.numberOfAttemptsInUpsc || 0,
-          mainExamAttempts: mentee.numberOfMainsAttempts || 0,
-          menteeUpscExperience: mentee.menteeUpscExperience || '',
-          preferredSlotsOnWeekdays: mentee.preferredSlots || [],
-          answerWritingLevel: mentee.answerWritingLevel || '',
-          weakSubjects: mentee.weakSubjects || [],
-          strongSubjects: mentee.strongSubjects || [],
-          previouslyEnrolledCourses: mentee.previouslyEnrolledCourses?.[0] || '',
-          currentAffairsSource: mentee.primarySourceOfCurrentAffairs || '',
-          expectations: mentee.expectationFromMentorshipCourse || ''
-        }));
-      }
+      // Only set values that are empty or undefined
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || mentee.name || '',
+        email: prev.email || mentee.email || '',
+        phoneNumber: prev.phoneNumber || menteeResponse.username || '',
+        gender: prev.gender || mentee.gender || Gender.MALE,
+        region: prev.region || mentee.region || Region.NORTH,
+        reservationCategory: prev.reservationCategory || mentee.category || ReservationCategory.GENERAL,
+        optionalSubject: prev.optionalSubject || mentee.optionalSubject,
+        isWorkingProfessional: prev.isWorkingProfessional || mentee.isWorkingProfessional || false,
+        preliminaryAttempts: prev.preliminaryAttempts || mentee.numberOfAttemptsInUpsc || 0,
+        mainExamAttempts: prev.mainExamAttempts || mentee.numberOfMainsAttempts || 0,
+        menteeUpscExperience: prev.menteeUpscExperience || mentee.menteeUpscExperience || MenteeUpscExperience.JUST_STARTED_PREPARATION,
+        answerWritingLevel: prev.answerWritingLevel || mentee.answerWritingLevel || AnswerWritingLevel.BEGINNER,
+        weakSubjects: prev.weakSubjects || mentee.weakSubjects || [],
+        strongSubjects: prev.strongSubjects || mentee.strongSubjects || [],
+        previouslyEnrolledCourses: prev.previouslyEnrolledCourses || mentee.previouslyEnrolledCourses?.[0] || '',
+        currentAffairsSource: prev.currentAffairsSource || mentee.primarySourceOfCurrentAffairs || '',
+        expectations: prev.expectations || mentee.expectationFromMentorshipCourse || ''
+      }));
     }
   }, [menteeResponse]);
 
@@ -88,6 +86,10 @@ const MultiStepForm = () => {
   ];
 
   const nextStep = () => {
+    if (step === 2 && !isOptionalSubjectValid) {
+      setErrors({ optionalSubject: 'Please select a valid optional subject from the suggestions' });
+      return;
+    }
     setStep(step + 1);
   };
 
@@ -126,7 +128,7 @@ const MultiStepForm = () => {
       case 1:
         return <PersonalInfo formData={formData} region={regionOptions} handleChange={handleChange} errors={errors} />;
       case 2:
-        return <EducationBackground formData={formData} handleChange={handleChange} errors={errors} />;
+        return <EducationBackground formData={formData} handleChange={handleChange} errors={errors} setErrors={setErrors} onValidationChange={setIsOptionalSubjectValid} />;
       case 3:
         return <PreparationJourney formData={formData} handleChange={handleChange} errors={errors} />;
       case 4:
@@ -182,7 +184,7 @@ const MultiStepForm = () => {
         previouslyEnrolledCourses: formData.previouslyEnrolledCourses ? [formData.previouslyEnrolledCourses] : [],
         primarySourceOfCurrentAffairs: formData.currentAffairsSource,
         expectationFromMentorshipCourse: formData.expectations || '',
-        mode: formData.mode as MenteeMode
+        mode: formData.mode as MenteeMode,
       };
 
       const menteeWithAuth: MenteeWithAuth = {
@@ -252,7 +254,10 @@ const MultiStepForm = () => {
             </Button>
           )}
           {step < 5 ? (
-            <Button onClick={nextStep} className="ml-auto">
+            <Button 
+              onClick={nextStep} 
+              className="ml-auto"
+            >
               Next
             </Button>
           ) : (

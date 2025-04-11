@@ -22,10 +22,6 @@ export default function MenteesPage() {
     fetchMenteesData();
   }, [filters]); // Add filters as dependency
 
-  useMemo(() => {
-    refreshAdmin(); 
-  }, [])
-
   const fetchMenteesData = async () => {
     try {
       setLoading(true);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 
@@ -11,10 +11,15 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, logout } = useAdminAuthStore();
+  const { isAuthenticated, logout, refreshAdmin } = useAdminAuthStore();
   const lastValidPath = useRef<string>('/admin/dashboard/courses/active');
 
   // Reset lastValidPath when authentication state changes
+  useMemo(() => {
+    refreshAdmin(); 
+  }, [])
+  
+  
   useEffect(() => {
     if (!isAuthenticated) {
       lastValidPath.current = '/admin/dashboard/courses/active';

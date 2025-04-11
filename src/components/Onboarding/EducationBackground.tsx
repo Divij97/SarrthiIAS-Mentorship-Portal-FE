@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FormData } from '@/types/multistep-form';
-import { OptionalSubject, ReservationCategory } from '@/types/mentee';
+import { OptionalSubject, OptionalSubjectLabels, ReservationCategory } from '@/types/mentee';
 import { FormErrors } from '@/utils/mentee-signup-form-validator';
 
 interface EducationBackgroundProps {
@@ -11,6 +11,8 @@ interface EducationBackgroundProps {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
   errors?: FormErrors;
+  setErrors: React.Dispatch<React.SetStateAction<FormErrors | undefined>>;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
 // Get reservation categories from enum
@@ -21,77 +23,54 @@ const reservationCategories = Object.values(ReservationCategory).map(category =>
          category === ReservationCategory.ST ? 'ST' : 'General'
 }));
 
-// Get all valid optional subjects from the enum with key and display value
-const optionalSubjects: Array<{key: string, value: OptionalSubject, label: string}> = Object.entries(OptionalSubject).map(([key, value]) => ({
-  key,
-  value: value as OptionalSubject,
-  label: value
-}));
-
-const EducationBackground = ({ formData, handleChange, errors }: EducationBackgroundProps) => {
-  // Find the display label for the current optionalSubject value
-  const getCurrentSubjectLabel = () => {
-    if (!formData.optionalSubject) return OptionalSubject.NOT_DECIDED;
-    const subject = optionalSubjects.find(s => s.key === formData.optionalSubject || s.value === formData.optionalSubject);
-    return subject ? subject.label : OptionalSubject.NOT_DECIDED;
-  };
-
-  const [subjectInput, setSubjectInput] = useState(getCurrentSubjectLabel());
-  const [suggestions, setSuggestions] = useState<Array<{key: string, value: OptionalSubject, label: string}>>([]);
+const EducationBackground = ({ formData, handleChange, errors, setErrors, onValidationChange }: EducationBackgroundProps) => {
+  const [subjectInput, setSubjectInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isValidSubject, setIsValidSubject] = useState(true);
+  const [filteredSubjects, setFilteredSubjects] = useState<{ value: OptionalSubject; label: string }[]>([]);
+  const [isValidSubject, setIsValidSubject] = useState(false);
 
-  // Update the input field if formData.optionalSubject changes from outside
   useEffect(() => {
-    setSubjectInput(getCurrentSubjectLabel());
+    if (formData.optionalSubject) {
+      setSubjectInput(OptionalSubjectLabels[formData.optionalSubject]);
+    }
   }, [formData.optionalSubject]);
 
-  // Function to validate if a subject is valid
-  const validateSubject = (subject: string): boolean => {
-    return optionalSubjects.some(opt => opt.label === subject);
-  };
-
-  // Function to get suggestions based on input
-  const getSuggestions = (input: string): Array<{key: string, value: OptionalSubject, label: string}> => {
-    const inputValue = input.toLowerCase();
-    return optionalSubjects.filter(subject =>
-      subject.label.toLowerCase().includes(inputValue)
-    );
-  };
-
-  // Handle input change
-  const handleSubjectInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSubjectInput(value);
-    
-    if (value.length > 0) {
-      const newSuggestions = getSuggestions(value);
-      setSuggestions(newSuggestions);
+  useEffect(() => {
+    if (subjectInput.length > 0) {
+      const filtered = Object.entries(OptionalSubjectLabels)
+        .filter(([_, label]) => 
+          label.toLowerCase().includes(subjectInput.toLowerCase())
+        )
+        .map(([value, label]) => ({
+          value: value as OptionalSubject,
+          label
+        }));
+      setFilteredSubjects(filtered);
       setShowSuggestions(true);
     } else {
-      setSuggestions([]);
+      setFilteredSubjects([]);
       setShowSuggestions(false);
     }
+  }, [subjectInput]);
 
-    // Validate the input
-    setIsValidSubject(value === '' || validateSubject(value));
+  // Validate subject input
+  useEffect(() => {
+    const isValid = Object.values(OptionalSubjectLabels).includes(subjectInput);
+    setIsValidSubject(isValid);
+    onValidationChange?.(isValid);
+  }, [subjectInput, onValidationChange]);
 
-    // Don't update form data yet, wait for selection
-  };
-
-  // Handle suggestion selection
-  const handleSelectSuggestion = (subjectOption: {key: string, value: OptionalSubject, label: string}) => {
-    setSubjectInput(subjectOption.label);
-    setSuggestions([]);
+  const handleSuggestionClick = (subject: { value: OptionalSubject; label: string }) => {
+    setSubjectInput(subject.label);
     setShowSuggestions(false);
-    setIsValidSubject(true);
-
-    // Create a custom event to update form data with the enum KEY (not value)
-    // This is critical - the server expects the enum key (HISTORY), not the display value (History)
-    const event = {
-      target: { value: subjectOption.key }
-    } as React.ChangeEvent<HTMLInputElement>;
-    handleChange('optionalSubject')(event);
+    handleChange('optionalSubject')({
+      target: { value: subject.value }
+    } as React.ChangeEvent<HTMLInputElement>);
+    if (errors?.optionalSubject) {
+      const newErrors = { ...errors };
+      delete newErrors.optionalSubject;
+      setErrors(newErrors);
+    }
   };
 
   // Handle reservation category selection
@@ -133,8 +112,8 @@ const EducationBackground = ({ formData, handleChange, errors }: EducationBackgr
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Additional Information</h2>
-      <p className="text-gray-600">Please provide these additional details</p>
+      <h2 className="text-2xl font-bold text-gray-900">Education Background</h2>
+      <p className="text-gray-600">Tell us about your educational background</p>
       <p className="text-sm font-medium text-red-600">* All fields are required</p>
 
       <div className="space-y-4">
@@ -156,55 +135,52 @@ const EducationBackground = ({ formData, handleChange, errors }: EducationBackgr
               </option>
             ))}
           </select>
+          {errors?.reservationCategory && (
+            <p className="mt-1 text-sm text-red-600">{errors.reservationCategory}</p>
+          )}
         </div>
 
         <div className="relative">
           <label htmlFor="optionalSubject" className="block text-sm font-medium text-gray-700">
             Optional Subject
           </label>
-          <input
-            type="text"
-            id="optionalSubject"
-            value={subjectInput}
-            onChange={handleSubjectInputChange}
-            className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${
-              isValidSubject 
-                ? 'border-gray-300' 
-                : 'border-red-300 focus:border-red-500 focus:ring-red-500'
-            }`}
-            required
-            autoComplete="off"
-          />
-          <div className="px-4 py-2 text-sm text-gray-500 border-t border-gray-200">
-            If your Optional subject is not decided, leave this field as is.
+          <div className="relative">
+            <input
+              type="text"
+              id="optionalSubject"
+              value={subjectInput}
+              onChange={(e) => {
+                setSubjectInput(e.target.value);
+              }}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 ${
+                !isValidSubject && subjectInput ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+              }`}
+              placeholder="Search for your optional subject..."
+              required
+            />
+            {!isValidSubject && subjectInput && (
+              <p className="mt-1 text-sm text-red-600">Please select a valid optional subject from the suggestions</p>
+            )}
+            {showSuggestions && filteredSubjects.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
+                {filteredSubjects.map((subject) => (
+                  <div
+                    key={subject.value}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleSuggestionClick(subject)}
+                  >
+                    {subject.label}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          {!isValidSubject && (
-            <p className="mt-1 text-sm text-red-600">
-              Please select a valid optional subject from the suggestions.
-            </p>
-          )}
-          
-          {/* Suggestions dropdown */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-auto">
-              {suggestions.map((subject, index) => (
-                <div
-                  key={index}
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-900"
-                  onClick={() => handleSelectSuggestion(subject)}
-                >
-                  {subject.label}
-                </div>
-              ))}
-              
-            </div>
+          {errors?.optionalSubject && (
+            <p className="mt-1 text-sm text-red-600">{errors.optionalSubject}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Professional Status
-          </label>
           <div className="mt-2">
             <div className="flex items-center">
               <input
@@ -212,7 +188,7 @@ const EducationBackground = ({ formData, handleChange, errors }: EducationBackgr
                 id="isWorkingProfessional"
                 checked={formData.isWorkingProfessional}
                 onChange={handleChange('isWorkingProfessional')}
-                className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="isWorkingProfessional" className="ml-2 block text-sm text-gray-700">
                 I am a working professional
