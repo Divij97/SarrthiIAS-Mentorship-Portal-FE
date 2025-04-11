@@ -9,7 +9,7 @@ import PreparationJourney from '@/components/Onboarding/PreparationJourney';
 import CurrentPreparation from '@/components/Onboarding/CurrentPreparation';
 import Expectations from '@/components/Onboarding/Expectations';
 import { Button } from '@/components/ui/Button';
-import { Region, Gender, OptionalSubject, Mentee, MenteeWithAuth, ReservationCategory, PreferredSlot, AnswerWritingLevel, MenteeUpscExperience, MenteeResponse } from '@/types/mentee';
+import { Region, Gender, OptionalSubject, Mentee, MenteeWithAuth, ReservationCategory, PreferredSlot, AnswerWritingLevel, MenteeUpscExperience, MenteeResponse, MenteeMode } from '@/types/mentee';
 import { signupMentee, getMenteeByPhone } from '@/services/mentee';
 import { validateStep, FormErrors } from '@/utils/mentee-signup-form-validator';
 import { useMenteeStore } from '@/stores/mentee/store';
@@ -27,8 +27,9 @@ const MultiStepForm = () => {
     phoneNumber: '',
     gender: '',
     region: '',
+    mode: MenteeMode.ONLINE,
     reservationCategory: '',
-    optionalSubject: '',
+    optionalSubject: OptionalSubject.NOT_DECIDED,
     isWorkingProfessional: false,
     preliminaryAttempts: 0,
     mainExamAttempts: 0,
@@ -181,7 +182,8 @@ const MultiStepForm = () => {
         strongSubjects: formData.strongSubjects,
         previouslyEnrolledCourses: formData.previouslyEnrolledCourses ? [formData.previouslyEnrolledCourses] : [],
         primarySourceOfCurrentAffairs: formData.currentAffairsSource,
-        expectationFromMentorshipCourse: formData.expectations || ''
+        expectationFromMentorshipCourse: formData.expectations || '',
+        mode: formData.mode as MenteeMode
       };
 
       const menteeWithAuth: MenteeWithAuth = {

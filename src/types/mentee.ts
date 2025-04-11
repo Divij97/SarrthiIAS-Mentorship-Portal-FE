@@ -113,6 +113,7 @@ export interface Mentee {
   phone: string;
   region: Region;
   gender: Gender;
+  mode?: MenteeMode;
 
   // S2
   category: ReservationCategory;
@@ -193,4 +194,9 @@ export interface MenteeSession {
   menteeUserName: string;
   zoomLink: string;
   sessionType: SessionType;
+}
+
+export enum MenteeMode {
+  ONLINE = 'ONLINE',
+  OFFLINE = 'OFFLINE'
 }

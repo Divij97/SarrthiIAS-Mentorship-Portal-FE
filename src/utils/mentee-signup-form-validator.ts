@@ -36,6 +36,10 @@ export const validatePersonalInfo = (formData: FormData): FormErrors => {
     errors.region = 'Please select your region';
   }
 
+  if (!formData.mode) {
+    errors.mode = 'Please select your preferred mode of mentorship';
+  }
+
   return errors;
 };
 

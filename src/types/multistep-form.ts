@@ -5,7 +5,8 @@ import {
   Gender, 
   PreferredSlot, 
   AnswerWritingLevel,
-  MenteeUpscExperience
+  MenteeUpscExperience,
+  MenteeMode
 } from '@/types/mentee';
 
 export interface FormData {
@@ -15,6 +16,7 @@ export interface FormData {
   phoneNumber: string;
   gender: Gender | string;
   region: Region | string;
+  mode: MenteeMode | string;
   
   // Additional Information
   reservationCategory: ReservationCategory | string;

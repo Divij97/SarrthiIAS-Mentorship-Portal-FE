@@ -3,7 +3,7 @@
 import { FormData } from '@/types/multistep-form';
 import { RadioGroup } from '@/components/ui/RadioGroup';
 import { useMenteeStore } from '@/stores/mentee/store';
-import { Gender, Region } from '@/types/mentee';
+import { Gender, Region, MenteeMode } from '@/types/mentee';
 
 interface PersonalInfoProps {
   formData: FormData;
@@ -19,6 +19,11 @@ const genderOptions = [
   { value: Gender.MALE, label: 'Male' },
   { value: Gender.FEMALE, label: 'Female' },
   { value: Gender.OTHER, label: 'Other' }
+];
+
+const modeOptions = [
+  { value: MenteeMode.ONLINE, label: 'Online' },
+  { value: MenteeMode.OFFLINE, label: 'Offline' }
 ];
 
 const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoProps) => {
@@ -58,6 +63,17 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
       // Pass the original event if no matching enum value
       handleChange('region')(e);
     }
+  };
+
+  // Custom handler for mode to ensure enum values are used
+  const handleModeChange = (value: string) => {
+    // Find matching enum value
+    const enumValue = Object.values(MenteeMode).find(
+      mode => mode === value
+    );
+    
+    // Create a custom event with the enum value
+    handleChange('mode')({ target: { value: enumValue || value } } as any);
   };
 
   return (
@@ -141,6 +157,16 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
           {errors?.region && (
             <p className="mt-1 text-sm text-gray-700">{errors.region}</p>
           )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Mode of Mentorship</label>
+          <RadioGroup
+            value={formData.mode || MenteeMode.ONLINE}
+            onChange={handleModeChange}
+            options={modeOptions}
+            name="mode"
+          />
         </div>
       </div>
     </div>
