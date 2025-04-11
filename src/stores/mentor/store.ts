@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { DayOfWeek, Mentor, MentorResponse } from '@/types/mentor';
 import { MentorshipSession } from '@/types/session';
 import { DateFormatDDMMYYYY } from '@/types/session';
+import { StrippedDownMentee } from '@/types/mentee';
 
 interface MentorStore {
   mentor: Mentor | null;
@@ -15,6 +16,7 @@ interface MentorStore {
   removeFromSessionsByDate: (date: DateFormatDDMMYYYY, sessionId: string) => void;
   addToSessionsByDayOfWeek: (date: DateFormatDDMMYYYY, schedule: MentorshipSession) => void;
   removeFromSessionsByDayOfWeek: (dayOfWeek: DayOfWeek, scheduleId: string) => void;
+  onMenteeScheduled: (menteeUserName: string) => void;
 }
 
 export const useMentorStore = create<MentorStore>()(
@@ -79,6 +81,24 @@ export const useMentorStore = create<MentorStore>()(
         if (current) {
           set({ 
             mentorResponse: { ...current, sessionsByDayOfWeek: { ...current.sessionsByDayOfWeek, [dayOfWeek]: current.sessionsByDayOfWeek[dayOfWeek]?.filter(s => s.id !== scheduleId) } }
+          });
+        }
+      },
+      onMenteeScheduled: (menteeUserName: string) => {
+        const current = get().mentorResponse;
+        if (current) {
+          const updatedUnscheduledMentees = current.unscheduledMenteeDetails.strippedDownMentees.filter(
+            m => m.phone !== menteeUserName
+          );
+          
+          set({ 
+            mentorResponse: { 
+              ...current, 
+              unscheduledMenteeDetails: { 
+                ...current.unscheduledMenteeDetails, 
+                strippedDownMentees: updatedUnscheduledMentees 
+              } 
+            } 
           });
         }
       }

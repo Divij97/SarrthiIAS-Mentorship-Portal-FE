@@ -6,7 +6,7 @@ import { MenteeScheduleTile } from '@/components/Home/MenteeScheduleTile';
 import { AddScheduleForMentee } from '@/components/Home/AddScheduleForMentee';
 import { StrippedDownMentee } from '@/types/mentee';
 import { DateFormatDDMMYYYY, RecurringMentorshipSchedule } from '@/types/session';
-import { createRecurringSchedule, sendOnBoardingEmail } from '@/services/mentors';
+import { createRecurringSchedule, getMentorByPhone, sendOnBoardingEmail } from '@/services/mentors';
 import { toast } from 'react-hot-toast';
 import { useLoginStore } from '@/stores/auth/store';
 import { DayOfWeek } from '@/types/mentor';
@@ -47,7 +47,7 @@ const getDateForDay = (day: DayOfWeek): string => {
 };
 
 export default function MentorSchedulesPage() {
-  const { mentorResponse, addToSessionsByDayOfWeek, removeFromSessionsByDayOfWeek, addToSessionsByDate, setMentorResponse } = useMentorStore();
+  const { mentorResponse, addToSessionsByDayOfWeek, removeFromSessionsByDayOfWeek, addToSessionsByDate, setMentorResponse, onMenteeScheduled } = useMentorStore();
   const authHeader = useLoginStore((state) => state.getAuthHeader());
   const [selectedMentee, setSelectedMentee] = useState<StrippedDownMentee | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -77,11 +77,16 @@ export default function MentorSchedulesPage() {
         }
       );
       console.log("Schedule created successfully: ", createdSession);
+      // if (mentorResponse.username) { 
+      //   const response = await getMentorByPhone(mentorResponse.username, authHeader||'');
+      //   setMentorResponse(response);
+      // }
 
       addToSessionsByDayOfWeek(schedule.firstSessionDate as DateFormatDDMMYYYY, createdSession);
 
       // Get the day of week from firstSessionDate
-      const firstSessionDate = new Date(schedule.firstSessionDate);
+      const [day, month, year] = schedule.firstSessionDate.split('/');
+      const firstSessionDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       const dayOfWeek = firstSessionDate.getDay();
       
       // Create dates for this week and next week
@@ -104,6 +109,7 @@ export default function MentorSchedulesPage() {
       // Add sessions to sessionsByDate for both dates
       addToSessionsByDate(formatDate(nextSessionDate), createdSession);
       addToSessionsByDate(formatDate(nextWeekSessionDate), createdSession);
+      onMenteeScheduled(createdSession.menteeUsername);
       
       // Get the updated mentor response and update local state
 
