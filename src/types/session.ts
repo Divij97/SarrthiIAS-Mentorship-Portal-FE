@@ -134,6 +134,7 @@ export interface RecurringMentorshipSchedule {
   recurrenceType: RecurrenceType;
   firstSessionDate: string;
   dayOfWeek: string;
+  mode: string;
 }
 
 

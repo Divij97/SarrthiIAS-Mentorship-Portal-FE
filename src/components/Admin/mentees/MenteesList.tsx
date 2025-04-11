@@ -263,7 +263,7 @@ export default function MenteesList({
                         >
                           {mentee.phone !== null && sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
                         </button>
-                        {!mentee.assignedMentor && (
+                        
                           <button
                             onClick={() => handleAssignMentor(mentee)}
                             disabled={assigningMentor === mentee.phone}
@@ -275,7 +275,7 @@ export default function MenteesList({
                             <UserPlusIcon className="h-4 w-4 mr-1" />
                             {mentee.phone !== null && assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
                           </button>
-                        )}
+                      
                       </td>
                     </tr>
                   ))}

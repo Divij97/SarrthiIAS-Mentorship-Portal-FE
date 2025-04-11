@@ -171,6 +171,7 @@ export interface StrippedDownMentee {
   email: string;
   preferredSlot?: PreferredSlot;
   creationTs?: number;
+  mode?: MenteeMode;
 }
 
 export interface MenteesForCsvExport {

@@ -3,7 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { DayOfWeek, StrippedDownMentor } from '@/types/mentor';
 import ScheduleEmailModal from './ScheduleEmailModal';
-import { StrippedDownMentee } from '@/types/mentee';
+import { MenteeMode, StrippedDownMentee } from '@/types/mentee';
 import { RecurrenceType } from '@/types/session';
 import { useMentorStore } from '@/stores/mentor/store';
 
@@ -19,6 +19,7 @@ interface AddScheduleForMenteeProps {
     recurrenceType: RecurrenceType;
     firstSessionDate: string;
     dayOfWeek: DayOfWeek;
+    mode: MenteeMode;
   }) => Promise<void>;
   mentee: StrippedDownMentee;
   mentor: StrippedDownMentor;
@@ -35,12 +36,14 @@ export default function AddScheduleForMentee({
   const [menteeFullName, setMenteeFullName] = useState(mentee.name);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>(RecurrenceType.WEEKLY);
+  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>(RecurrenceType.BI_WEEKLY);
   const [firstSessionDate, setFirstSessionDate] = useState('');
   const [dayOfWeek, setDayOfWeek] = useState<DayOfWeek>(DayOfWeek.SUNDAY);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const unscheduledMenteeEmail = useMentorStore(state => state.getUnscheduledMenteeEmail(menteeUsername));
+  const [menteeMode, setMenteeMode] = useState<MenteeMode>(mentee.mode || MenteeMode.ONLINE);
+  const [createZoomMeeting, setCreateZoomMeeting] = useState(mentee.mode === MenteeMode.ONLINE);
 
   useEffect(() => {
     if (firstSessionDate) {
@@ -60,6 +63,12 @@ export default function AddScheduleForMentee({
     }
   }, [firstSessionDate]);
 
+  const handleZoomMeetingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.target.checked;
+    setCreateZoomMeeting(isChecked);
+    setMenteeMode(isChecked ? MenteeMode.ONLINE : MenteeMode.OFFLINE);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -71,7 +80,8 @@ export default function AddScheduleForMentee({
         endTime,
         recurrenceType,
         firstSessionDate,
-        dayOfWeek
+        dayOfWeek,
+        mode: menteeMode
       });
       setShowEmailModal(true);
     } catch (error) {
@@ -251,6 +261,20 @@ export default function AddScheduleForMentee({
                         <option value={DayOfWeek.FRIDAY}>Friday</option>
                         <option value={DayOfWeek.SATURDAY}>Saturday</option>
                       </select>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="createZoomMeeting"
+                        name="createZoomMeeting"
+                        checked={createZoomMeeting}
+                        onChange={handleZoomMeetingChange}
+                        className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-600"
+                      />
+                      <label htmlFor="createZoomMeeting" className="ml-2 block text-sm text-gray-900">
+                        Create zoom meeting
+                      </label>
                     </div>
 
                     <div className="mt-6 flex justify-end">
