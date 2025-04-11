@@ -3,16 +3,16 @@
 import { useState } from 'react';
 import { useMentorStore } from '@/stores/mentor/store';
 import { MenteeScheduleTile } from '@/components/Home/MenteeScheduleTile';
-import { AddScheduleForMentee } from '@/components/Home/AddScheduleForMentee';
 import { StrippedDownMentee } from '@/types/mentee';
 import { DateFormatDDMMYYYY, RecurringMentorshipSchedule } from '@/types/session';
-import { createRecurringSchedule, getMentorByPhone, sendOnBoardingEmail } from '@/services/mentors';
+import { createRecurringSchedule, sendOnBoardingEmail } from '@/services/mentors';
 import { toast } from 'react-hot-toast';
 import { useLoginStore } from '@/stores/auth/store';
 import { DayOfWeek } from '@/types/mentor';
 import { WeekDayScheduleCard } from '@/components/Home/WeekDayScheduleCard';
 import { Dialog } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import AddScheduleForMentee from '@/components/Home/AddScheduleForMentee';
 
 
 const DAY_ORDER = [
@@ -53,6 +53,7 @@ export default function MentorSchedulesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
   const handleScheduleClick = (mentee: StrippedDownMentee) => {
     setSelectedMentee(mentee);
@@ -77,10 +78,6 @@ export default function MentorSchedulesPage() {
         }
       );
       console.log("Schedule created successfully: ", createdSession);
-      // if (mentorResponse.username) { 
-      //   const response = await getMentorByPhone(mentorResponse.username, authHeader||'');
-      //   setMentorResponse(response);
-      // }
 
       addToSessionsByDayOfWeek(schedule.firstSessionDate as DateFormatDDMMYYYY, createdSession);
 
@@ -110,12 +107,7 @@ export default function MentorSchedulesPage() {
       addToSessionsByDate(formatDate(nextSessionDate), createdSession);
       addToSessionsByDate(formatDate(nextWeekSessionDate), createdSession);
       onMenteeScheduled(createdSession.menteeUsername);
-      
-      // Get the updated mentor response and update local state
 
-      // Close the modal
-      setIsModalOpen(false);
-      setSelectedMentee(null);
     } catch (error) {
       console.error('Failed to create schedule:', error);
       toast.error(
@@ -320,6 +312,7 @@ export default function MentorSchedulesPage() {
           }}
           onSubmit={handleScheduleSubmit}
           mentee={selectedMentee}
+          mentor={{name: mentorResponse?.mentor?.name, phone: mentorResponse?.username, email: mentorResponse?.mentor?.email}}
         />
       )}
     </div>

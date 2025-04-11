@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Dialog } from '@/components/ui/Dialog';
-import { Button } from '@/components/ui/Button';
-import { RecurrenceType } from '@/types/session';
-import { DayOfWeek } from '@/types/mentor';
+import { useState, Fragment, useEffect } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import { DayOfWeek, StrippedDownMentor } from '@/types/mentor';
+import ScheduleEmailModal from './ScheduleEmailModal';
 import { StrippedDownMentee } from '@/types/mentee';
-
+import { RecurrenceType } from '@/types/session';
 interface AddScheduleForMenteeProps {
   isOpen: boolean;
   onClose: () => void;
@@ -16,158 +16,276 @@ interface AddScheduleForMenteeProps {
     recurrenceType: RecurrenceType;
     firstSessionDate: string;
     dayOfWeek: DayOfWeek;
-  }) => void;
+  }) => Promise<void>;
   mentee: StrippedDownMentee;
+  mentor: StrippedDownMentor;
 }
 
-export const AddScheduleForMentee = ({ isOpen, onClose, onSubmit, mentee }: AddScheduleForMenteeProps) => {
-  const [formData, setFormData] = useState({
-    menteeUsername: mentee.phone, // Using phone as username
-    menteeFullName: mentee.name,
-    startTime: '',
-    endTime: '',
-    recurrenceType: RecurrenceType.WEEKLY,
-    firstSessionDate: '',
-    dayOfWeek: DayOfWeek.MONDAY
-  });
+export default function AddScheduleForMentee({
+  isOpen,
+  onClose,
+  onSubmit,
+  mentor,
+  mentee
+}: AddScheduleForMenteeProps) {
+  const [menteeUsername, setMenteeUsername] = useState(mentee.phone);
+  const [menteeFullName, setMenteeFullName] = useState(mentee.name);
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>(RecurrenceType.WEEKLY);
+  const [firstSessionDate, setFirstSessionDate] = useState('');
+  const [dayOfWeek, setDayOfWeek] = useState<DayOfWeek>(DayOfWeek.SUNDAY);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
-  const convertToDisplayFormat = (dateString: string) => {
-    if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
-    return `${day}/${month}/${year}`;
-  };
+  useEffect(() => {
+    if (firstSessionDate) {
+      const date = new Date(firstSessionDate);
+      const day = date.getDay();
+      // Convert JavaScript day (0-6) to our DayOfWeek enum
+      const dayOfWeekMap: Record<number, DayOfWeek> = {
+        0: DayOfWeek.SUNDAY,
+        1: DayOfWeek.MONDAY,
+        2: DayOfWeek.TUESDAY,
+        3: DayOfWeek.WEDNESDAY,
+        4: DayOfWeek.THURSDAY,
+        5: DayOfWeek.FRIDAY,
+        6: DayOfWeek.SATURDAY
+      };
+      setDayOfWeek(dayOfWeekMap[day]);
+    }
+  }, [firstSessionDate]);
 
-  const getDayOfWeekFromDate = (dateString: string): DayOfWeek => {
-    if (!dateString) return DayOfWeek.MONDAY;
-    const date = new Date(dateString);
-    const days = [
-      DayOfWeek.SUNDAY,
-      DayOfWeek.MONDAY,
-      DayOfWeek.TUESDAY,
-      DayOfWeek.WEDNESDAY,
-      DayOfWeek.THURSDAY,
-      DayOfWeek.FRIDAY,
-      DayOfWeek.SATURDAY
-    ];
-    return days[date.getDay()];
-  };
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value;
-    const dayOfWeek = getDayOfWeekFromDate(newDate);
-    setFormData({ ...formData, firstSessionDate: newDate, dayOfWeek });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Convert the date from yyyy-mm-dd to dd/mm/yyyy
-    const [year, month, day] = formData.firstSessionDate.split('-');
-    const formattedDate = `${day}/${month}/${year}`;
-    
-    onSubmit({
-      ...formData,
-      firstSessionDate: formattedDate
-    });
+    setIsSubmitting(true);
+    try {
+      await onSubmit({
+        menteeUsername,
+        menteeFullName,
+        startTime,
+        endTime,
+        recurrenceType,
+        firstSessionDate,
+        dayOfWeek
+      });
+      setShowEmailModal(true);
+    } catch (error) {
+      console.error('Error creating schedule:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCloseEmailModal = () => {
+    setShowEmailModal(false);
     onClose();
   };
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Create Schedule for Mentee">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Mentee Name</label>
-          <input
-            type="text"
-            value={formData.menteeFullName}
-            disabled
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-          />
-        </div>
+    <>
+      <Transition.Root show={isOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-10" onClose={onClose}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          </Transition.Child>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Start Time</label>
-            <input
-              type="time"
-              value={formData.startTime}
-              onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-              required
-            />
+          <div className="fixed inset-0 z-10 overflow-y-auto">
+            <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                enterTo="opacity-100 translate-y-0 sm:scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              >
+                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                  <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+                    <button
+                      type="button"
+                      className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                      onClick={onClose}
+                    >
+                      <span className="sr-only">Close</span>
+                      <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                    </button>
+                  </div>
+                  
+                  <div>
+                    <div className="mt-3 text-center sm:mt-0 sm:text-left">
+                      <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                        Add Schedule for Mentee
+                      </Dialog.Title>
+                      <div className="mt-4">
+                        <p className="text-sm text-gray-500">
+                          Create a new schedule for a mentee.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                    <div>
+                      <label htmlFor="menteeUsername" className="block text-sm font-medium leading-6 text-gray-900">
+                        Mentee Username
+                      </label>
+                      <input
+                        type="text"
+                        name="menteeUsername"
+                        id="menteeUsername"
+                        value={menteeUsername}
+                        onChange={(e) => setMenteeUsername(e.target.value)}
+                        required
+                        className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="menteeFullName" className="block text-sm font-medium leading-6 text-gray-900">
+                        Mentee Full Name
+                      </label>
+                      <input
+                        type="text"
+                        name="menteeFullName"
+                        id="menteeFullName"
+                        value={menteeFullName}
+                        onChange={(e) => setMenteeFullName(e.target.value)}
+                        required
+                        className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="startTime" className="block text-sm font-medium leading-6 text-gray-900">
+                        Start Time
+                      </label>
+                      <input
+                        type="time"
+                        name="startTime"
+                        id="startTime"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        required
+                        className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="endTime" className="block text-sm font-medium leading-6 text-gray-900">
+                        End Time
+                      </label>
+                      <input
+                        type="time"
+                        name="endTime"
+                        id="endTime"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        required
+                        className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="recurrenceType" className="block text-sm font-medium leading-6 text-gray-900">
+                        Recurrence Type
+                      </label>
+                      <select
+                        name="recurrenceType"
+                        id="recurrenceType"
+                        value={recurrenceType}
+                        onChange={(e) => setRecurrenceType(e.target.value as RecurrenceType)}
+                        required
+                        className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6"
+                      >
+                        <option value="WEEKLY">Weekly</option>
+                        <option value="BIWEEKLY">Bi-weekly</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="firstSessionDate" className="block text-sm font-medium leading-6 text-gray-900">
+                        First Session Date
+                      </label>
+                      <input
+                        type="date"
+                        name="firstSessionDate"
+                        id="firstSessionDate"
+                        value={firstSessionDate}
+                        onChange={(e) => setFirstSessionDate(e.target.value)}
+                        required
+                        className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="dayOfWeek" className="block text-sm font-medium leading-6 text-gray-900">
+                        Day of Week
+                      </label>
+                      <select
+                        name="dayOfWeek"
+                        id="dayOfWeek"
+                        value={dayOfWeek}
+                        onChange={(e) => setDayOfWeek(e.target.value as DayOfWeek)}
+                        required
+                        className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6"
+                      >
+                        <option value={DayOfWeek.SUNDAY}>Sunday</option>
+                        <option value={DayOfWeek.MONDAY}>Monday</option>
+                        <option value={DayOfWeek.TUESDAY}>Tuesday</option>
+                        <option value={DayOfWeek.WEDNESDAY}>Wednesday</option>
+                        <option value={DayOfWeek.THURSDAY}>Thursday</option>
+                        <option value={DayOfWeek.FRIDAY}>Friday</option>
+                        <option value={DayOfWeek.SATURDAY}>Saturday</option>
+                      </select>
+                    </div>
+
+                    <div className="mt-6 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={onClose}
+                        className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="ml-3 inline-flex justify-center rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50"
+                      >
+                        {isSubmitting ? 'Creating...' : 'Create Schedule'}
+                      </button>
+                    </div>
+                  </form>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">End Time</label>
-            <input
-              type="time"
-              value={formData.endTime}
-              onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-              required
-            />
-          </div>
-        </div>
+        </Dialog>
+      </Transition.Root>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">First Session Date</label>
-          <input
-            type="date"
-            value={formData.firstSessionDate}
-            onChange={handleDateChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-            required
-          />
-          <p className="mt-1 text-sm text-gray-500">
-            Selected date: {convertToDisplayFormat(formData.firstSessionDate)}
-          </p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Day of Week</label>
-          <input
-            type="text"
-            value={formData.dayOfWeek.charAt(0) + formData.dayOfWeek.slice(1).toLowerCase()}
-            disabled
-            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm"
-          />
-          <p className="mt-1 text-sm text-gray-500">
-            Day of week is automatically set based on the selected date
-          </p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Recurrence Type</label>
-          <select
-            value={formData.recurrenceType}
-            onChange={(e) => setFormData({ ...formData, recurrenceType: e.target.value as RecurrenceType })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-            required
-          >
-            {Object.values(RecurrenceType).map((type) => (
-              <option key={type} value={type}>
-                {type.charAt(0) + type.slice(1).toLowerCase()}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mt-6 flex justify-end space-x-3">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-md hover:bg-orange-700"
-          >
-            Create Schedule
-          </Button>
-        </div>
-      </form>
-    </Dialog>
+      <ScheduleEmailModal
+        isOpen={showEmailModal}
+        onClose={handleCloseEmailModal}
+        mentor={mentor}
+        menteeName={menteeFullName}
+        scheduleDetails={{
+          startTime,
+          endTime,
+          recurrenceType,
+          firstSessionDate,
+          dayOfWeek
+        }}
+      />
+    </>
   );
-}; 
+} 
