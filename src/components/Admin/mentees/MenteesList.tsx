@@ -284,7 +284,7 @@ export default function MenteesList({
                               : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
                             }`}
                         >
-                          {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
+                          {mentee.phone !== null && sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
                         </button>
                         {!mentee.assignedMentor && (
                           <button
@@ -296,7 +296,7 @@ export default function MenteesList({
                               }`}
                           >
                             <UserPlusIcon className="h-4 w-4 mr-1" />
-                            {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
+                            {mentee.phone !== null && assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
                           </button>
                         )}
                       </td>
