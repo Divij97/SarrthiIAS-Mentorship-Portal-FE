@@ -28,7 +28,7 @@ export default function ScheduleEmailModal({
   menteeEmail,
   scheduleDetails
 }: ScheduleEmailModalProps) {
-  const subject = '🚀 Your UPSC Journey Starts NOW – Let\'s Crush It Together!';
+  const subject = '🚀 Welcome to Sarrthi IAS One on One Mentorship Programme';
   
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':');
