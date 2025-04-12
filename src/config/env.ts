@@ -12,6 +12,6 @@ export const config = {
     defaultPassword: "sarrthiiasmentorshipplatform",
   },
   api: {
-    url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+    url: process.env.NEXT_PUBLIC_API_URL || 'https://backend.mentorship.sarrthiias.com',
   },
 } as const; 

@@ -159,7 +159,7 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
             <p className="mt-1 text-sm text-gray-700">{errors.region}</p>
           )}
         </div>
-        {/*TODO: remove */}
+        {/* TODO: remove
         <div>
           <label className="block text-sm font-medium text-gray-700">Mode of Mentorship</label>
           <RadioGroup
@@ -168,7 +168,7 @@ const PersonalInfo = ({ formData, handleChange, region, errors }: PersonalInfoPr
             options={modeOptions}
             name="mode"
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );
