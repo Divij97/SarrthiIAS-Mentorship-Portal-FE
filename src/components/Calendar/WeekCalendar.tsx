@@ -252,6 +252,13 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
           const dateStr = format(day, 'yyyy-MM-dd');
           const dayMeetings = meetingsByDay[dateStr] || [];
           
+          // Sort meetings by startTime
+          const sortedDayMeetings = [...dayMeetings].sort((a, b) => {
+            const timeA = a.startTime.split(':').map(Number);
+            const timeB = b.startTime.split(':').map(Number);
+            return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
+          });
+          
           return (
             <div 
               key={day.toString()} 
@@ -260,8 +267,8 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
               }`}
             >
               <div className="h-full p-2 space-y-2">
-                {dayMeetings.length > 0 ? (
-                  dayMeetings.map((meeting) => (
+                {sortedDayMeetings.length > 0 ? (
+                  sortedDayMeetings.map((meeting) => (
                     <div
                       key={meeting.id}
                       onClick={() => onMeetingClick && onMeetingClick(meeting)}

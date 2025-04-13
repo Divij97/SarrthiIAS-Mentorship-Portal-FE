@@ -212,12 +212,18 @@ export default function MentorSchedulesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {DAY_ORDER.map((day) => {
                 const sessions = mentorResponse?.sessionsByDayOfWeek?.[day] || [];
+                // Sort sessions by startTime
+                const sortedSessions = [...sessions].sort((a, b) => {
+                  const timeA = a.startTime.split(':').map(Number);
+                  const timeB = b.startTime.split(':').map(Number);
+                  return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
+                });
                 const date = getDateForDay(day);
                 return (
                   <WeekDayScheduleCard
                     key={day}
                     day={day}
-                    sessions={sessions}
+                    sessions={sortedSessions}
                     date={date}
                   />
                 );
