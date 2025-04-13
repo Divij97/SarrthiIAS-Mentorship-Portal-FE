@@ -28,8 +28,8 @@ export function RecurringSessionCard({ session, dayOfWeek }: RecurringSessionCar
         dayOfWeek: dayOfWeek as DayOfWeek
       }
       await cancelRecurringSession(deleteRecurringSessionRequest, authHeader||'');
-      if (mentorResponse.username) { 
-        const response = await getMentorByPhone(mentorResponse.username, authHeader||'');
+      if (mentorResponse.u) { 
+        const response = await getMentorByPhone(mentorResponse.u, authHeader||'');
         setMentorResponse(response);
       }
       
@@ -44,24 +44,24 @@ export function RecurringSessionCard({ session, dayOfWeek }: RecurringSessionCar
   };
 
   // Format the start date from YYYY-MM-DD to a more readable format
-  const formattedStartDate = session.recurrence?.startDate 
-    ? format(new Date(session.recurrence.startDate), 'MMM d, yyyy')
+  const formattedStartDate = session.r?.startDate 
+    ? format(new Date(session.r.startDate), 'MMM d, yyyy')
     : 'Not specified';
 
   // Format the recurrence type to be more user-friendly
-  const formattedFrequency = session.recurrence?.recurrenceType === 'WEEKLY' 
+  const formattedFrequency = session.r?.recurrenceType === 'WEEKLY' 
     ? 'Weekly' 
-    : session.recurrence?.recurrenceType === 'BI_WEEKLY' 
+    : session.r?.recurrenceType === 'BI_WEEKLY' 
       ? 'Bi Weekly' 
       : 'Not specified';
 
   return (
     <div className="border rounded-md p-4">
       <div className="space-y-2">
-        <p className="font-medium text-gray-900">{session.menteeFullName}</p>
+        <p className="font-medium text-gray-900">{session.mn}</p>
         <div className="text-sm text-gray-500 space-y-1">
           <p>
-            {session.startTime} - {session.endTime}
+            {session.st} - {session.et}
           </p>
           <p>
             Frequency: {formattedFrequency}
@@ -71,9 +71,9 @@ export function RecurringSessionCard({ session, dayOfWeek }: RecurringSessionCar
           </p>
         </div>
         <div className="flex gap-2 mt-2">
-          {session.zoomLink && (
+          {session.z && (
             <a
-              href={session.zoomLink}
+              href={session.z}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-blue-600 hover:text-blue-800"

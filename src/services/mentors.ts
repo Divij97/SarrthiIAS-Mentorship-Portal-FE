@@ -1,9 +1,9 @@
-import { MentorGroupsBulkResponse, MentorResponse, MentorWithAuth } from '@/types/mentor';
+import { DayOfWeek, Mentor, MentorGroupsBulkResponse, MentorResponse, MentorWithAuth } from '@/types/mentor';
 import { config } from '@/config/env';
 import { useLoginStore } from '@/stores/auth/store';
 import { DeleteRecurringSessionRequest, SessionUpdate } from '@/types/session';
 import { RecurringMentorshipSchedule, MentorshipSession } from '@/types/session';
-import { StrippedDownMentee } from '@/types/mentee';
+import { StrippedDownMentee, UnscheduledMenteeDetails } from '@/types/mentee';
 
 export const getMentorByPhone = async (phone: string, authHeader: string): Promise<MentorResponse> => {
   try {
@@ -34,6 +34,7 @@ export const getMentorByPhone = async (phone: string, authHeader: string): Promi
     
     const responseData = await response.json();
     console.log(`[${timestamp}] API Call: getMentorByPhone - Completed successfully`);
+
     return responseData;
   } catch (error) {
     // console.error('Error fetching mentor:', error);

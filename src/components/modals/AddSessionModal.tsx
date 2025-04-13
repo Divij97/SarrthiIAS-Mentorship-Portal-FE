@@ -31,7 +31,7 @@ export default function AddSessionModal({
   onSubmit
 }: AddSessionModalProps) {
   const { mentorResponse } = useMentorStore();
-  const assignedMentees = mentorResponse?.assignedMentees || [];
+  const assignedMentees = mentorResponse?.am || [];
   
   console.log('AddSessionModal render with isOpen:', isOpen);
   console.log('AddSessionModal formData:', formData);
@@ -92,17 +92,17 @@ export default function AddSessionModal({
                           className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 pr-10 py-2 sm:text-sm border-gray-300 rounded-md"
                           value={formData.menteeUsername}
                           onChange={(e) => {
-                            const mentee = assignedMentees.find((mentee) => mentee.phone === e.target.value);
-                            onFormChange('menteeUsername', mentee?.phone || '');
-                            onFormChange('menteeFullName', mentee?.name || '');
+                            const mentee = assignedMentees.find((mentee) => mentee.p === e.target.value);
+                            onFormChange('menteeUsername', mentee?.p || '');
+                            onFormChange('menteeFullName', mentee?.n || '');
                           }}
                           required
                           disabled={isLoading}
                         >
                           <option value="">Select a mentee</option>
                           {assignedMentees.map((mentee) => (
-                            <option key={mentee.phone} value={mentee.phone}>
-                              {mentee.name} ({mentee.phone})
+                            <option key={mentee.p} value={mentee.p}>
+                              {mentee.n} ({mentee.p})
                             </option>
                           ))}
                         </select>

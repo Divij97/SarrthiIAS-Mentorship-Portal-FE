@@ -76,7 +76,7 @@ export default function EditSessionModal({
                           Mentee
                         </label>
                         <div className="mt-1 p-2 bg-gray-50 rounded-md text-gray-700">
-                          {session.menteeUsername || 'Unknown Mentee'}
+                          {session.mu || 'Unknown Mentee'}
                         </div>
                       </div>
 

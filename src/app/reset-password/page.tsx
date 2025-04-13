@@ -42,7 +42,7 @@ export default function ResetPasswordPage() {
       return false;
     }
 
-    const expectedOtp = userType === UserType.MENTOR ? mentorResponse?.otp : menteeResponse?.otp;
+    const expectedOtp = userType === UserType.MENTOR ? mentorResponse?.o : menteeResponse?.otp;
     
     if (!expectedOtp) {
       setError('OTP not found. Please try logging in again.');

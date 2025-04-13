@@ -37,7 +37,7 @@ export default function RootLayoutClient({
         return;
       }
 
-      var hasOTP = Boolean(menteeResponse?.otp || mentorResponse?.otp);
+      var hasOTP = Boolean(menteeResponse?.otp || mentorResponse?.o);
       if (userType === UserType.MENTOR) {
         const tempMentorData: TempMentorData = JSON.parse(localStorage.getItem('tempMentorData') || '{}');
         hasOTP = Boolean(hasOTP || tempMentorData?.verifiedOtp);
@@ -71,7 +71,7 @@ export default function RootLayoutClient({
 
       // Check for valid user based on userType
       const hasValidUser = userType === UserType.MENTOR 
-                          ? Boolean(mentorResponse?.mentor) 
+                          ? Boolean(mentorResponse?.m) 
                           : Boolean(menteeResponse?.mentee);
 
       // Only redirect to home if user is authenticated, has a valid user, is on a public route, and doesn't have OTP

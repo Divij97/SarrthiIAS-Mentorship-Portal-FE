@@ -283,7 +283,7 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
                         {formatTimeDisplay(meeting.startTime)} - {formatTimeDisplay(meeting.endTime)}
                       </div>
                       <div className="mt-1 text-xs text-gray-600">
-                        Occurence Type: {meeting.sessionType === 'AD_HOC' ? 'Once' : 'Scheduled'}
+                        {meeting.sessionType === 'AD_HOC' ? 'Single' : 'Repeating'}
                       </div>
                       {(meeting as any).isGroupSession && (
                         <div className="mt-1 text-xs text-blue-600">
@@ -321,7 +321,7 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
                   </div>
                   <div className="flex items-center text-xs text-gray-600 mb-1">
                     <CalendarIcon className="h-3.5 w-3.5 mr-1" />
-                    Frequency: {meeting.sessionType === 'AD_HOC' ? 'Once' : 'Weekly/Bi-Weekly'}
+                    {meeting.sessionType === 'AD_HOC' ? 'Single' : 'Repeating'}
                   </div>
                   {meeting.menteeFullName && (
                     <div className="flex items-center text-xs text-gray-600">

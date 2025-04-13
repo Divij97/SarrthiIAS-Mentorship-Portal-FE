@@ -35,7 +35,7 @@ function CancelSessionModalContainer({
   const handleCancel = async () => {
     if (mentorResponse && selectedSession && sessionManager) {
       try {
-        await sessionManager.cancelSession(selectedSession.id, cancelModalDate, selectedSession.sessionType);
+        await sessionManager.cancelSession(selectedSession.id, cancelModalDate, selectedSession.s);
         setIsCancelModalOpen(false);
         setSelectedSession(null);
       } catch (error) {
@@ -87,7 +87,7 @@ function AddSessionModalContainer({
     e.preventDefault();
     if (mentorResponse && sessionManager) {
       try {
-        const mentorUsername = mentorResponse.username || '';
+        const mentorUsername = mentorResponse.u || '';
         await sessionManager.addNewSession(
           mentorUsername,
           formData.date,

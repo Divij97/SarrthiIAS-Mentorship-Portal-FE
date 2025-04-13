@@ -44,8 +44,8 @@ export default function MentorSignUpForm() {
 
 
   useEffect(() => {
-    if (mentorResponse?.mentor) {
-      const mentor = mentorResponse.mentor;
+    if (mentorResponse?.m) {
+      const mentor = mentorResponse.m;
       
       // Only set initial values if form fields are empty (to avoid overriding user input)
       if (!formData.name && mentor.name) {
@@ -53,7 +53,7 @@ export default function MentorSignUpForm() {
           ...prev,
           name: mentor.name || '',
           email: mentor.email || '',
-          phone: mentorResponse.username || '',
+          phone: mentorResponse.u || '',
         }));
       }
     }

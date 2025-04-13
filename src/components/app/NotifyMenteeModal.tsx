@@ -17,7 +17,7 @@ export default function NotifyMenteeModal({ isOpen, onClose, mentees, authHeader
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
-    const selectedMentee = mentees.find(m => m.phone === selectedMenteeId);
+    const selectedMentee = mentees.find(m => m.p === selectedMenteeId);
     if (!selectedMentee) return;
 
     try {
@@ -65,8 +65,8 @@ export default function NotifyMenteeModal({ isOpen, onClose, mentees, authHeader
             >
               <option value="">Select a mentee</option>
               {mentees.map((mentee) => (
-                <option key={mentee.phone} value={mentee.phone}>
-                  {mentee.name}
+                <option key={mentee.p} value={mentee.p}>
+                  {mentee.n}
                 </option>
               ))}
             </select>

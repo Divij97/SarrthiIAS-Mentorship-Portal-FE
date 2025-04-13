@@ -71,9 +71,9 @@ export default function MenteesList({
     try {
       // Create a StrippedDownMentee object with required fields
       const strippedMentee: StrippedDownMentee = {
-        name: mentee.name,
-        phone: mentee.phone,
-        email: mentee.email,
+        n: mentee.name,
+        p: mentee.phone,
+        e: mentee.email,
         preferredSlot: PreferredSlot.ALL // Default
       };
 
@@ -97,7 +97,7 @@ export default function MenteesList({
 
     setAssigningMentor(selectedMentee.phone);
     try {
-      await assignMentorToMentee(selectedMentee.phone, { mentorUserName: mentorPhone, mentee: { name: selectedMentee.name, phone: selectedMentee.phone, email: selectedMentee.email } }, authHeader);
+      await assignMentorToMentee(selectedMentee.phone, { mentorUserName: mentorPhone, mentee: { n: selectedMentee.name, p: selectedMentee.phone, e: selectedMentee.email } }, authHeader);
 
       toast.success(`Mentor assigned successfully to ${selectedMentee.name}`);
       setShowAssignModal(false);

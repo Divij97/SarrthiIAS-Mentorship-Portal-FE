@@ -56,14 +56,14 @@ export class SessionManager {
         setTimeout(() => {
           const updatedSession: MentorshipSession = {
             id: sessionId,
-            menteeFullName: 'Test User',
-            menteeUsername: 'testuser',
-            zoomLink: null,
-            startTime: formattedStartTime,
-            endTime: formattedEndTime,
-            mentorUsername: 'mentor',
-            mentorName: 'Mentor Name',
-            sessionType: SessionType.AD_HOC
+            mn: 'Test User',
+            mu: 'testuser',
+            z: null,
+            st: formattedStartTime,
+            et: formattedEndTime,
+            u: 'mentor',
+            m: 'Mentor Name',
+            s: SessionType.AD_HOC
           };
           resolve(updatedSession);
         }, 1000);

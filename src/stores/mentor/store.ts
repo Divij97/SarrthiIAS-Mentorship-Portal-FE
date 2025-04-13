@@ -34,7 +34,7 @@ export const useMentorStore = create<MentorStore>()(
           set({ 
             mentorResponse: { 
               ...current, 
-              otp: null 
+              o: null 
             } 
           });
         }
@@ -43,7 +43,7 @@ export const useMentorStore = create<MentorStore>()(
         const current = get().mentorResponse;
         if (current) {
           set({ 
-            mentorResponse: { ...current, sessionsByDate: { ...current.sessionsByDate, [date]: [session] } }
+            mentorResponse: { ...current, sd: { ...current.sd, [date]: [session] } }
           });
         }
       },
@@ -51,7 +51,7 @@ export const useMentorStore = create<MentorStore>()(
         const current = get().mentorResponse;
         if (current) {
           set({ 
-            mentorResponse: { ...current, sessionsByDate: { ...current.sessionsByDate, [date]: current.sessionsByDate[date].filter(s => s.id !== sessionId) } }
+            mentorResponse: { ...current, sd: { ...current.sd, [date]: current.sd[date].filter(s => s.id !== sessionId) } }
           });
         }
       },
@@ -73,7 +73,7 @@ export const useMentorStore = create<MentorStore>()(
         };
         if (current) {
           set({ 
-            mentorResponse: { ...current, sessionsByDayOfWeek: { ...current.sessionsByDayOfWeek, [getDayOfWeekFromDate(date)]: [schedule] } }
+            mentorResponse: { ...current, sw: { ...current.sw, [getDayOfWeekFromDate(date)]: [schedule] } }
           });
         }
       },
@@ -81,22 +81,22 @@ export const useMentorStore = create<MentorStore>()(
         const current = get().mentorResponse;
         if (current) {
           set({ 
-            mentorResponse: { ...current, sessionsByDayOfWeek: { ...current.sessionsByDayOfWeek, [dayOfWeek]: current.sessionsByDayOfWeek[dayOfWeek]?.filter(s => s.id !== scheduleId) } }
+            mentorResponse: { ...current, sw: { ...current.sw, [dayOfWeek]: current.sw[dayOfWeek]?.filter(s => s.id !== scheduleId) } }
           });
         }
       },
       onMenteeScheduled: (menteeUserName: string) => {
         const current = get().mentorResponse;
         if (current) {
-          const updatedUnscheduledMentees = current.unscheduledMenteeDetails.strippedDownMentees.filter(
-            m => m.phone !== menteeUserName
+          const updatedUnscheduledMentees = current.um.strippedDownMentees.filter(
+            m => m.p !== menteeUserName
           );
           
           set({ 
             mentorResponse: { 
               ...current, 
-              unscheduledMenteeDetails: { 
-                ...current.unscheduledMenteeDetails, 
+              um: { 
+                ...current.um, 
                 strippedDownMentees: updatedUnscheduledMentees 
               } 
             } 
@@ -106,7 +106,7 @@ export const useMentorStore = create<MentorStore>()(
       getUnscheduledMenteeEmail: (menteeUserName: string) => {
         const current = get().mentorResponse;
         if (current) {
-          return current.unscheduledMenteeDetails.strippedDownMentees.find(m => m.phone === menteeUserName)?.email || null;
+          return current.um.strippedDownMentees.find(m => m.p === menteeUserName)?.e || null;
         }
       }
     }),

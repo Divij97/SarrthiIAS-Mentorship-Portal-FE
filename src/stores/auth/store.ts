@@ -53,7 +53,7 @@ export const useLoginStore = create<AuthState>()(
       const handleMentorLogin = async (phone: string, authHeader: string): Promise<MentorResponse | null> => {
         console.log('[Auth] Making mentor login request:', new Date().toISOString());
         const response = await getMentorByPhone(phone, authHeader);
-        if (response.isTempPassword || response.mentor) {
+        if (response.it || response.m) {
           set({ 
             isAuthenticated: true
           });

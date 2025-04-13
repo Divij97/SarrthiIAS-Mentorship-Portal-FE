@@ -66,9 +66,9 @@ export default function LoginPage() {
       if (response) {
         if (userType === UserType.MENTOR) {
           const mentorResponse = response as MentorResponse;
-          setMentor(mentorResponse.mentor);
+          setMentor(mentorResponse.m);
           setMentorResponse(mentorResponse);
-          if (mentorResponse.otp) {
+          if (mentorResponse.o) {
             // Store OTP in login store and redirect to reset password
             router.push(`/reset-password?phone=${phone}`);
           } else {

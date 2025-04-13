@@ -30,15 +30,15 @@ export interface Mentor {
 }
 
 export interface MentorResponse {
-  mentor: Mentor | null;
-  username: string | null;
-  isTempPassword: boolean;
-  otp: string | null;
-  sessionsByDayOfWeek: { [key in DayOfWeek]?: MentorshipSession[] };
-  sessionsByDate: { [date: string]: MentorshipSession[] };
-  groups: string[];
-  unscheduledMenteeDetails: UnscheduledMenteeDetails;
-  assignedMentees: StrippedDownMentee[];
+  m: Mentor | null;
+  u: string | null;
+  it: boolean;
+  o: string | null;
+  sw: { [key in DayOfWeek]?: MentorshipSession[] };
+  sd: { [date: string]: MentorshipSession[] };
+  g: string[];
+  um: UnscheduledMenteeDetails;
+  am: StrippedDownMentee[];
 }
 
 export interface MentorWithAuth {

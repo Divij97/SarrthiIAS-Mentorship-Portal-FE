@@ -165,8 +165,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         edit: {
           isOpen: true,
           formData: {
-            startTime: extractTimeFromISOString(session.startTime),
-            endTime: extractTimeFromISOString(session.endTime),
+            startTime: extractTimeFromISOString(session.st),
+            endTime: extractTimeFromISOString(session.et),
           }
         },
         selectedSession: session,
@@ -280,7 +280,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      const mentorSessions = mentorResponse.sessionsByDate;
+      const mentorSessions = mentorResponse.sd;
       const meetings: Meeting[] = [];
       
       Object.entries(mentorSessions).forEach(([date, sessions]) => {
@@ -289,19 +289,19 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         
         sessions.forEach(session => {
           // Extract time from ISO string
-          const startTime = extractTimeFromISOString(session.startTime);
-          const endTime = extractTimeFromISOString(session.endTime);
+          const startTime = extractTimeFromISOString(session.st);
+          const endTime = extractTimeFromISOString(session.et);
           
           meetings.push({
             id: session.id,
-            title: `Session with ${session.menteeFullName || session.menteeUsername || 'Mentee'}`,
+            title: `Session with ${session.mn || session.mu || 'Mentee'}`,
             date: calendarDate, // Use converted date for calendar view
             startTime: startTime,
             endTime: endTime,
-            menteeUsername: session.menteeUsername,
-            zoomLink: session.zoomLink,
+            menteeUsername: session.mu,
+            zoomLink: session.z,
             originalDate: date, // Store original date format for cancel modal
-            sessionType: session.sessionType // Include session type
+            sessionType: session.s // Include session type
           });
         });
       });
@@ -359,8 +359,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       const updatedMeetings = get().calendarMeetings.map(meeting => {
         if (meeting.id === selectedSession.id) {
           // Extract time from ISO string if needed
-          const startTime = extractTimeFromISOString(updatedSession.startTime);
-          const endTime = extractTimeFromISOString(updatedSession.endTime);
+          const startTime = extractTimeFromISOString(updatedSession.st);
+          const endTime = extractTimeFromISOString(updatedSession.et);
             
           return { 
             ...meeting, 
@@ -377,18 +377,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         const updatedMentorResponse = { ...mentorResponse } as MentorResponse;
         
         // Update in sessionsByDate
-        Object.entries(updatedMentorResponse.sessionsByDate).forEach(([date, sessions]) => {
+        Object.entries(updatedMentorResponse.sd).forEach(([date, sessions]) => {
           const sessionIndex = sessions.findIndex(s => s.id === selectedSession.id);
           if (sessionIndex !== -1) {
-            updatedMentorResponse.sessionsByDate[date][sessionIndex] = updatedSession;
+            updatedMentorResponse.sd[date][sessionIndex] = updatedSession;
           }
         });
         
         // Update in sessionsByDayOfWeek if it exists
-        if (updatedMentorResponse.sessionsByDayOfWeek) {
-          Object.keys(updatedMentorResponse.sessionsByDayOfWeek).forEach((day) => {
+        if (updatedMentorResponse.sw) {
+          Object.keys(updatedMentorResponse.sw).forEach((day) => {
             const dayKey = day as DayOfWeek;
-            const sessions = updatedMentorResponse.sessionsByDayOfWeek[dayKey];
+            const sessions = updatedMentorResponse.sw[dayKey];
             
             if (sessions) {
               const sessionIndex = sessions.findIndex(s => s.id === selectedSession.id);
@@ -396,7 +396,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
               if (sessionIndex !== -1) {
                 const updatedSessions = [...sessions];
                 updatedSessions[sessionIndex] = updatedSession;
-                updatedMentorResponse.sessionsByDayOfWeek[dayKey] = updatedSessions;
+                updatedMentorResponse.sw[dayKey] = updatedSessions;
               }
             }
           });
@@ -445,7 +445,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     
     try {
       // Call API to cancel session with date
-      const result = await sessionManager.cancelSession(selectedSession.id, cancel.date, selectedSession.sessionType);
+      const result = await sessionManager.cancelSession(selectedSession.id, cancel.date, selectedSession.s);
       
       if (result.success) {
         // Remove session from local state
@@ -467,18 +467,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           const updatedMentorResponse = { ...mentorResponse } as MentorResponse;
           
           // Remove from sessionsByDate
-          Object.entries(updatedMentorResponse.sessionsByDate).forEach(([date, sessions]) => {
-            updatedMentorResponse.sessionsByDate[date] = sessions.filter(s => s.id !== selectedSession.id);
+          Object.entries(updatedMentorResponse.sd).forEach(([date, sessions]) => {
+            updatedMentorResponse.sd[date] = sessions.filter(s => s.id !== selectedSession.id);
           });
           
           // Remove from sessionsByDayOfWeek if it exists
-          if (updatedMentorResponse.sessionsByDayOfWeek) {
-            Object.keys(updatedMentorResponse.sessionsByDayOfWeek).forEach((day) => {
+          if (updatedMentorResponse.sw) {
+            Object.keys(updatedMentorResponse.sw).forEach((day) => {
               const dayKey = day as DayOfWeek;
-              const sessions = updatedMentorResponse.sessionsByDayOfWeek[dayKey];
+              const sessions = updatedMentorResponse.sw[dayKey];
               
               if (sessions) {
-                updatedMentorResponse.sessionsByDayOfWeek[dayKey] = sessions.filter(
+                updatedMentorResponse.sw[dayKey] = sessions.filter(
                   s => s.id !== selectedSession.id
                 );
               }
@@ -539,14 +539,14 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       
       if (result.success) {
         // Remove session from local state
-        if (mentorResponse?.sessionsByDayOfWeek) {
+        if (mentorResponse?.sw) {
           // Create a safe copy of the mentor response
           const updatedMentorResponse = { ...mentorResponse } as MentorResponse;
           
           // Remove from sessionsByDayOfWeek for the specific day
-          if (updatedMentorResponse.sessionsByDayOfWeek[dayOfWeek]) {
-            updatedMentorResponse.sessionsByDayOfWeek[dayOfWeek] = updatedMentorResponse.sessionsByDayOfWeek[dayOfWeek].filter(
-              s => s.id !== sessionId && s.sessionType === SessionType.SCHEDULED
+          if (updatedMentorResponse.sw[dayOfWeek]) {
+            updatedMentorResponse.sw[dayOfWeek] = updatedMentorResponse.sw[dayOfWeek].filter(
+              s => s.id !== sessionId && s.s === SessionType.SCHEDULED
             );
           }
           
@@ -623,7 +623,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       }
       
       // Get the mentor username from mentorResponse
-      const mentorUsername = mentorResponse.username || 'mentor';
+      const mentorUsername = mentorResponse.u || 'mentor';
       
       // Call API to add a new session
       await sessionManager.addNewSession(

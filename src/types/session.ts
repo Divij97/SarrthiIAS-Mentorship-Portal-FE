@@ -1,21 +1,19 @@
-import { Course } from "./course";
 import { ZoomMeetingInfo } from "./meeting";
-import { StrippedDownMentee } from "./mentee";
 import { DayOfWeek } from "./mentor";
 
 export interface MentorshipSession {
   id: string;
-  menteeFullName: string;
-  menteeUsername: string;
+  mn: string;
+  mu: string;
   // Can be derived from zoomLink !== null
-  zoomLink: string | null;
-  startTime: string;
-  endTime: string;
-  mentorUsername: string;
-  mentorName: string;
-  recurrence?: Recurrence;
-  sessionType: SessionType;
-  zoomMeetingInfo?: ZoomMeetingInfo;
+  z: string | null;
+  st: string;
+  et: string;
+  u: string;
+  m: string;
+  r?: Recurrence;
+  s: SessionType;
+  zi?: ZoomMeetingInfo;
 }
 
 export interface Recurrence {

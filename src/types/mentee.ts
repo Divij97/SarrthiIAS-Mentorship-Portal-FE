@@ -209,11 +209,10 @@ export interface UnscheduledMenteeDetails {
 }
 
 export interface StrippedDownMentee {
-  name: string;
-  phone: string;
-  email: string;
+  n: string;
+  p: string;
+  e: string;
   preferredSlot?: PreferredSlot;
-  creationTs?: number;
   mode?: MenteeMode;
 }
 

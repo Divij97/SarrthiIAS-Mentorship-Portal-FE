@@ -32,8 +32,8 @@ export default function AddScheduleForMentee({
   mentor,
   mentee
 }: AddScheduleForMenteeProps) {
-  const [menteeUsername, setMenteeUsername] = useState(mentee.phone);
-  const [menteeFullName, setMenteeFullName] = useState(mentee.name);
+  const [menteeUsername, setMenteeUsername] = useState(mentee.p);
+  const [menteeFullName, setMenteeFullName] = useState(mentee.n);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>(RecurrenceType.BI_WEEKLY);

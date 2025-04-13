@@ -10,10 +10,10 @@ const handleJoinSession = (zoomLink: string) => {
   };
 
 export const ZoomLinkButton = ({ session }: ZoomLinkButtonProps) => {
-    if (session.isZoomLinkGenerated && session.zoomLink) {
+    if (session.isZoomLinkGenerated && session.z) {
       return (
         <button
-          onClick={() => handleJoinSession(session.zoomLink!)}
+          onClick={() => handleJoinSession(session.z!)}
           className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors duration-200"
         >
           <VideoCameraIcon className="h-5 w-5 mr-2" />

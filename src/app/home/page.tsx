@@ -17,7 +17,7 @@ export default function HomePage() {
 
   useEffect(() => {
     // Check if user has an OTP and needs to reset password
-    if (menteeResponse?.otp || mentorResponse?.otp) {
+    if (menteeResponse?.otp || mentorResponse?.o) {
       console.log("Home page detected OTP, redirecting to reset password");
       router.replace(`/reset-password?phone=${phone}`);
       return;
@@ -28,7 +28,7 @@ export default function HomePage() {
   }, [router, menteeResponse, mentorResponse, phone]);
 
   // Don't render anything during the redirect checks
-  if (menteeResponse?.otp || mentorResponse?.otp) {
+  if (menteeResponse?.otp || mentorResponse?.o) {
     return <div className="min-h-screen flex items-center justify-center">Redirecting to password reset...</div>;
   }
 

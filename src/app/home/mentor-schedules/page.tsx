@@ -71,7 +71,7 @@ export default function MentorSchedulesPage() {
       
       // Show success message with session details
       toast.success(
-        `Schedule created successfully for ${createdSession.menteeFullName}`,
+        `Schedule created successfully for ${createdSession.mn}`,
         {
           duration: 3000,
           position: 'top-right',
@@ -106,7 +106,7 @@ export default function MentorSchedulesPage() {
       // Add sessions to sessionsByDate for both dates
       addToSessionsByDate(formatDate(nextSessionDate), createdSession);
       addToSessionsByDate(formatDate(nextWeekSessionDate), createdSession);
-      onMenteeScheduled(createdSession.menteeUsername);
+      onMenteeScheduled(createdSession.mu);
 
     } catch (error) {
       console.error('Failed to create schedule:', error);
@@ -125,11 +125,11 @@ export default function MentorSchedulesPage() {
   const handleSendOnboardingEmail = async (mentee: StrippedDownMentee) => {
     if (!authHeader || sendingEmail) return;
 
-    setSendingEmail(mentee.phone);
+    setSendingEmail(mentee.p);
 
     try {
       await sendOnBoardingEmail(mentee, authHeader, 'MENTOR_ASSIGNED');
-      toast.success(`Onboarding email sent to ${mentee.name}`, {
+      toast.success(`Onboarding email sent to ${mentee.n}`, {
         duration: 3000,
         position: 'top-right',
       });
@@ -138,7 +138,7 @@ export default function MentorSchedulesPage() {
       toast.error(
         error instanceof Error 
           ? error.message 
-          : `Failed to send email to ${mentee.name}`,
+          : `Failed to send email to ${mentee.n}`,
         {
           duration: 4000,
           position: 'top-right',
@@ -177,11 +177,11 @@ export default function MentorSchedulesPage() {
               </p>
             </div>
 
-            {mentorResponse?.unscheduledMenteeDetails?.strippedDownMentees?.length ? (
+            {mentorResponse?.um?.strippedDownMentees?.length ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mentorResponse.unscheduledMenteeDetails.strippedDownMentees.map((mentee: StrippedDownMentee) => (
+                {mentorResponse.um.strippedDownMentees.map((mentee: StrippedDownMentee) => (
                   <MenteeScheduleTile
-                    key={mentee.phone}
+                    key={mentee.p}
                     mentee={mentee}
                     onScheduleClick={() => handleScheduleClick(mentee)}
                   />
@@ -211,11 +211,11 @@ export default function MentorSchedulesPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {DAY_ORDER.map((day) => {
-                const sessions = mentorResponse?.sessionsByDayOfWeek?.[day] || [];
+                const sessions = mentorResponse?.sw?.[day] || [];
                 // Sort sessions by startTime
                 const sortedSessions = [...sessions].sort((a, b) => {
-                  const timeA = a.startTime.split(':').map(Number);
-                  const timeB = b.startTime.split(':').map(Number);
+                  const timeA = a.st.split(':').map(Number);
+                  const timeB = b.st.split(':').map(Number);
                   return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
                 });
                 const date = getDateForDay(day);
@@ -268,26 +268,26 @@ export default function MentorSchedulesPage() {
               </div>
 
               <div className="space-y-4">
-                {mentorResponse?.assignedMentees?.length ? (
-                  mentorResponse.assignedMentees.map((mentee) => (
+                {mentorResponse?.am?.length ? (
+                  mentorResponse.am.map((mentee) => (
                     <div
-                      key={mentee.phone}
+                      key={mentee.p}
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                     >
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900">{mentee.name}</h3>
-                        <p className="text-sm text-gray-500">{mentee.email}</p>
+                        <h3 className="text-sm font-medium text-gray-900">{mentee.n}</h3>
+                        <p className="text-sm text-gray-500">{mentee.e}</p>
                       </div>
                       <button
                         onClick={() => handleSendOnboardingEmail(mentee)}
-                        disabled={sendingEmail === mentee.phone}
+                        disabled={sendingEmail === mentee.p}
                         className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                          sendingEmail === mentee.phone
+                          sendingEmail === mentee.p
                             ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
                             : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
                         }`}
                       >
-                        {sendingEmail === mentee.phone ? 'Sending...' : 'Send Email'}
+                        {sendingEmail === mentee.p ? 'Sending...' : 'Send Email'}
                       </button>
                     </div>
                   ))
@@ -318,7 +318,7 @@ export default function MentorSchedulesPage() {
           }}
           onSubmit={handleScheduleSubmit}
           mentee={selectedMentee}
-          mentor={{name: mentorResponse?.mentor?.name, phone: mentorResponse?.username, email: mentorResponse?.mentor?.email}}
+          mentor={{name: mentorResponse?.m?.name, phone: mentorResponse?.u, email: mentorResponse?.m?.email}}
         />
       )}
     </div>

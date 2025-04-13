@@ -7,8 +7,8 @@ interface SessionCardProps {
   }
   
   export const SessionInfoCard = ({ session }: SessionCardProps) => {
-    const startTime = formatTimeDisplay(session.startTime);
-    const endTime = formatTimeDisplay(session.endTime);
+    const startTime = formatTimeDisplay(session.st);
+    const endTime = formatTimeDisplay(session.et);
   
     return (
       <div key={session.id} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-all duration-200">
@@ -17,20 +17,20 @@ interface SessionCardProps {
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <UserIcon className="h-5 w-5 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-900">{session.menteeFullName}</h3>
+                <h3 className="text-lg font-medium text-gray-900">{session.mn}</h3>
               </div>
               <div className="flex items-center space-x-2 text-gray-500">
                 <PhoneIcon className="h-4 w-4" />
-                <span className="text-sm">{session.menteeUsername}</span>
+                <span className="text-sm">{session.mu}</span>
               </div>
               <div className="flex items-center space-x-2 text-gray-500">
                 <ClockIcon className="h-4 w-4" />
                 <span className="text-sm">{startTime} - {endTime}</span>
               </div>
             </div>
-            {session.isZoomLinkGenerated || session.zoomLink ? (
+            {session.isZoomLinkGenerated || session.z ? (
               <a
-                href={session.zoomLink || '#'}
+                href={session.z || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"

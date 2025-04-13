@@ -58,15 +58,15 @@ export default function MentorSessionsPage() {
   // Fetch group sessions when component mounts
   useEffect(() => {
     const fetchGroupSessions = async () => {
-      if (!mentorResponse?.username || !authHeader || !mentorResponse?.groups || mentorResponse.groups.length === 0) {
+      if (!mentorResponse?.u || !authHeader || !mentorResponse?.g || mentorResponse.g.length === 0) {
         return;
       }
 
       setIsLoadingGroupSessions(true);
       try {
         const response = await getGroupSessionForMentor(
-          mentorResponse.username,
-          mentorResponse.groups,
+          mentorResponse.u,
+          mentorResponse.g,
           authHeader
         );
         setGroupSessions(response.groupSessions);
@@ -78,7 +78,7 @@ export default function MentorSessionsPage() {
     };
 
     fetchGroupSessions();
-  }, [mentorResponse?.username, mentorResponse?.groups]);
+  }, [mentorResponse?.u, mentorResponse?.g]);
 
   // Convert group sessions to meetings format and update state
   useEffect(() => {
@@ -117,18 +117,18 @@ export default function MentorSessionsPage() {
 
   // Combine all meetings and update state when either individual or group meetings change
   useEffect(() => {
-    const individualMeetings = mentorResponse?.sessionsByDate 
-      ? Object.entries(mentorResponse.sessionsByDate).flatMap(([date, sessions]) =>
+    const individualMeetings = mentorResponse?.sd 
+      ? Object.entries(mentorResponse.sd).flatMap(([date, sessions]) =>
           sessions.map(session => ({
             id: session.id,
-            title: `Session with ${session.menteeFullName || session.menteeUsername}`,
+            title: `Session with ${session.mn || session.mu}`,
             date: convertDateFormat(date),
-            startTime: session.startTime,
-            endTime: session.endTime,
-            menteeUsername: session.menteeUsername,
-            zoomLink: session.zoomMeetingInfo?.joinUrl,
+            startTime: session.st,
+            endTime: session.et,
+            menteeUsername: session.mu,
+            zoomLink: session.zi?.joinUrl,
             originalDate: date,
-            sessionType: session.sessionType
+            sessionType: session.s
           }))
         )
       : [];
@@ -138,7 +138,7 @@ export default function MentorSessionsPage() {
     );
 
     setAllMeetings(meetings);
-  }, [mentorResponse?.sessionsByDate, groupMeetings, setMentorResponse]);
+  }, [mentorResponse?.sd, groupMeetings, setMentorResponse]);
 
   // Handlers
   const handleAddSessionClick = () => {
@@ -146,9 +146,9 @@ export default function MentorSessionsPage() {
   };
 
   const handleCancelClick = (meeting: Meeting) => {
-    if (!mentorResponse?.sessionsByDate || !meeting.originalDate) return;
+    if (!mentorResponse?.sd || !meeting.originalDate) return;
     
-    const session = mentorResponse.sessionsByDate[meeting.originalDate]
+    const session = mentorResponse.sd[meeting.originalDate]
       .find((s: MentorshipSession) => s.id === meeting.id);
       
     if (session) {
@@ -162,7 +162,7 @@ export default function MentorSessionsPage() {
 
   const handleAddSession = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mentorResponse?.username || !authHeader) return;
+    if (!mentorResponse?.u || !authHeader) return;
 
     setIsLoading(true);
     setError(null);
@@ -183,22 +183,22 @@ export default function MentorSessionsPage() {
           updateType: UpdateType.ADD,
           isPermanentUpdate: true,
           sessionType: SessionType.AD_HOC,
-          mentorEmail: mentorResponse.mentor?.email
+          mentorEmail: mentorResponse.m?.email
         },
         authHeader,
-        mentorResponse.username
+        mentorResponse.u
       );
       const updatedSession: MentorshipSession = {
         id: newSession.id,
-        menteeUsername: addFormData.menteeUsername,
-        menteeFullName: addFormData.menteeFullName,
-        mentorUsername: mentorResponse.username,
-        mentorName: mentorResponse.mentor?.name || 'Mentor',
-        startTime: addFormData.startTime,
-        endTime: addFormData.endTime,
-        sessionType: SessionType.AD_HOC,
-        zoomLink: newSession.zoomLink,
-        zoomMeetingInfo: newSession.zoomMeetingInfo
+        mu: addFormData.menteeUsername,
+        mn: addFormData.menteeFullName,
+        u: mentorResponse.u,
+        m: mentorResponse.m?.name || 'Mentor',
+        st: addFormData.startTime,
+        et: addFormData.endTime,
+        s: SessionType.AD_HOC,
+        z: newSession.z,
+        zi: newSession.zi
       }
 
       addToSessionsByDate(formattedDate, updatedSession);
@@ -221,7 +221,7 @@ export default function MentorSessionsPage() {
   };
 
   const handleCancelSession = async () => {
-    if (!selectedSession || !authHeader || !mentorResponse?.username || !selectedSession.originalDate) return;
+    if (!selectedSession || !authHeader || !mentorResponse?.u || !selectedSession.originalDate) return;
 
     setIsLoading(true);
     setError(null);
@@ -233,9 +233,9 @@ export default function MentorSessionsPage() {
           date: selectedSession.originalDate,
           updateType: UpdateType.DELETE,
           isPermanentUpdate: true,
-          sessionType: selectedSession.sessionType,
-          menteeUsername: selectedSession.menteeUsername,
-          menteeFullName: selectedSession.menteeFullName
+          sessionType: selectedSession.s,
+          menteeUsername: selectedSession.mu,
+          menteeFullName: selectedSession.mn
         },
         authHeader
       );
@@ -347,7 +347,7 @@ export default function MentorSessionsPage() {
         <NotifyMenteeModal
           isOpen={isNotifyModalOpen}
           onClose={() => setIsNotifyModalOpen(false)}
-          mentees={mentorResponse?.assignedMentees || []}
+          mentees={mentorResponse?.am || []}
           authHeader={authHeader || ''}
         />
       </div>

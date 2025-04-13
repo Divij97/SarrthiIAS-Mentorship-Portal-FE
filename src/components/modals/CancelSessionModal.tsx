@@ -58,7 +58,7 @@ export default function CancelSessionModal({
                   <div>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
-                        Are you sure you want to cancel your session with {session.menteeUsername || 'this mentee'}? This action cannot be undone.
+                        Are you sure you want to cancel your session with {session.mu || 'this mentee'}? This action cannot be undone.
                       </p>
                     </div>
 
