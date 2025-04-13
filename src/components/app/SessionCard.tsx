@@ -72,7 +72,7 @@ export default function SessionCard({ session }: SessionCardProps) {
             </a>
           ) : (
             <span className="text-gray-500 cursor-help" title="Zoom meeting link will be updated shortly">
-              Link pending
+              Link not available
             </span>
           )}
         </div>

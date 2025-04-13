@@ -247,7 +247,7 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
       </div>
 
       {/* Desktop Week View - Calendar grid */}
-      <div className="hidden md:grid grid-cols-7 h-96 overflow-y-auto">
+      <div className="hidden md:grid grid-cols-7 min-h-[400px] max-h-[800px] overflow-y-auto">
         {weekDays.map((day: Date) => {
           const dateStr = format(day, 'yyyy-MM-dd');
           const dayMeetings = meetingsByDay[dateStr] || [];
@@ -275,6 +275,9 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
                       <div className="text-xs text-gray-600">
                         {formatTimeDisplay(meeting.startTime)} - {formatTimeDisplay(meeting.endTime)}
                       </div>
+                      <div className="mt-1 text-xs text-gray-600">
+                        Occurence Type: {meeting.sessionType === 'AD_HOC' ? 'Once' : 'Scheduled'}
+                      </div>
                       {(meeting as any).isGroupSession && (
                         <div className="mt-1 text-xs text-blue-600">
                           Group Session
@@ -294,7 +297,7 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
       </div>
 
       {/* Mobile Day View - List of meetings for selected day */}
-      <div className="md:hidden h-96 overflow-y-auto">
+      <div className="md:hidden min-h-[400px] max-h-[800px] overflow-y-auto">
         <div className={`h-full p-4 ${isToday(selectedDay) ? 'bg-orange-50' : ''}`}>
           {selectedDayMeetings.length > 0 ? (
             <div className="space-y-3">
@@ -308,6 +311,10 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
                   <div className="flex items-center text-xs text-gray-600 mb-1">
                     <ClockIcon className="h-3.5 w-3.5 mr-1" />
                     {formatTimeDisplay(meeting.startTime)} - {formatTimeDisplay(meeting.endTime)}
+                  </div>
+                  <div className="flex items-center text-xs text-gray-600 mb-1">
+                    <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                    Frequency: {meeting.sessionType === 'AD_HOC' ? 'Once' : 'Weekly/Bi-Weekly'}
                   </div>
                   {meeting.menteeFullName && (
                     <div className="flex items-center text-xs text-gray-600">
