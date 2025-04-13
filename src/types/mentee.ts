@@ -151,9 +151,9 @@ export enum MenteeUpscExperience {
 
 export interface Mentee {
   // S1
-  name: string;
-  email: string;
-  phone: string;
+  n: string;
+  e: string;
+  p: string;
   region: Region;
   gender: Gender;
   mode?: MenteeMode;

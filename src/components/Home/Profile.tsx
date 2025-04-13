@@ -14,15 +14,15 @@ export default function Profile({ mentee }: ProfileProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <p className="text-sm font-medium text-gray-500">Full Name</p>
-            <p className="mt-1 text-sm text-gray-900">{mentee.name || 'Not provided'}</p>
+            <p className="mt-1 text-sm text-gray-900">{mentee.n || 'Not provided'}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Email</p>
-            <p className="mt-1 text-sm text-gray-900">{mentee.email || 'Not provided'}</p>
+            <p className="mt-1 text-sm text-gray-900">{mentee.e || 'Not provided'}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Phone Number</p>
-            <p className="mt-1 text-sm text-gray-900">{mentee.phone || 'Not provided'}</p>
+            <p className="mt-1 text-sm text-gray-900">{mentee.p || 'Not provided'}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Region</p>

@@ -55,8 +55,8 @@ const MultiStepForm = () => {
       // Only set values that are empty or undefined
       setFormData(prev => ({
         ...prev,
-        name: prev.name || mentee.name || '',
-        email: prev.email || mentee.email || '',
+        name: prev.name || mentee.n || '',
+        email: prev.email || mentee.e || '',
         phoneNumber: prev.phoneNumber || menteeResponse.username || '',
         gender: prev.gender || mentee.gender || Gender.MALE,
         region: prev.region || mentee.region || Region.NORTH,
@@ -164,9 +164,9 @@ const MultiStepForm = () => {
       
       // This is a mentee signup with password update
       const menteeObj: Mentee = {
-        name: formData.name,
-        email: formData.email,
-        phone: tempMenteeData.phone,
+        n: formData.name,
+        e: formData.email,
+        p: tempMenteeData.phone,
         region: formData.region as Region,
         gender: formData.gender as Gender,
         category: formData.reservationCategory as ReservationCategory,

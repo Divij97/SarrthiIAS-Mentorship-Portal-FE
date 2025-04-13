@@ -2,9 +2,9 @@ import { Mentee, Region, Gender, ReservationCategory, OptionalSubject, Preferred
 
 export const sampleMentees: Mentee[] = [
   {
-    name: "Rahul Kumar",
-    email: "rahul.kumar@example.com",
-    phone: "9876543220",
+    n: "Rahul Kumar",
+    e: "rahul.kumar@example.com",
+    p: "9876543220",
     region: Region.NORTH,
     gender: Gender.MALE,
     
@@ -25,9 +25,9 @@ export const sampleMentees: Mentee[] = [
     expectationFromMentorshipCourse: "Looking to improve answer writing skills and get structured guidance"
   },
   {
-    name: "Priya Patel",
-    email: "priya.patel@example.com",
-    phone: "9876543221",
+    n: "Priya Patel",
+    e: "priya.patel@example.com",
+    p: "9876543221",
     region: Region.WEST,
     gender: Gender.FEMALE,
     
@@ -48,9 +48,9 @@ export const sampleMentees: Mentee[] = [
     expectationFromMentorshipCourse: "Need help with Mains answer writing and interview preparation"
   },
   {
-    name: "Mohammed Ali",
-    email: "mohammed.ali@example.com",
-    phone: "9876543222",
+    n: "Mohammed Ali",
+    e: "mohammed.ali@example.com",
+    p: "9876543222",
     region: Region.SOUTH,
     gender: Gender.MALE,
     
@@ -71,9 +71,9 @@ export const sampleMentees: Mentee[] = [
     expectationFromMentorshipCourse: "Complete guidance for first attempt preparation"
   },
   {
-    name: "Anjali Verma",
-    email: "anjali.verma@example.com",
-    phone: "9876543223",
+    n: "Anjali Verma",
+    e: "anjali.verma@example.com",
+    p: "9876543223",
     region: Region.CENTRAL,
     gender: Gender.FEMALE,
     
@@ -94,9 +94,9 @@ export const sampleMentees: Mentee[] = [
     expectationFromMentorshipCourse: "Focused preparation for Mains and personality test"
   },
   {
-    name: "Rajesh Singh",
-    email: "rajesh.singh@example.com",
-    phone: "9876543224",
+    n: "Rajesh Singh",
+    e: "rajesh.singh@example.com",
+    p: "9876543224",
     region: Region.EAST,
     gender: Gender.MALE,
     

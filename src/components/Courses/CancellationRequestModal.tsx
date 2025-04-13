@@ -34,7 +34,7 @@ export default function CancellationRequestModal({
   const [eligibleSessions, setEligibleSessions] = useState<EligibleSession[]>([]);
   const [selectedSessionDetails, setSelectedSessionDetails] = useState<string>('');
   const { menteeResponse } = useMenteeStore();
-  const menteeName = menteeResponse?.mentee?.name || '[Your Name]';
+  const menteeName = menteeResponse?.mentee?.n || '[Your Name]';
 
   useEffect(() => {
     // Function to check if a session is at least 48 hours in the future

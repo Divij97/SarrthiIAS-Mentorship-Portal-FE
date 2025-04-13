@@ -7,7 +7,7 @@ interface MenteeViewProps {
 export default function MenteeView({ mentee }: MenteeViewProps) {
   return (
     <div className="space-y-4 sm:space-y-6">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome, {mentee.name}!</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome, {mentee.n}!</h1>
       <div className="bg-white shadow rounded-lg p-4 sm:p-6">
         <div className="space-y-4 sm:space-y-6">
           <div>
@@ -15,11 +15,11 @@ export default function MenteeView({ mentee }: MenteeViewProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs sm:text-sm font-medium text-gray-500">Email</p>
-                <p className="text-sm sm:text-base text-gray-900 break-words">{mentee.email}</p>
+                <p className="text-sm sm:text-base text-gray-900 break-words">{mentee.e}</p>
               </div>
               <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs sm:text-sm font-medium text-gray-500">Phone</p>
-                <p className="text-sm sm:text-base text-gray-900">{mentee.phone}</p>
+                <p className="text-sm sm:text-base text-gray-900">{mentee.p}</p>
               </div>
               <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs sm:text-sm font-medium text-gray-500">Region</p>
