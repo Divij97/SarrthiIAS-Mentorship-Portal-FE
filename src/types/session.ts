@@ -20,7 +20,7 @@ export interface MentorshipSession {
 
 export interface Recurrence {
   recurrenceType: string;
-  weekNumber: number;
+  startDate: string;
 }
 
 export interface MentorSessionsByDate {
