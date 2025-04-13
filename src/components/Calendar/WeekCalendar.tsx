@@ -18,7 +18,10 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
   // Get the next week's start date
   const nextWeekStart = useMemo(() => addWeeks(thisWeekStart, 1), [thisWeekStart]);
   
-  // State to track which week is currently displayed (0 = this week, 1 = next week)
+  // Get the week after next week's start date
+  const weekAfterNextStart = useMemo(() => addWeeks(nextWeekStart, 1), [nextWeekStart]);
+  
+  // State to track which week is currently displayed (0 = this week, 1 = next week, 2 = week after next)
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
 
   // For mobile view: track which day is selected (0-6 for Monday-Sunday)
@@ -36,9 +39,18 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
   });
   
   // Calculate the current week start based on the index
-  const currentWeekStart = useMemo(() => 
-    currentWeekIndex === 0 ? thisWeekStart : nextWeekStart
-  , [currentWeekIndex, thisWeekStart, nextWeekStart]);
+  const currentWeekStart = useMemo(() => {
+    switch (currentWeekIndex) {
+      case 0:
+        return thisWeekStart;
+      case 1:
+        return nextWeekStart;
+      case 2:
+        return weekAfterNextStart;
+      default:
+        return thisWeekStart;
+    }
+  }, [currentWeekIndex, thisWeekStart, nextWeekStart, weekAfterNextStart]);
   
   const weekDays = useMemo(() => {
     return eachDayOfInterval({
@@ -47,17 +59,17 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
     });
   }, [currentWeekStart]);
 
-  // Navigate to next week (only if currently on this week)
+  // Navigate to next week (only if not on the last week)
   const nextWeek = () => {
-    if (currentWeekIndex === 0) {
-      setCurrentWeekIndex(1);
+    if (currentWeekIndex < 2) {
+      setCurrentWeekIndex(currentWeekIndex + 1);
     }
   };
 
-  // Navigate to previous week (only if currently on next week)
+  // Navigate to previous week (only if not on the first week)
   const prevWeek = () => {
-    if (currentWeekIndex === 1) {
-      setCurrentWeekIndex(0);
+    if (currentWeekIndex > 0) {
+      setCurrentWeekIndex(currentWeekIndex - 1);
     }
   };
 
@@ -65,9 +77,9 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
   const nextDay = () => {
     if (selectedDayIndex < 6) {
       setSelectedDayIndex(selectedDayIndex + 1);
-    } else if (currentWeekIndex === 0) {
-      // If at the end of the week and on "this week", move to next week
-      setCurrentWeekIndex(1);
+    } else if (currentWeekIndex < 2) {
+      // If at the end of the week and not on the last week, move to next week
+      setCurrentWeekIndex(currentWeekIndex + 1);
       setSelectedDayIndex(0); // Set to Monday of next week
     }
   };
@@ -76,18 +88,17 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
   const prevDay = () => {
     if (selectedDayIndex > 0) {
       setSelectedDayIndex(selectedDayIndex - 1);
-    } else if (currentWeekIndex === 1) {
-      // If at the start of the week and on "next week", move to this week
-      setCurrentWeekIndex(0);
-      setSelectedDayIndex(6); // Set to Sunday of this week
+    } else if (currentWeekIndex > 0) {
+      // If at the start of the week and not on the first week, move to previous week
+      setCurrentWeekIndex(currentWeekIndex - 1);
+      setSelectedDayIndex(6); // Set to Sunday of previous week
     }
   };
 
-  // Check if we're viewing this week
+  // Check which week we're viewing
   const isCurrentWeek = currentWeekIndex === 0;
-  
-  // Check if we're viewing next week
   const isNextWeek = currentWeekIndex === 1;
+  const isWeekAfterNext = currentWeekIndex === 2;
 
   const weekTitle = useMemo(() => {
     const weekStart = format(currentWeekStart, 'MMM d');
@@ -130,7 +141,7 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
       <div className="hidden md:flex items-center justify-between px-6 py-4 border-b">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
-            {isCurrentWeek ? 'This Week' : 'Next Week'}
+            {isCurrentWeek ? 'This Week' : isNextWeek ? 'Next Week' : 'Week After Next'}
           </h2>
           <p className="text-sm text-gray-500">{weekTitle}</p>
         </div>
@@ -148,9 +159,9 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
           </button>
           <button
             onClick={nextWeek}
-            disabled={isNextWeek}
+            disabled={isWeekAfterNext}
             className={`p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-              isNextWeek 
+              isWeekAfterNext 
                 ? 'text-gray-300 cursor-not-allowed' 
                 : 'hover:bg-gray-100 text-gray-600'
             }`}
@@ -167,7 +178,7 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
             {isToday(selectedDay) ? 'Today' : selectedDayTitle}
           </h2>
           <p className="text-xs text-gray-500">
-            {isCurrentWeek ? 'This Week' : 'Next Week'}
+            {isCurrentWeek ? 'This Week' : isNextWeek ? 'Next Week' : 'Week After Next'}
           </p>
         </div>
         <div className="flex space-x-2">
@@ -184,9 +195,9 @@ export default function WeekCalendar({ meetings, onMeetingClick }: WeekCalendarP
           </button>
           <button
             onClick={nextDay}
-            disabled={currentWeekIndex === 1 && selectedDayIndex === 6}
+            disabled={currentWeekIndex === 2 && selectedDayIndex === 6}
             className={`p-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-              currentWeekIndex === 1 && selectedDayIndex === 6
+              currentWeekIndex === 2 && selectedDayIndex === 6
                 ? 'text-gray-300 cursor-not-allowed'
                 : 'hover:bg-gray-100 text-gray-600'
             }`}
