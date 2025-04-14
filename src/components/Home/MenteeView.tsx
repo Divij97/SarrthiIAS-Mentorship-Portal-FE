@@ -1,8 +1,23 @@
-import { Mentee } from '@/types/mentee';
+import { Mentee, ReservationCategory } from '@/types/mentee';
 
 interface MenteeViewProps {
   mentee: Mentee;
 }
+
+// Helper function to convert reservation category to display format
+const getCategoryDisplay = (category: ReservationCategory): string => {
+  switch (category) {
+    case ReservationCategory.OBC:
+      return 'OBC';
+    case ReservationCategory.SC_ST:
+    case ReservationCategory.SC:
+    case ReservationCategory.ST:
+      return 'SC/ST';
+    case ReservationCategory.GENERAL:
+    default:
+      return 'General';
+  }
+};
 
 export default function MenteeView({ mentee }: MenteeViewProps) {
   return (
@@ -31,7 +46,7 @@ export default function MenteeView({ mentee }: MenteeViewProps) {
               </div>
               <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs sm:text-sm font-medium text-gray-500">Category</p>
-                <p className="text-sm sm:text-base text-gray-900">{mentee.category}</p>
+                <p className="text-sm sm:text-base text-gray-900">{getCategoryDisplay(mentee.category)}</p>
               </div>
             </div>
           </div>

@@ -22,6 +22,7 @@ export enum ReservationCategory {
   OBC = 'OBC',
   SC = 'SC',
   ST = 'ST',
+  SC_ST = 'SC_ST'
   // Add other categories as needed
 }
 

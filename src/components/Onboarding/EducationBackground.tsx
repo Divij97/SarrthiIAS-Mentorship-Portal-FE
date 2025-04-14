@@ -16,12 +16,13 @@ interface EducationBackgroundProps {
 }
 
 // Get reservation categories from enum
-const reservationCategories = Object.values(ReservationCategory).map(category => ({
-  value: category,
-  label: category === ReservationCategory.OBC ? 'OBC' : 
-         category === ReservationCategory.SC ? 'SC' : 
-         category === ReservationCategory.ST ? 'ST' : 'General'
-}));
+const reservationCategories = Object.values(ReservationCategory)
+  .filter(category => category !== ReservationCategory.SC && category !== ReservationCategory.ST)
+  .map(category => ({
+    value: category,
+    label: category === ReservationCategory.OBC ? 'OBC' : 
+           category === ReservationCategory.SC_ST ? 'SC/ST' : 'General'
+  }));
 
 const EducationBackground = ({ formData, handleChange, errors, setErrors, onValidationChange }: EducationBackgroundProps) => {
   const [subjectInput, setSubjectInput] = useState('');
