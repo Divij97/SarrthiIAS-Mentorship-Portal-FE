@@ -106,7 +106,7 @@ export const useMentorStore = create<MentorStore>()(
       getUnscheduledMenteeEmail: (menteeUserName: string) => {
         const current = get().mentorResponse;
         if (current) {
-          return current.um.strippedDownMentees.find(m => m.p === menteeUserName)?.e || null;
+          return current.am.find(m => m.p === menteeUserName)?.e || null;
         }
       }
     }),
