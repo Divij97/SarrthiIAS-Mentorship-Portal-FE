@@ -67,8 +67,8 @@ export function RegisterMenteeModal({ onSuccess }: RegisterMenteeModalProps) {
               Name
             </label>
             <Input
-              id="name"
-              name="name"
+              id="n"
+              name="n"
               value={formData.n}
               onChange={handleChange}
               required
@@ -79,8 +79,8 @@ export function RegisterMenteeModal({ onSuccess }: RegisterMenteeModalProps) {
               Phone
             </label>
             <Input
-              id="phone"
-              name="phone"
+              id="p"
+              name="p"
               type="tel"
               value={formData.p}
               onChange={handleChange}
@@ -92,8 +92,8 @@ export function RegisterMenteeModal({ onSuccess }: RegisterMenteeModalProps) {
               Email
             </label>
             <Input
-              id="email"
-              name="email"
+              id="e"
+              name="e"
               type="email"
               value={formData.e}
               onChange={handleChange}
