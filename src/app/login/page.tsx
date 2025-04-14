@@ -203,7 +203,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="text-sm text-right">
+            {/* <div className="text-sm text-right">
               <button 
                 type="button"
                 onClick={() => {
@@ -218,7 +218,7 @@ export default function LoginPage() {
               >
                 Forgot your password?
               </button>
-            </div>
+            </div> */}
 
             {error && (
               <div className="text-red-600 text-sm">{error}</div>
