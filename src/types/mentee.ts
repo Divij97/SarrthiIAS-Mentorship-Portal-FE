@@ -20,7 +20,7 @@ export enum Gender {
 export enum ReservationCategory {
   GENERAL = 'GENERAL',
   OBC = 'OBC',
-  SC_ST = 'SC_ST',
+  SC_ST = 'SC/ST',
   // Add other categories as needed
 }
 
