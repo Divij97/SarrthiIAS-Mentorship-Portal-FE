@@ -17,9 +17,9 @@ export function RegisterMenteeModal({ onSuccess }: RegisterMenteeModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { getAuthHeader } = useAdminAuthStore();
   const [formData, setFormData] = useState<CreateMenteeRequest>({
-    name: '',
-    phone: '',
-    email: '',
+    n: '',
+    p: '',
+    e: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +40,7 @@ export function RegisterMenteeModal({ onSuccess }: RegisterMenteeModalProps) {
       toast.success('Mentee registered successfully');
       setIsOpen(false);
       onSuccess?.();
-      setFormData({ name: '', phone: '', email: '' });
+      setFormData({ n: '', p: '', e: '' });
     } catch (error) {
       toast.error('Failed to register mentee. Please try again.');
     } finally {
@@ -69,7 +69,7 @@ export function RegisterMenteeModal({ onSuccess }: RegisterMenteeModalProps) {
             <Input
               id="name"
               name="name"
-              value={formData.name}
+              value={formData.n}
               onChange={handleChange}
               required
             />
@@ -82,7 +82,7 @@ export function RegisterMenteeModal({ onSuccess }: RegisterMenteeModalProps) {
               id="phone"
               name="phone"
               type="tel"
-              value={formData.phone}
+              value={formData.p}
               onChange={handleChange}
               required
             />
@@ -95,7 +95,7 @@ export function RegisterMenteeModal({ onSuccess }: RegisterMenteeModalProps) {
               id="email"
               name="email"
               type="email"
-              value={formData.email}
+              value={formData.e}
               onChange={handleChange}
               required
             />

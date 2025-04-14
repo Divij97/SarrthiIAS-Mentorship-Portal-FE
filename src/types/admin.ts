@@ -22,9 +22,9 @@ export enum ResourceType {
 }
 
 export interface CreateMenteeRequest {
-    name: string;
-    phone: string;
-    email: string;
+    n: string;
+    p: string;
+    e: string;
 }
 
 export interface CreateMentorRequest {
