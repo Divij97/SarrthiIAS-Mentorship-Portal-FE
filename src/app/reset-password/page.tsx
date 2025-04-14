@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
     // Mark that OTP has been verified
     setHasVerifiedOTP?.(true);
 
-    const hasOneOnOneMentorship = menteeResponse?.enrolledCourses.some((course) => course.course.isOneOnOneMentorshipCourse);
+    const hasOneOnOneMentorship = menteeResponse?.enrolledCourses.some((enrolledCourse) => enrolledCourse.course.isOneOnOneMentorshipCourse) && !menteeResponse?.assignedMentor?.phone;
     
     // Store necessary information for signup
     localStorage.setItem('tempMenteeData', JSON.stringify({
@@ -172,21 +172,21 @@ export default function ResetPasswordPage() {
       }
 
       // Store necessary information in localStorage
-      const navigateData = {
-        phone,
-        password: newPassword,
-        verifiedOtp: otp
-      };
+      // const navigateData = {
+      //   phone,
+      //   password: newPassword,
+      //   verifiedOtp: otp
+      // };
       
-      if (userType === UserType.MENTOR) {
-        localStorage.setItem('tempMentorData', JSON.stringify(navigateData));
-        console.log("Setting up mentor navigation to /mentor-signup");
-        router.push('/mentor-signup');
-      } else {
-        localStorage.setItem('tempMenteeData', JSON.stringify(navigateData));
-        console.log("Setting up mentee navigation to /signup");
-        router.push('/signup');
-      }
+      // if (userType === UserType.MENTOR) {
+      //   localStorage.setItem('tempMentorData', JSON.stringify(navigateData));
+      //   console.log("Setting up mentor navigation to /mentor-signup");
+      //   // router.push('/mentor-signup');
+      // } else {
+      //   localStorage.setItem('tempMenteeData', JSON.stringify(navigateData));
+      //   console.log("Setting up mentee navigation to /signup");
+      //   // router.push('/signup');
+      // }
 
       // Still try the normal navigation functions
       if (userType === UserType.MENTOR) {

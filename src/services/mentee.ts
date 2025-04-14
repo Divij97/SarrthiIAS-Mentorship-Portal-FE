@@ -52,14 +52,13 @@ export const signupMentee = async (menteeData: MenteeWithAuth, assignMentor: boo
 
     //TODO: check if mentee has 1-1 course assigned if then assign mentor = true
 
-    const response = await fetch(`${apiUrl}/v1/mentees?assignMentor=false`, {
+    const response = await fetch(`${apiUrl}/v1/mentees?assignMentor=${assignMentor}`, {
       method: 'PUT',
       headers: {
         'Authorization': authHeader,
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      credentials: 'same-origin',
       body: JSON.stringify(menteeData),
     });
 
