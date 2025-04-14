@@ -1,8 +1,8 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { XMarkIcon, ClockIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
-import { MenteeIdentifier } from '@/types/mentor';
 import { useMentorStore } from '@/stores/mentor/store';
+import { CustomTimeInput } from '@/components/ui/CustomTimeInput';
 
 interface AddSessionFormData {
   date: string;
@@ -142,12 +142,10 @@ export default function AddSessionModal({
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <ClockIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </div>
-                        <input
-                          type="time"
+                        <CustomTimeInput
                           id="start-time"
-                          className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
                           value={formData.startTime}
-                          onChange={(e) => onFormChange('startTime', e.target.value)}
+                          onChange={(value) => onFormChange('startTime', value)}
                           required
                           disabled={isLoading}
                         />
@@ -162,12 +160,10 @@ export default function AddSessionModal({
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <ClockIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </div>
-                        <input
-                          type="time"
+                        <CustomTimeInput
                           id="end-time"
-                          className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
                           value={formData.endTime}
-                          onChange={(e) => onFormChange('endTime', e.target.value)}
+                          onChange={(value) => onFormChange('endTime', value)}
                           required
                           disabled={isLoading}
                         />
