@@ -3,9 +3,9 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { MentorshipGroup } from '@/types/session';
-import { UserGroupIcon, ArrowLeftIcon, XCircleIcon, UserPlusIcon, UsersIcon, DocumentPlusIcon, DocumentTextIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, ArrowLeftIcon, XCircleIcon, UserPlusIcon, UsersIcon, DocumentPlusIcon, DocumentTextIcon, DocumentIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { ArrowTopRightOnSquareIcon as ExternalLinkIcon } from '@heroicons/react/24/outline';
-import { fetchCourseGroups, createMentorshipGroup, mergeGroups, fetchCourse } from '@/services/courses';
+import { fetchCourseGroups, createMentorshipGroup, mergeGroups, fetchCourse, updateCourseDetails } from '@/services/courses';
 import GroupForm, { GroupFormData } from '@/components/Admin/GroupForm';
 import GroupCard from '@/components/Admin/courses/GroupCard';
 import { Course, CreateGroupRequest } from '@/types/course';
@@ -16,10 +16,10 @@ import MergeGroupModal from '@/components/Admin/courses/MergeGroupModal';
 import DocumentModal from '@/components/Admin/courses/DocumentModal';
 import { addDocumentsToCourse } from '@/services/admin';
 import toast from 'react-hot-toast';
-import { useQuery } from '@tanstack/react-query';
-import { getCourseDetails, deleteResource } from '@/services/admin';
+import { deleteResource } from '@/services/admin';
 import { ResourceType } from '@/types/admin';
 import { DeleteGroupModal } from '@/components/Admin/courses/DeleteGroupModal';
+import UpdateCourseModal from '@/components/Admin/courses/UpdateCourseModal';
 
 export default function CourseDetailsPage({
   params,
@@ -51,6 +51,8 @@ export default function CourseDetailsPage({
   const [selectedGroup, setSelectedGroup] = useState<MentorshipGroup | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   
   // Find the current course to check its type
   const currentCourse = adminData?.courses?.find(course => course.id === courseId);
@@ -272,6 +274,32 @@ export default function CourseDetailsPage({
     setIsDocumentModalOpen(true);
   };
 
+  const handleUpdateCourse = async (updatedCourse: Partial<Course>) => {
+    if (!authHeader) {
+      toast.error('Authentication required');
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      await updateCourseDetails(courseId, updatedCourse as Course, authHeader);
+      
+      // Update the course in the admin store
+      useAdminAuthStore.getState().updateCourse(courseId, updatedCourse as Course);
+      
+      // Update local state
+      setCourse(prev => prev ? { ...prev, ...updatedCourse } : null);
+      
+      toast.success('Course updated successfully!');
+      setIsUpdateModalOpen(false);
+    } catch (error) {
+      console.error('Error updating course:', error);
+      toast.error('Failed to update course. Please try again.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // Render function to display one-on-one mentorship content
   const renderOneOnOneContent = () => {
     return (
@@ -440,7 +468,16 @@ export default function CourseDetailsPage({
             <ArrowLeftIcon className="h-4 w-4 mr-1" />
             Back to Courses
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">{course?.name}</h1>
+          <div className="flex items-center space-x-2">
+            <h1 className="text-2xl font-bold text-gray-900">{course?.name}</h1>
+            <button
+              onClick={() => setIsUpdateModalOpen(true)}
+              className="p-1 text-gray-400 hover:text-orange-600 transition-colors duration-200"
+              title="Edit course details"
+            >
+              <PencilIcon className="h-5 w-5" />
+            </button>
+          </div>
           {course?.description && (
             <p className="mt-1 text-sm text-gray-500 max-w-3xl">{course.description}</p>
           )}
@@ -581,6 +618,16 @@ export default function CourseDetailsPage({
         groupName={selectedGroup?.groupFriendlyName || ''}
         isLoading={isDeleting}
       />
+
+      {course && (
+        <UpdateCourseModal
+          isOpen={isUpdateModalOpen}
+          onClose={() => setIsUpdateModalOpen(false)}
+          onSubmit={handleUpdateCourse}
+          course={course}
+          isLoading={isUpdating}
+        />
+      )}
     </div>
   );
 } 

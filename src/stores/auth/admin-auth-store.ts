@@ -25,6 +25,7 @@ interface AdminAuthState {
   setError: (error: string) => void;
   setAdminData: (data: AdminData | null) => void;
   addCourse: (course: Course) => void;
+  updateCourse: (courseId: string, course: Course) => void;
   handleLogin: (username: string, password: string) => Promise<{ success: true; adminData: AdminData } | { success: false; adminData: null }>;
   refreshAdmin: () => Promise<boolean>;
   logout: () => void;
@@ -53,6 +54,7 @@ const initialState: AdminAuthState = {
   setError: () => {},
   setAdminData: () => {},
   addCourse: () => {},
+  updateCourse: (courseId, course) => null,
   handleLogin: async () => ({ success: false, adminData: null }),
   refreshAdmin: async () => false,
   logout: () => {},
@@ -93,6 +95,13 @@ export const useAdminAuthStore = create<AdminAuthState>()(
         adminData: state.adminData ? {
           ...state.adminData,
           courses: [...(state.adminData.courses || []), course]
+        } : null
+      })),
+
+      updateCourse: (courseId, updatedCourse) => set((state) => ({
+        adminData: state.adminData ? {
+          ...state.adminData,
+          courses: [...(state.adminData.courses.filter((course) => course.id !== courseId)), updatedCourse]
         } : null
       })),
 

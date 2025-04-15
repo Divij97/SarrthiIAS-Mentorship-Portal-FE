@@ -210,3 +210,20 @@ export const createGroupInCourse = async (courseId: string, request: CreateGroup
     throw error;
   }
 }
+
+export const updateCourseDetails = async (courseId: string, updatedCourse: Course, authHeader: string): Promise<void> => {
+  
+    const response = await fetch(`${config.api.url}/v1/courses/${courseId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': authHeader,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updatedCourse)
+    })
+
+    if (!response.ok) {
+        throw Error(`${response}`)
+    }
+}
