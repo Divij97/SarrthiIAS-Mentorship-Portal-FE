@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Course } from '@/types/course';
-import { PencilIcon } from '@heroicons/react/24/outline';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { RegisterMenteesToCourse } from '@/components/app/admin/mentees/register-multiple-mentees-modal';
 import UpdateCourseModal from '@/components/Admin/courses/UpdateCourseModal';
 import { updateCourseDetails } from '@/services/courses';
@@ -49,7 +49,7 @@ export function OneOnOneCourseListItem({ course }: OneOnOneCourseListItemProps) 
             className="p-1 text-gray-400 hover:text-orange-600 transition-colors duration-200"
             title="Edit course details"
           >
-            <PencilIcon className="h-5 w-5" />
+            <PencilSquareIcon className="h-5 w-5" />
           </button>
         </div>
         <RegisterMenteesToCourse 
