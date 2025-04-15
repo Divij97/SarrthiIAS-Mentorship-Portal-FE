@@ -43,7 +43,13 @@ export const useMentorStore = create<MentorStore>()(
         const current = get().mentorResponse;
         if (current) {
           set({ 
-            mentorResponse: { ...current, sd: { ...current.sd, [date]: [session] } }
+            mentorResponse: { 
+              ...current, 
+              sd: { 
+                ...current.sd, 
+                [date]: [...(current.sd[date] || []), session]
+              } 
+            }
           });
         }
       },
