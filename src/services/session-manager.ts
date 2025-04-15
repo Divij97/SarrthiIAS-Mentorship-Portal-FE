@@ -6,6 +6,7 @@ import { addNewAdHocSession, cancelRecurringSession, cancelSession } from './men
 import { BulkMentorshipGroupCreateOrUpdateRequest, DeleteGroupSessionsRequest, MentorshipSessionsResponse } from '@/types/admin';
 import { createOrUpdateGroupSession, deleteGroupSessions } from './admin';
 import { formatTimeToHHMM } from '@/utils/date-time-utils';
+import { ZoomMeetingInfo } from '@/types/meeting';
 
 export class SessionManager {
   private authHeader: string;
@@ -98,13 +99,14 @@ export class SessionManager {
     }
   }
 
-  async cancelRecurringSession(sessionId: string, dayOfWeek: string): Promise<{ success: boolean }> {
+  async cancelRecurringSession(sessionId: string, dayOfWeek: string, zoomMeetingInfo: ZoomMeetingInfo | null): Promise<{ success: boolean }> {
     try {
       // In a real implementation, this would call the actual API
       // For now, we'll use the mock implementation
       const deleteRecurringSessionRequest: DeleteRecurringSessionRequest = {
         sessionId: sessionId,
-        dayOfWeek: dayOfWeek as DayOfWeek
+        dayOfWeek: dayOfWeek as DayOfWeek,
+        zoomMeetingInfo: zoomMeetingInfo
       }
   
       return await cancelRecurringSession(deleteRecurringSessionRequest, this.authHeader);

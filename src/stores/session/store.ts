@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { MentorshipSession } from '@/types/session';
-import { Meeting } from '@/types/meeting';
+import { Meeting, ZoomMeetingInfo } from '@/types/meeting';
 import { SessionManager } from '@/services/session-manager';
 import { DayOfWeek, MentorResponse } from '@/types/mentor';
 import { convertDateFormat, extractTimeFromISOString } from '@/utils/date-time-utils';
@@ -535,7 +535,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     
     try {
       // Call API to cancel recurring session
-      const result = await sessionManager.cancelRecurringSession(sessionId, dayOfWeek);
+      const meetingInfo: ZoomMeetingInfo | null = mentorResponse?.sw[dayOfWeek]?.find((session) => session.id === sessionId)?.zi
+      const result = await sessionManager.cancelRecurringSession(sessionId, dayOfWeek, meetingInfo);
       
       if (result.success) {
         // Remove session from local state

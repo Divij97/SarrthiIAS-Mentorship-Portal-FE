@@ -23,9 +23,11 @@ export function RecurringSessionCard({ session, dayOfWeek }: RecurringSessionCar
     
     setIsCancelling(true);
     try {
+      const zoomMeetingInfo = mentorResponse.sw[dayOfWeek]?.find((swSession) => swSession.id === session.id)?.zi
       const deleteRecurringSessionRequest: DeleteRecurringSessionRequest = {
         sessionId: session.id,
-        dayOfWeek: dayOfWeek as DayOfWeek
+        dayOfWeek: dayOfWeek as DayOfWeek,
+        zoomMeetingInfo: zoomMeetingInfo
       }
       await cancelRecurringSession(deleteRecurringSessionRequest, authHeader||'');
       if (mentorResponse.u) { 

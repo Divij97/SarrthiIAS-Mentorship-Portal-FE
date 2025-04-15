@@ -175,4 +175,5 @@ export function createDateDDMMYYYY(date: string): DateFormatDDMMYYYY | null {
 export interface DeleteRecurringSessionRequest {
   sessionId: string;
   dayOfWeek: DayOfWeek;
+  zoomMeetingInfo?: ZoomMeetingInfo
 }
