@@ -38,6 +38,7 @@ interface AdminAuthState {
   getMentorEmailByPhone: (phone: string) => string | null;
   getGroupFriendlyName: (courseName: string, groupId: string) => string | null;
   assignGroupsToCourse: (courseId: string, course: Course) => Promise<{ success: boolean; message?: string }>;
+  removeCourse: (courseId: string) => void;
 }
 
 const initialState: AdminAuthState = {
@@ -65,7 +66,8 @@ const initialState: AdminAuthState = {
   getMentorUserNameByPhone: () => null,
   getMentorEmailByPhone: () => null,
   getGroupFriendlyName: () => null,
-  assignGroupsToCourse: async () => ({ success: false })
+  assignGroupsToCourse: async () => ({ success: false }),
+  removeCourse: () => {}
 };
 
 export const useAdminAuthStore = create<AdminAuthState>()(
@@ -195,6 +197,15 @@ export const useAdminAuthStore = create<AdminAuthState>()(
           console.error('Error in store assignGroupsToCourse:', error);
           return { success: false, message: error instanceof Error ? error.message : 'Unknown error occurred' };
         }
+      },
+
+      removeCourse: (courseId: string) => {
+        set((state) => ({
+          adminData: {
+            ...state.adminData,
+            courses: state.adminData?.courses?.filter(course => course.id !== courseId) || []
+          }
+        }));
       }
     }),
     {
