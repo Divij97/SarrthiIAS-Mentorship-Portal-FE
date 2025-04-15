@@ -80,6 +80,7 @@ export default function MentorSchedulesPage() {
       console.log("Schedule created successfully: ", createdSession);
 
       addToSessionsByDayOfWeek(schedule.firstSessionDate as DateFormatDDMMYYYY, createdSession);
+      addToSessionsByDate(schedule.firstSessionDate as DateFormatDDMMYYYY, createdSession)
 
       // Get the day of week from firstSessionDate
       const [day, month, year] = schedule.firstSessionDate.split('/');
