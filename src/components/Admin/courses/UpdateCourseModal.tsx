@@ -141,24 +141,26 @@ export default function UpdateCourseModal({
 
               {/* Existing Documents */}
               {documents.length > 0 && (
-                <div className="space-y-1 mb-3">
+                <div className="space-y-2 mb-3">
                   {documents.map((doc, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-gray-700">{doc.name}</span>
-                        <a 
-                          href={doc.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-purple-600 hover:text-purple-800 text-xs"
-                        >
-                          {doc.url}
-                        </a>
+                    <div key={index} className="flex items-start justify-between text-sm">
+                      <div className="flex-1 min-w-0 mr-2">
+                        <div className="flex flex-col">
+                          <span className="text-gray-700 break-words">{doc.name}</span>
+                          <a 
+                            href={doc.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-600 hover:text-purple-800 text-xs break-all"
+                          >
+                            {doc.url}
+                          </a>
+                        </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleRemoveDocument(index)}
-                        className="text-gray-400 hover:text-red-500 transition-colors duration-200"
+                        className="flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors duration-200 mt-0.5"
                         title="Remove document"
                       >
                         <MinusCircleIcon className="h-4 w-4" />
