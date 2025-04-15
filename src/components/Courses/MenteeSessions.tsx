@@ -69,9 +69,9 @@ export default function MenteeSessions({ sessions, mentor }: MenteeSessionsProps
                     Mentorship Session
                   </h3>
                 </div>
-                {session.zoomLink && (
+                {session.zi?.joinUrl && (
                   <a
-                    href={session.zoomLink}
+                    href={session.zi?.joinUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
@@ -88,7 +88,7 @@ export default function MenteeSessions({ sessions, mentor }: MenteeSessionsProps
                 </div>
                 <div>
                   <p className="text-gray-500">Time</p>
-                  <p className="font-medium">{session.startTime} - {session.endTime}</p>
+                  <p className="font-medium">{session.st} - {session.et}</p>
                 </div>
               </div>
             </div>

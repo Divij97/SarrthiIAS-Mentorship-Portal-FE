@@ -43,8 +43,8 @@ export default function AddScheduleForMentee({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const unscheduledMenteeEmail = useMentorStore(state => state.getUnscheduledMenteeEmail(menteeUsername));
-  const [menteeMode, setMenteeMode] = useState<MenteeMode>(mentee.mode || MenteeMode.ONLINE);
-  const [createZoomMeeting, setCreateZoomMeeting] = useState(mentee.mode === MenteeMode.ONLINE);
+  const [menteeMode, setMenteeMode] = useState<MenteeMode>(MenteeMode.ONLINE);
+  const [createZoomMeeting, setCreateZoomMeeting] = useState(true);
 
   useEffect(() => {
     if (firstSessionDate) {

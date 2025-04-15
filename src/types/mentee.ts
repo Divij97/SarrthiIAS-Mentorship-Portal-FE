@@ -1,4 +1,5 @@
 import { Course } from "./course";
+import { ZoomMeetingInfo } from "./meeting";
 import { DayOfWeek, StrippedDownMentor } from "./mentor";
 import { SessionType, SuggestedInterval } from "./session";
 
@@ -232,12 +233,12 @@ export interface MenteesForCsvExport {
 
 export interface MenteeSession {
   id: string;
-  startTime: string;
-  endTime: string;
-  menteeFullName: string;
-  menteeUserName: string;
-  zoomLink: string;
-  sessionType: SessionType;
+  st: string;
+  et: string;
+  mn: string;
+  mu: string;
+  zi?: ZoomMeetingInfo;
+  s: SessionType;
 }
 
 export enum MenteeMode {

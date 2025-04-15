@@ -56,7 +56,7 @@ export default function CancellationRequestModal({
     // Filter eligible sessions and format them for the dropdown
     const filteredSessions = Object.entries(sessions).flatMap(([date, sessionsForDate]) => 
       sessionsForDate
-        .filter(session => isSessionEligible(date, session.startTime))
+        .filter(session => isSessionEligible(date, session.st))
         .map(session => {
           const [day, month, year] = date.split('/');
           const formattedDate = new Date(
@@ -71,10 +71,10 @@ export default function CancellationRequestModal({
           
           return {
             id: session.id,
-            displayText: `${formattedDate} | ${session.startTime} - ${session.endTime}`,
+            displayText: `${formattedDate} | ${session.st} - ${session.et}`,
             dateFormatted: formattedDate,
-            startTime: session.startTime,
-            endTime: session.endTime
+            startTime: session.st,
+            endTime: session.et
           };
         })
     );
