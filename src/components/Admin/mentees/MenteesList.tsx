@@ -38,10 +38,8 @@ export default function MenteesList({
 }: MenteesListProps) {
   const [mentees, setMentees] = useState<MenteesForCsvExport[]>(initialMentees);
   const [loading, setLoading] = useState(initialLoading);
-  const [error, setError] = useState<string | null>(null);
   const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
   const adminData = useAdminAuthStore((state) => state.adminData);
-  const fetchInProgress = useRef(false);
   const [assigningMentor, setAssigningMentor] = useState<string | null>(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedMentee, setSelectedMentee] = useState<MenteesForCsvExport | null>(null);
@@ -56,10 +54,7 @@ export default function MenteesList({
 
   const handleRefresh = async () => {
     console.log('request to Refresh mentees list');
-    if (!fetchInProgress.current) {
-      console.log('Refreshing mentees list...');
-      await onRefresh();
-    }
+    await onRefresh();
   };
 
   const handleAssignMentor = (mentee: MenteesForCsvExport) => {
@@ -122,10 +117,6 @@ export default function MenteesList({
           <div className="p-4 text-center text-gray-500">
             <MagnifyingGlassIcon className="mx-auto h-8 w-8 animate-spin" />
             <p className="mt-2">Loading mentees...</p>
-          </div>
-        ) : error ? (
-          <div className="p-4 text-center text-red-500">
-            <p>{error}</p>
           </div>
         ) : mentees.length === 0 ? (
           <div className="p-4 text-center text-gray-500">

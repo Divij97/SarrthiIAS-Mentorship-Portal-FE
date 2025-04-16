@@ -312,3 +312,38 @@ export const resetPasswordForUser = async (username: string, authHeader: string)
     }
   });
 }
+
+export const fullMenteesList = async (authHeader: string): Promise<MenteesResponse> => {
+  const BATCH_SIZE = 300;
+  let allMentees: MenteesForCsvExport[] = [];
+  let currentSkip = 0;
+  let hasMore = true;
+
+  try {
+    while (hasMore) {
+      const response = await fetchMentees(
+        {
+          limit: BATCH_SIZE,
+          skip: currentSkip
+        },
+        authHeader
+      );
+
+      allMentees = [...allMentees, ...response.mentees];
+
+      // If we get fewer mentees than the batch size, we've reached the end
+      if (response.mentees.length < BATCH_SIZE) {
+        hasMore = false;
+      } else {
+        currentSkip += BATCH_SIZE;
+      }
+    }
+
+    return {
+      mentees: allMentees,
+    };
+  } catch (error) {
+    console.error('Error fetching all mentees:', error);
+    throw error;
+  }
+}
