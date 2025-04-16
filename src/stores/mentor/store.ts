@@ -3,7 +3,6 @@ import { persist } from 'zustand/middleware';
 import { DayOfWeek, Mentor, MentorResponse } from '@/types/mentor';
 import { MentorshipSession } from '@/types/session';
 import { DateFormatDDMMYYYY } from '@/types/session';
-import { StrippedDownMentee } from '@/types/mentee';
 
 interface MentorStore {
   mentor: Mentor | null;

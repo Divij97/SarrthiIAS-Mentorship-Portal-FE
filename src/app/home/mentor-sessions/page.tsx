@@ -185,8 +185,7 @@ export default function MentorSessionsPage() {
           sessionType: SessionType.AD_HOC,
           mentorEmail: mentorResponse.m?.email
         },
-        authHeader,
-        mentorResponse.u
+        authHeader
       );
       const updatedSession: MentorshipSession = {
         id: newSession.id,

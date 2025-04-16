@@ -4,14 +4,13 @@ import { useState } from 'react';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { Dialog } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
 import { UpdateMenteeCourseRequest } from '@/types/admin';
 import { fetchCourseAllMentees, updateMenteeEnrolledInGroup, updateMenteesEnrolledInCourse } from '@/services/admin';
 import { MentorshipGroup } from '@/types/session';
 import { menteesToCSV, downloadCSV } from '@/utils/csv-utils';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
-import { StrippedDownMentee } from '@/types/mentee';
+import { ErrorResponse } from '@/types/error';
 
 interface RegisterMenteesToCourseProps {
   courseId: string;
@@ -65,7 +64,7 @@ export function RegisterMenteesToCourse({ courseId, groups = [], onSuccess }: Re
         setPhoneNumbersText(''); // Reset to initial state
         setSelectedGroupId(''); // Reset selected group
       } catch(error) {
-        throw new Error('Failed to register mentees');
+        throw new Error(`Failed to register mentees, errorCode: ${(error as ErrorResponse)?.errorCode || 'UNKNOWN'}`);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to register mentees. Please try again.');

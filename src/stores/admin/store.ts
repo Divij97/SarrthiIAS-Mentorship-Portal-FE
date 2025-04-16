@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { assignGroupsToCourse } from '@/services/admin';
+import { assignMenteesToCourseGroups } from '@/services/admin';
 import { AdminData } from '@/types/admin';
 import { MentorshipGroup } from '@/types/session';
 import { useAdminAuthStore } from '../auth/admin-auth-store';
@@ -23,7 +23,7 @@ interface AdminState {
   clearCourseGroups: (courseName: string) => void;
   getMentorUserNameByPhone: (phone: string) => string | null;
   getGroupFriendlyName: (courseName: string, groupId: string) => string | null;
-  assignGroupsToCourse: (courseId: string, course: any) => Promise<void>;
+  assignMenteesToCourseGroups: (courseId: string) => Promise<void>;
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -68,13 +68,13 @@ export const useAdminStore = create<AdminState>()(
         return group?.groupFriendlyName || null;
       },
 
-      assignGroupsToCourse: async (courseId: string, course: any): Promise<void> => {
+      assignMenteesToCourseGroups: async (courseId: string): Promise<void> => {
         try {
           const authHeader = useAdminAuthStore.getState().getAuthHeader();
           if (!authHeader) {
             throw new Error('No authentication header available');
           }
-          await assignGroupsToCourse(courseId, authHeader, course);
+          await assignMenteesToCourseGroups(courseId, authHeader);
         } catch (error) {
           console.error('Error in store assignGroupsToCourse:', error);
           throw error;

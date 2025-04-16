@@ -91,6 +91,13 @@ export default function MenteeSessions({ sessions, mentor }: MenteeSessionsProps
                   <p className="font-medium">{session.st} - {session.et}</p>
                 </div>
               </div>
+              
+              {session.zi?.joinUrl && (
+                <div className="mt-4">
+                  <p className="text-gray-500">Zoom Link</p>
+                  <p className="font-medium text-blue-600 break-all">{session.zi.joinUrl}</p>
+                </div>
+              )}
             </div>
           );
         })}

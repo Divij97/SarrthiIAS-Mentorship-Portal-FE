@@ -5,7 +5,7 @@ import { SessionManager } from '@/services/session-manager';
 import { DayOfWeek, MentorResponse } from '@/types/mentor';
 import { convertDateFormat, extractTimeFromISOString } from '@/utils/date-time-utils';
 import { useMentorStore } from '@/stores/mentor/store';
-import { SessionType, RecurrenceType } from '@/types/session';
+import { SessionType } from '@/types/session';
 
 // Define modal state types
 interface ModalState {

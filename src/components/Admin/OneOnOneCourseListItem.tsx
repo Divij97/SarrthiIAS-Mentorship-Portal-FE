@@ -99,6 +99,13 @@ export function OneOnOneCourseListItem({ course }: OneOnOneCourseListItemProps) 
       {course.description && (
         <p className="mt-2 text-sm text-gray-500">{course.description}</p>
       )}
+      {course.startDate && (
+        <p className="mt-2 text-sm text-gray-500">starts: {course.startDate}</p>
+      )}
+      {course.endDate && (
+        <p className="mt-2 text-sm text-gray-500">ends: {course.endDate}</p>
+      )}
+      
 
       <UpdateCourseModal
         isOpen={isUpdateModalOpen}

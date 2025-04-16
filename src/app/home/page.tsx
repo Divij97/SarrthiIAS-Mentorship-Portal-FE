@@ -24,7 +24,11 @@ export default function HomePage() {
     }
 
     // If no password reset needed, redirect to profile
-    router.replace('/home/profile');
+    if (menteeResponse?.enrolledCourses?.length === 1) {
+      router.replace(`/home/courses/${menteeResponse.enrolledCourses[0].course.id}`)  
+    } else {
+      router.replace('/home/profile');
+    }
   }, [router, menteeResponse, mentorResponse, phone]);
 
   // Don't render anything during the redirect checks

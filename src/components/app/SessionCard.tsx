@@ -6,19 +6,6 @@ interface SessionCardProps {
 }
 
 export default function SessionCard({ session }: SessionCardProps) {
-  const getStatusColor = (status: Session['status']) => {
-    switch (status) {
-      case 'scheduled':
-        return 'bg-blue-50 text-blue-700';
-      case 'completed':
-        return 'bg-green-50 text-green-700';
-      case 'cancelled':
-        return 'bg-red-50 text-red-700';
-      default:
-        return 'bg-gray-50 text-gray-700';
-    }
-  };
-
   const formatDate = (dateStr: string) => {
     let date;
     

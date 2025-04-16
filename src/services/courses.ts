@@ -196,7 +196,7 @@ export const fetchCourse = async (courseId: string, authHeader: string): Promise
 
 export const createGroupInCourse = async (courseId: string, request: CreateGroupRequest, authHeader: string): Promise<void> => {
   try {
-    const response = await fetch(`${config.api.url}/v1/courses/${courseId}/groups`, {
+    await fetch(`${config.api.url}/v1/courses/${courseId}/groups`, {
       method: 'POST',
       headers: {
         'Authorization': authHeader,

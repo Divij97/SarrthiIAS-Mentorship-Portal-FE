@@ -1,5 +1,5 @@
-import { MenteeIdentifier, MentorWithAuth, MentorResponse, DayOfWeek } from '@/types/mentor';
-import { MentorshipSession, SessionUpdate, UpdateType, SessionType, DateFormatDDMMYYYY, createDateDDMMYYYY, RecurrenceType, DeleteRecurringSessionRequest } from '@/types/session';
+import { MenteeIdentifier, DayOfWeek } from '@/types/mentor';
+import { MentorshipSession, SessionUpdate, UpdateType, SessionType, DateFormatDDMMYYYY, createDateDDMMYYYY, DeleteRecurringSessionRequest } from '@/types/session';
 import { config } from '@/config/env';
 import { useMentorStore } from '@/stores/mentor/store';
 import { addNewAdHocSession, cancelRecurringSession, cancelSession } from './mentors';
@@ -158,7 +158,7 @@ export class SessionManager {
         mentorEmail: mentorEmail
       };
 
-      const response = await addNewAdHocSession(sessionUpdate, this.authHeader, mentorUsername);
+      const response = await addNewAdHocSession(sessionUpdate, this.authHeader);
 
       console.log('Session added successfully, ID:', sessionId);
       return await response;

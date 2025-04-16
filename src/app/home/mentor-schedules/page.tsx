@@ -53,7 +53,6 @@ export default function MentorSchedulesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
-  const [showEmailModal, setShowEmailModal] = useState(false);
 
   const handleScheduleClick = (mentee: StrippedDownMentee) => {
     setSelectedMentee(mentee);

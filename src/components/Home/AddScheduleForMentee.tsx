@@ -7,6 +7,7 @@ import { MenteeMode, StrippedDownMentee } from '@/types/mentee';
 import { RecurrenceType } from '@/types/session';
 import { useMentorStore } from '@/stores/mentor/store';
 import { CustomTimeInput } from '@/components/ui/CustomTimeInput';
+import toast from 'react-hot-toast';
 
 
 interface AddScheduleForMenteeProps {
@@ -72,6 +73,24 @@ export default function AddScheduleForMentee({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Parse the schedule date
+    const [year, month, day] = firstSessionDate.split('-');
+    const scheduleDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    
+    // Add the time to the date
+    const [hours, minutes] = startTime.split(':');
+    scheduleDateTime.setHours(parseInt(hours), parseInt(minutes));
+
+    // Check if the schedule is in the past
+    const now = new Date();
+    if (scheduleDateTime < now) {
+      toast.error('Cannot create schedule for a past date and time.', {
+        duration: 4000,
+        position: 'top-right',
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       await onSubmit({

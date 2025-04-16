@@ -1,7 +1,7 @@
 import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorshipSessionsResponse, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
-import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
+import { MenteesForCsvExport } from '@/types/mentee';
 
 export const loginAdmin = async (authHeader: string): Promise<AdminData> => {
   try {
@@ -29,7 +29,7 @@ export const loginAdmin = async (authHeader: string): Promise<AdminData> => {
   }
 };
 
-export const assignGroupsToCourse = async (courseId: string, authHeader: string, course: any): Promise<void> => {
+export const assignMenteesToCourseGroups = async (courseId: string, authHeader: string): Promise<void> => {
   try {
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
@@ -41,8 +41,6 @@ export const assignGroupsToCourse = async (courseId: string, authHeader: string,
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      credentials: 'same-origin',
-      body: JSON.stringify(course),
     });
 
     if (!response.ok) {

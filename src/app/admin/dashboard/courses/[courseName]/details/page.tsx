@@ -38,7 +38,7 @@ export default function CourseDetailsPage({
   const [assigningGroups, setAssigningGroups] = useState(false);
   const [groupsAssigned, setGroupsAssigned] = useState(false);
   const adminData = useAdminAuthStore.getState().adminData;
-  const { setCourseGroups, getCourseGroups, assignGroupsToCourse } = useAdminAuthStore();
+  const { setCourseGroups, getCourseGroups, assignMenteesToCourseGroups } = useAdminAuthStore();
   const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
@@ -140,7 +140,7 @@ export default function CourseDetailsPage({
         throw new Error('Course information not available');
       }
       
-      await assignGroupsToCourse(courseId, currentCourse);
+      await assignMenteesToCourseGroups(courseId);
       // console.log("Response from assignGroupsToCourse: ", response);
       // Notify user about successful request
       setError(null); // Clear any previous errors

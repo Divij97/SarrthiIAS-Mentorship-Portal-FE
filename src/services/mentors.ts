@@ -1,9 +1,9 @@
-import { DayOfWeek, Mentor, MentorGroupsBulkResponse, MentorResponse, MentorWithAuth } from '@/types/mentor';
+import { MentorGroupsBulkResponse, MentorResponse, MentorWithAuth } from '@/types/mentor';
 import { config } from '@/config/env';
 import { useLoginStore } from '@/stores/auth/store';
 import { DeleteRecurringSessionRequest, SessionUpdate } from '@/types/session';
 import { RecurringMentorshipSchedule, MentorshipSession } from '@/types/session';
-import { StrippedDownMentee, UnscheduledMenteeDetails } from '@/types/mentee';
+import { StrippedDownMentee } from '@/types/mentee';
 
 export const getMentorByPhone = async (phone: string, authHeader: string): Promise<MentorResponse> => {
   try {
@@ -175,7 +175,7 @@ export const createRecurringSchedule = async (
   }
 }; 
 
-export const addNewAdHocSession = async (sessionUpdate: SessionUpdate, authHeader: string, mentorUsername: string): Promise<MentorshipSession> => {
+export const addNewAdHocSession = async (sessionUpdate: SessionUpdate, authHeader: string): Promise<MentorshipSession> => {
   const response = await fetch(`${config.api.url}/v1/mentors/me/sessions`, {
     method: 'PUT',
     headers: {

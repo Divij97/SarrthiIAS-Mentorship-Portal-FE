@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { AdminData } from '@/types/admin';
-import { loginAdmin, assignGroupsToCourse } from '@/services/admin';
+import { loginAdmin, assignMenteesToCourseGroups } from '@/services/admin';
 import { Course } from '@/types/course';
 import { GroupMentorshipSession, MentorshipGroup } from '@/types/session';
 
@@ -37,7 +37,7 @@ interface AdminAuthState {
   getMentorUserNameByPhone: (phone: string) => string | null;
   getMentorEmailByPhone: (phone: string) => string | null;
   getGroupFriendlyName: (courseName: string, groupId: string) => string | null;
-  assignGroupsToCourse: (courseId: string, course: Course) => Promise<{ success: boolean; message?: string }>;
+  assignMenteesToCourseGroups: (courseId: string) => Promise<{ success: boolean; message?: string }>;
   removeCourse: (courseId: string) => void;
 }
 
@@ -55,7 +55,7 @@ const initialState: AdminAuthState = {
   setError: () => {},
   setAdminData: () => {},
   addCourse: () => {},
-  updateCourse: (courseId, course) => null,
+  updateCourse: () => null,
   handleLogin: async () => ({ success: false, adminData: null }),
   refreshAdmin: async () => false,
   logout: () => {},
@@ -66,7 +66,7 @@ const initialState: AdminAuthState = {
   getMentorUserNameByPhone: () => null,
   getMentorEmailByPhone: () => null,
   getGroupFriendlyName: () => null,
-  assignGroupsToCourse: async () => ({ success: false }),
+  assignMenteesToCourseGroups: async () => ({ success: false }),
   removeCourse: () => {}
 };
 
@@ -185,13 +185,13 @@ export const useAdminAuthStore = create<AdminAuthState>()(
         return group?.groupFriendlyName || null;
       },
 
-      assignGroupsToCourse: async (courseId: string, course: Course): Promise<{ success: boolean; message?: string }> => {
+      assignMenteesToCourseGroups: async (courseId: string): Promise<{ success: boolean; message?: string }> => {
         try {
           const authHeader = get()._authHeader;
           if (!authHeader) {
             throw new Error('No authentication header available');
           }
-          const result = await assignGroupsToCourse(courseId, authHeader, course);
+          await assignMenteesToCourseGroups(courseId, authHeader);
           return { success: true, message: 'Groups assigned successfully' };
         } catch (error) {
           console.error('Error in store assignGroupsToCourse:', error);

@@ -2,7 +2,6 @@
 
 import { FormData } from '@/types/multistep-form';
 import { FormErrors } from '@/utils/mentee-signup-form-validator';
-import { TimeSlotChooser } from '../ui/TimeSlotChooser';
 import { MenteeUpscExperience } from '@/types/mentee';
 
 interface CurrentPreparationProps {
@@ -66,8 +65,6 @@ const CurrentPreparation = ({
             <p className="mt-1 text-sm text-red-600">{errors.upscExperience}</p>
           )}
         </div>
-
-        {/* <TimeSlotChooser formData={formData} handleChange={handleChange} /> */}
 
         <div>
           <label htmlFor="weakSubjects" className="block text-sm font-medium text-gray-700">

@@ -21,6 +21,7 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [openSubsections, setOpenSubsections] = useState<string | null>(null);
+  const [isSubMenuOpen, setIsSubMenuOpen] = useState<boolean>(false);
   const navRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({
@@ -68,7 +69,9 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
   };
 
   const toggleSubsections = (path: string) => {
-    setOpenSubsections(openSubsections === path ? null : path);
+    const openedSectionPath = openSubsections === path ? null : path
+    setOpenSubsections(openedSectionPath);
+    setIsSubMenuOpen(openedSectionPath !== null)
   };
 
   const getActiveSubsection = (item: NavigationItem) => {
@@ -120,6 +123,7 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
                         } else {
                           router.push(item.path);
                           setIsOpen(false);
+                          setIsSubMenuOpen(false)
                         }
                       }}
                       className={`${
@@ -143,9 +147,12 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
                           <Link
                             key={subsection.path}
                             href={subsection.path}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.preventDefault();
                               setIsOpen(false);
                               setOpenSubsections(null);
+                              setIsSubMenuOpen(false);
+                              router.push(subsection.path);
                             }}
                             className={`${
                               pathname === subsection.path
@@ -210,6 +217,7 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
                         if (item.subsections) {
                           toggleSubsections(item.path);
                         } else {
+                          toggleSubsections(null)
                           router.push(item.path);
                         }
                       }}
@@ -228,14 +236,20 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
                         />
                       )}
                     </button>
-                    {item.subsections && openSubsections === item.path && (
+                    {item.subsections && isSubMenuOpen && (
                       <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                         <div className="py-1">
                           {item.subsections.map((subsection) => (
                             <Link
                               key={subsection.path}
                               href={subsection.path}
-                              onClick={() => setOpenSubsections(null)}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setIsOpen(false);
+                                setOpenSubsections(null);
+                                setIsSubMenuOpen(false);
+                                router.push(subsection.path);
+                              }}
                               className={`${
                                 pathname === subsection.path
                                   ? 'bg-orange-50 text-orange-900'

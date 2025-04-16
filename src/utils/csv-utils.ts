@@ -1,4 +1,4 @@
-import { MenteesForCsvExport, StrippedDownMentee } from "@/types/mentee";
+import { MenteesForCsvExport } from "@/types/mentee";
 
 /**
  * Converts mentee data to CSV format

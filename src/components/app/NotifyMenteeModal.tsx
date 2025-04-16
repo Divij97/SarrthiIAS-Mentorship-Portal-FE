@@ -4,6 +4,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { StrippedDownMentee } from '@/types/mentee';
 import { sendEmailToMentor } from '@/services/mentors';
 import { toast } from 'react-hot-toast';
+import { ErrorResponse } from '@/types/error';
 
 interface NotifyMenteeModalProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ export default function NotifyMenteeModal({ isOpen, onClose, mentees, authHeader
       toast.success('Email has been sent to the mentee successfully');
       onClose();
     } catch (error) {
-      toast.error('Failed to send email to mentee');
+      toast.error(`Failed to send email to mentee, errorCode: ${(error as ErrorResponse)?.errorCode || 'UNKNOWN'}`);
     } finally {
       setIsLoading(false);
     }

@@ -2,8 +2,7 @@ import {
   ReservationCategory, 
   OptionalSubject, 
   Region, 
-  Gender, 
-  PreferredSlot, 
+  Gender,  
   AnswerWritingLevel,
   MenteeUpscExperience,
   MenteeMode
