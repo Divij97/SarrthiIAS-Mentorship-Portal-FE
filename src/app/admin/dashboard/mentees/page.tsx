@@ -65,11 +65,16 @@ export default function MenteesPage() {
     }
 
     const query = searchQuery.toLowerCase().trim();
-    const results = allMentees.filter(mentee => 
-      mentee.name.toLowerCase().includes(query) ||
-      mentee.email.toLowerCase().includes(query) ||
-      mentee.phone.toLowerCase().includes(query)
-    );
+    const results = allMentees.filter(mentee => {
+      // Safely handle null/undefined values
+      const name = mentee.name?.toLowerCase() || '';
+      const email = mentee.email?.toLowerCase() || '';
+      const phone = mentee.phone?.toLowerCase() || '';
+
+      return name.includes(query) ||
+             email.includes(query) ||
+             phone.includes(query);
+    });
 
     setSearchResults(results);
   };
