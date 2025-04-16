@@ -21,6 +21,7 @@ import AddSessionModal from '@/components/modals/AddSessionModal';
 import CancelSessionModal from '@/components/modals/CancelSessionModal';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import { BackendError, FetchError } from '@/types/error';
 
 export default function MentorSessionsPage() {
   // State for modals
@@ -212,7 +213,12 @@ export default function MentorSessionsPage() {
       });
       router.refresh();
     } catch (error) {
-      toast.error('Failed to add session. Please try again.');
+      const fetchError = error as FetchError<BackendError>;
+      if (fetchError.errorData) {
+        toast.error(`Failed to add session. Error Code: ${fetchError.errorData.errorCode}`)
+      } else {
+        toast.error(`Failed to add session. Please try again.`)
+      }
       setError('Failed to add session. Please try again.');
     } finally {
       setIsLoading(false);

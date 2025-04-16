@@ -1,6 +1,11 @@
-export interface ErrorResponse {
-  errorCode: string;
-  message: string;
+export interface BackendError {
+  errorCode: ErrorCode;
+  exMessage: string;
+}
+
+export interface FetchError<T = BackendError> extends Error {
+  status?: number;
+  errorData?: T;
 }
 
 export enum ErrorCode {

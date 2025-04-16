@@ -2,13 +2,10 @@ import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateReques
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
 import { MenteesForCsvExport } from '@/types/mentee';
+import { fetchSafe } from '@/utils/api';
 
 export const loginAdmin = async (authHeader: string): Promise<AdminData> => {
-  try {
-    let apiUrl = config.api.url;
-    apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
-    
-    const response = await fetch(`${apiUrl}/v1/admin/me`, {
+  return await fetchSafe<AdminData>(`${config.api.url}/v1/admin/me`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
@@ -17,23 +14,13 @@ export const loginAdmin = async (authHeader: string): Promise<AdminData> => {
       },
       credentials: 'same-origin'
     });
-
-    if (!response.ok) {
-      throw new Error(`Failed to login: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error logging in:', error);
-    throw error;
-  }
 };
 
 export const assignMenteesToCourseGroups = async (courseId: string, authHeader: string): Promise<void> => {
   try {
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
-    
+
     const response = await fetch(`${apiUrl}/v1/courses/${courseId}/assignGroups`, {
       method: 'POST',
       headers: {
@@ -56,14 +43,14 @@ export const registerMentee = async (mentee: CreateMenteeRequest, authHeader: st
   try {
     let apiUrl = config.api.url;
     apiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
-      const response = await fetch(`${config.api.url}/v1/mentees`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `${authHeader}`,
-        },
-        body: JSON.stringify(mentee),
-      });
+    const response = await fetch(`${config.api.url}/v1/mentees`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `${authHeader}`,
+      },
+      body: JSON.stringify(mentee),
+    });
 
     if (!response) {
       return false;
@@ -138,7 +125,7 @@ export const deleteGroupSessions = async (groupId: string, request: DeleteGroupS
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
-    }); 
+    });
 
     if (!response.ok) {
       throw new Error('Failed to delete group session');
@@ -213,7 +200,7 @@ export const updateMenteeEnrolledInGroup = async (courseId: string, groupId: str
       },
       body: JSON.stringify(requestBody)
     });
-  } catch(error) {
+  } catch (error) {
     console.error(`Failed to update mentee information.`)
   }
 }
@@ -230,7 +217,7 @@ export const addDocumentsToCourse = async (courseId: string, requestBody: AddDoc
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
-    }); 
+    });
 
     if (!response.ok) {
       throw new Error('Failed to add documents to course');
@@ -306,7 +293,7 @@ export const assignMentorToMentee = async (menteeUserName: string, request: Ment
       },
       body: JSON.stringify(request),
     });
-    
+
     if (!response.ok) {
       throw new Error('Error assigning mentor to mentee');
     }
@@ -316,10 +303,12 @@ export const assignMentorToMentee = async (menteeUserName: string, request: Ment
   }
 }
 
-export const getCourseDetails = async (courseName: string) => {
-  const response = await fetch(`/api/admin/courses/${courseName}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch course details');
-  }
-  return response.json();
-};
+export const resetPasswordForUser = async (username: string, authHeader: string): Promise<void> => {
+  return await fetchSafe<void>(`${config.api.url}/v1/internal/reset-password/${username}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    }
+  });
+}

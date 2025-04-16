@@ -264,18 +264,17 @@ export default function MenteesList({
                           {mentee.phone !== null && sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
                         </button>
                         
-                          <button
-                            onClick={() => handleAssignMentor(mentee)}
-                            disabled={assigningMentor === mentee.phone}
-                            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
-                                ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
-                                : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
-                              }`}
-                          >
-                            <UserPlusIcon className="h-4 w-4 mr-1" />
-                            {mentee.phone !== null && assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
-                          </button>
-                      
+                        <button
+                          onClick={() => handleAssignMentor(mentee)}
+                          disabled={assigningMentor === mentee.phone}
+                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
+                              ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                              : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                            }`}
+                        >
+                          <UserPlusIcon className="h-4 w-4 mr-1" />
+                          {mentee.phone !== null && assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
+                        </button>
                       </td>
                     </tr>
                   ))}

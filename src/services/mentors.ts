@@ -4,6 +4,7 @@ import { useLoginStore } from '@/stores/auth/store';
 import { DeleteRecurringSessionRequest, SessionUpdate } from '@/types/session';
 import { RecurringMentorshipSchedule, MentorshipSession } from '@/types/session';
 import { StrippedDownMentee } from '@/types/mentee';
+import { fetchSafe } from '@/utils/api';
 
 export const getMentorByPhone = async (phone: string, authHeader: string): Promise<MentorResponse> => {
   try {
@@ -176,7 +177,7 @@ export const createRecurringSchedule = async (
 }; 
 
 export const addNewAdHocSession = async (sessionUpdate: SessionUpdate, authHeader: string): Promise<MentorshipSession> => {
-  const response = await fetch(`${config.api.url}/v1/mentors/me/sessions`, {
+  return await fetchSafe<MentorshipSession>(`${config.api.url}/v1/mentors/me/sessions`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -184,13 +185,6 @@ export const addNewAdHocSession = async (sessionUpdate: SessionUpdate, authHeade
     },
     body: JSON.stringify(sessionUpdate)
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to add new session: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
-  }
-
-  return await response.json();
 };
 
 export const cancelSession = async (sessionUpdate: SessionUpdate, authHeader: string) => {

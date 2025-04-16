@@ -10,7 +10,7 @@ import { fetchCourseAllMentees, updateMenteeEnrolledInGroup, updateMenteesEnroll
 import { MentorshipGroup } from '@/types/session';
 import { menteesToCSV, downloadCSV } from '@/utils/csv-utils';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
-import { ErrorResponse } from '@/types/error';
+import { BackendError } from '@/types/error';
 
 interface RegisterMenteesToCourseProps {
   courseId: string;
@@ -64,7 +64,7 @@ export function RegisterMenteesToCourse({ courseId, groups = [], onSuccess }: Re
         setPhoneNumbersText(''); // Reset to initial state
         setSelectedGroupId(''); // Reset selected group
       } catch(error) {
-        throw new Error(`Failed to register mentees, errorCode: ${(error as ErrorResponse)?.errorCode || 'UNKNOWN'}`);
+        throw new Error(`Failed to register mentees, errorCode: ${(error as BackendError)?.errorCode || 'UNKNOWN'}`);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to register mentees. Please try again.');
