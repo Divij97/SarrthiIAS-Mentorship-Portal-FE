@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { MenteesForCsvExport, StrippedDownMentee, PreferredSlot } from '@/types/mentee';
+import { MenteesForCsvExport } from '@/types/mentee';
 import { MenteesFilters, assignMentorToMentee } from '@/services/admin';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
-import { MagnifyingGlassIcon, ArrowPathIcon, UserPlusIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { sendOnBoardingEmail } from '@/services/mentors';
+import { MagnifyingGlassIcon, ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import { AssignMentorModal } from './assign-mentor-modal';
 import SearchFilters from './search-filters';
+import MenteeRow from './MenteeRow';
+import MenteeMobileCard from './MenteeMobileCard';
 
 interface MenteesListProps {
   courses: { id: string; name: string }[];
@@ -41,8 +42,6 @@ export default function MenteesList({
   const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
   const adminData = useAdminAuthStore((state) => state.adminData);
   const fetchInProgress = useRef(false);
-  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
-  const [emailError, setEmailError] = useState<string | null>(null);
   const [assigningMentor, setAssigningMentor] = useState<string | null>(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedMentee, setSelectedMentee] = useState<MenteesForCsvExport | null>(null);
@@ -63,32 +62,7 @@ export default function MenteesList({
     }
   };
 
-  const handleSendOnboardingEmail = async (mentee: MenteesForCsvExport) => {
-    if (!authHeader || sendingEmail) return;
-
-    setSendingEmail(mentee.phone);
-    setEmailError(null);
-
-    try {
-      // Create a StrippedDownMentee object with required fields
-      const strippedMentee: StrippedDownMentee = {
-        n: mentee.name,
-        p: mentee.phone,
-        e: mentee.email,
-        preferredSlot: PreferredSlot.ALL // Default
-      };
-
-      await sendOnBoardingEmail(strippedMentee, authHeader);
-      // Show success message (you might want to add a toast notification here)
-    } catch (error) {
-      console.error('Failed to send onboarding email:', error);
-      setEmailError(`Failed to send email to ${mentee.name}`);
-    } finally {
-      setSendingEmail(null);
-    }
-  };
-
-  const handleAssignMentor = async (mentee: MenteesForCsvExport) => {
+  const handleAssignMentor = (mentee: MenteesForCsvExport) => {
     setSelectedMentee(mentee);
     setShowAssignModal(true);
   };
@@ -124,10 +98,11 @@ export default function MenteesList({
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md w-full sm:w-auto ${loading
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-              }`}
+            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md w-full sm:w-auto ${
+              loading
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+            }`}
           >
             <ArrowPathIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -158,11 +133,6 @@ export default function MenteesList({
           </div>
         ) : (
           <>
-            {emailError && (
-              <div className="p-2 text-center text-red-500 bg-red-50">
-                <p>{emailError}</p>
-              </div>
-            )}
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -187,44 +157,12 @@ export default function MenteesList({
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {mentees.map((mentee) => (
-                    <tr key={mentee.phone}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {mentee.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {mentee.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {mentee.phone}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
-                        <button
-                          onClick={() => handleSendOnboardingEmail(mentee)}
-                          disabled={sendingEmail === mentee.phone}
-                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${sendingEmail === mentee.phone
-                            ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
-                            : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
-                            }`}
-                        >
-                          {mentee.phone !== null && sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
-                        </button>
-
-                        <button
-                          onClick={() => handleAssignMentor(mentee)}
-                          disabled={assigningMentor === mentee.phone}
-                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
-                            ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
-                            : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
-                            }`}
-                        >
-                          <UserPlusIcon className="h-4 w-4 mr-1" />
-                          {mentee.phone !== null && assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
-                        </button>
-                      </td>
-                    </tr>
+                    <MenteeRow
+                      key={mentee.phone}
+                      mentee={mentee}
+                      assigningMentor={assigningMentor}
+                      onAssignMentor={handleAssignMentor}
+                    />
                   ))}
                 </tbody>
               </table>
@@ -233,45 +171,12 @@ export default function MenteesList({
             {/* Mobile Cards */}
             <div className="md:hidden divide-y divide-gray-200">
               {mentees.map((mentee) => (
-                <div key={mentee.phone} className="p-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-medium text-gray-900">{mentee.name}</h4>
-                      <span className="text-xs text-gray-500">{mentee.phone}</span>
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      <p>{mentee.email}</p>
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      <p>Assigned Mentor: {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}</p>
-                    </div>
-                    <div className="pt-2 space-y-2">
-                      <button
-                        onClick={() => handleSendOnboardingEmail(mentee)}
-                        disabled={sendingEmail === mentee.phone}
-                        className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${sendingEmail === mentee.phone
-                          ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
-                          : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
-                          }`}
-                      >
-                        {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
-                      </button>
-                      {!mentee.assignedMentor && (
-                        <button
-                          onClick={() => handleAssignMentor(mentee)}
-                          disabled={assigningMentor === mentee.phone}
-                          className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
-                            ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
-                            : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
-                            }`}
-                        >
-                          <UserPlusIcon className="h-4 w-4 mr-1" />
-                          {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <MenteeMobileCard
+                  key={mentee.phone}
+                  mentee={mentee}
+                  assigningMentor={assigningMentor}
+                  onAssignMentor={handleAssignMentor}
+                />
               ))}
             </div>
 
@@ -281,20 +186,22 @@ export default function MenteesList({
                 <button
                   onClick={onPrevPage}
                   disabled={currentPage === 1 || loading}
-                  className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${currentPage === 1 || loading
+                  className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                    currentPage === 1 || loading
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
+                  }`}
                 >
                   Previous
                 </button>
                 <button
                   onClick={onNextPage}
                   disabled={!hasMore || loading}
-                  className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${!hasMore || loading
+                  className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                    !hasMore || loading
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
+                  }`}
                 >
                   Next
                 </button>
@@ -310,10 +217,11 @@ export default function MenteesList({
                     <button
                       onClick={onPrevPage}
                       disabled={currentPage === 1 || loading}
-                      className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${currentPage === 1 || loading
+                      className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                        currentPage === 1 || loading
                           ? 'text-gray-300 cursor-not-allowed'
                           : 'text-gray-500 hover:bg-gray-50'
-                        }`}
+                      }`}
                     >
                       <span className="sr-only">Previous</span>
                       <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -321,10 +229,11 @@ export default function MenteesList({
                     <button
                       onClick={onNextPage}
                       disabled={!hasMore || loading}
-                      className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${!hasMore || loading
+                      className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                        !hasMore || loading
                           ? 'text-gray-300 cursor-not-allowed'
                           : 'text-gray-500 hover:bg-gray-50'
-                        }`}
+                      }`}
                     >
                       <span className="sr-only">Next</span>
                       <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
@@ -337,6 +246,7 @@ export default function MenteesList({
         )}
       </div>
 
+      {/* Assign Mentor Modal */}
       <AssignMentorModal
         isOpen={showAssignModal}
         onClose={() => {

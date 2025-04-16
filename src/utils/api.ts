@@ -27,7 +27,13 @@ export async function fetchSafe<TSuccess, TError = BackendError>(
         throw error;
     }
 
-    // Assuming successful response is JSON
+    // Check if the response has content
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+        return undefined as TSuccess;
+    }
+
+    // Parse the response as JSON
     const data = (await response.json()) as TSuccess;
     return data;
 }

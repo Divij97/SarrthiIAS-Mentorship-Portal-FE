@@ -259,7 +259,7 @@ export const sendEmailToMentor = async (mentee: StrippedDownMentee, authHeader: 
 };
 
 export const sendOnBoardingEmail = async (mentee: StrippedDownMentee, authHeader: string, template: string = 'ONBOARDING') => {
-  const response = await fetch(`${config.api.url}/v1/mentors/me/emails?template=${template}`, {
+  await fetchSafe<void>(`${config.api.url}/v1/mentors/me/emails?template=${template}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -267,11 +267,4 @@ export const sendOnBoardingEmail = async (mentee: StrippedDownMentee, authHeader
     },
     body: JSON.stringify(mentee)
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to send onboarding email: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
-  }
-
-  return { success: true };
 };
