@@ -6,6 +6,7 @@ import { MagnifyingGlassIcon, ArrowPathIcon, UserPlusIcon, ChevronLeftIcon, Chev
 import { sendOnBoardingEmail } from '@/services/mentors';
 import { toast } from 'react-hot-toast';
 import { AssignMentorModal } from './assign-mentor-modal';
+import SearchFilters from './search-filters';
 
 interface MenteesListProps {
   courses: { id: string; name: string }[];
@@ -21,11 +22,11 @@ interface MenteesListProps {
   currentPage: number;
 }
 
-export default function MenteesList({ 
-  courses, 
-  groups, 
-  mentees: initialMentees, 
-  loading: initialLoading, 
+export default function MenteesList({
+  courses,
+  groups,
+  mentees: initialMentees,
+  loading: initialLoading,
   onRefresh,
   filters,
   onFilterChange,
@@ -124,73 +125,20 @@ export default function MenteesList({
             onClick={handleRefresh}
             disabled={loading}
             className={`flex items-center px-3 py-2 text-sm font-medium rounded-md w-full sm:w-auto ${loading
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
               }`}
           >
             <ArrowPathIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <label htmlFor="courseFilter" className="block text-sm font-medium text-gray-700 mb-1">
-              Filter by Course
-            </label>
-            <select
-              id="courseFilter"
-              value={filters.courseId || ''}
-              onChange={(e) => onFilterChange('courseId', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-              <option value="">All Courses</option>
-              {courses.map(course => (
-                <option key={course.id} value={course.id}>
-                  {course.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="groupFilter" className="block text-sm font-medium text-gray-700 mb-1">
-              Filter by Group
-            </label>
-            <select
-              id="groupFilter"
-              value={filters.groupId || ''}
-              onChange={(e) => onFilterChange('groupId', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-              disabled={!filters.courseId}
-            >
-              <option value="">All Groups</option>
-              {groups
-                .filter(group => !filters.courseId || group.course === filters.courseId)
-                .map(group => (
-                  <option key={group.groupId} value={group.groupId}>
-                    {group.groupFriendlyName}
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="limitFilter" className="block text-sm font-medium text-gray-700 mb-1">
-              Results per page
-            </label>
-            <select
-              id="limitFilter"
-              value={filters.limit}
-              onChange={(e) => onFilterChange('limit', parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </div>
-        </div>
+        <SearchFilters
+          courses={courses}
+          groups={groups}
+          filters={filters}
+          onFilterChange={onFilterChange}
+        />
       </div>
 
       {/* Mentees List */}
@@ -257,19 +205,19 @@ export default function MenteesList({
                           onClick={() => handleSendOnboardingEmail(mentee)}
                           disabled={sendingEmail === mentee.phone}
                           className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${sendingEmail === mentee.phone
-                              ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
-                              : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
+                            ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
+                            : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
                             }`}
                         >
                           {mentee.phone !== null && sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
                         </button>
-                        
+
                         <button
                           onClick={() => handleAssignMentor(mentee)}
                           disabled={assigningMentor === mentee.phone}
                           className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
-                              ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
-                              : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                            ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                            : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
                             }`}
                         >
                           <UserPlusIcon className="h-4 w-4 mr-1" />
@@ -302,8 +250,8 @@ export default function MenteesList({
                         onClick={() => handleSendOnboardingEmail(mentee)}
                         disabled={sendingEmail === mentee.phone}
                         className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${sendingEmail === mentee.phone
-                            ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
-                            : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
+                          ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
+                          : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
                           }`}
                       >
                         {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
@@ -313,8 +261,8 @@ export default function MenteesList({
                           onClick={() => handleAssignMentor(mentee)}
                           disabled={assigningMentor === mentee.phone}
                           className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${assigningMentor === mentee.phone
-                              ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
-                              : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                            ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                            : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
                             }`}
                         >
                           <UserPlusIcon className="h-4 w-4 mr-1" />
@@ -333,22 +281,20 @@ export default function MenteesList({
                 <button
                   onClick={onPrevPage}
                   disabled={currentPage === 1 || loading}
-                  className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-                    currentPage === 1 || loading
+                  className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${currentPage === 1 || loading
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   Previous
                 </button>
                 <button
                   onClick={onNextPage}
                   disabled={!hasMore || loading}
-                  className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-                    !hasMore || loading
+                  className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${!hasMore || loading
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   Next
                 </button>
@@ -364,11 +310,10 @@ export default function MenteesList({
                     <button
                       onClick={onPrevPage}
                       disabled={currentPage === 1 || loading}
-                      className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                        currentPage === 1 || loading
+                      className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${currentPage === 1 || loading
                           ? 'text-gray-300 cursor-not-allowed'
                           : 'text-gray-500 hover:bg-gray-50'
-                      }`}
+                        }`}
                     >
                       <span className="sr-only">Previous</span>
                       <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -376,11 +321,10 @@ export default function MenteesList({
                     <button
                       onClick={onNextPage}
                       disabled={!hasMore || loading}
-                      className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                        !hasMore || loading
+                      className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${!hasMore || loading
                           ? 'text-gray-300 cursor-not-allowed'
                           : 'text-gray-500 hover:bg-gray-50'
-                      }`}
+                        }`}
                     >
                       <span className="sr-only">Next</span>
                       <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
