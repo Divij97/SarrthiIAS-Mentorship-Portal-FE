@@ -159,6 +159,11 @@ export default function MenteesPage() {
                 placeholder="Search by name, email, or phone..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && searchEnabled) {
+                    handleSearch();
+                  }
+                }}
                 disabled={!searchEnabled}
                 className={`w-full pl-10 pr-4 py-2 border rounded-md ${
                   searchEnabled 
