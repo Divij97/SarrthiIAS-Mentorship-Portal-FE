@@ -95,13 +95,15 @@ export default function MenteesPage() {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold text-gray-900">Mentees Management</h2>
         <div className="flex space-x-4">
+          
+          {/* TODO uncomment it after backend implementation 
           <button
             onClick={() => setShowResetPasswordModal(true)}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-orange-700 bg-orange-100 hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
           >
             <KeyIcon className="h-5 w-5 mr-2" />
             Reset Password
-          </button>
+          </button> */}
           <RegisterMenteeModal onSuccess={handleRefresh}/>
         </div>
       </div>
