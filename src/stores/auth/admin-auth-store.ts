@@ -4,6 +4,7 @@ import { AdminData } from '@/types/admin';
 import { loginAdmin, assignMenteesToCourseGroups } from '@/services/admin';
 import { Course } from '@/types/course';
 import { GroupMentorshipSession, MentorshipGroup } from '@/types/session';
+import { MenteesForCsvExport } from '@/types/mentee';
 
 interface CourseGroupsMap {
   [courseName: string]: MentorshipGroup[];
@@ -39,6 +40,8 @@ interface AdminAuthState {
   getGroupFriendlyName: (courseName: string, groupId: string) => string | null;
   assignMenteesToCourseGroups: (courseId: string) => Promise<{ success: boolean; message?: string }>;
   removeCourse: (courseId: string) => void;
+  allMentees: MenteesForCsvExport[] | null;
+  setAllMentees: (mentees: MenteesForCsvExport[]) => void;
 }
 
 const initialState: AdminAuthState = {
@@ -67,7 +70,9 @@ const initialState: AdminAuthState = {
   getMentorEmailByPhone: () => null,
   getGroupFriendlyName: () => null,
   assignMenteesToCourseGroups: async () => ({ success: false }),
-  removeCourse: () => {}
+  removeCourse: () => {},
+  allMentees: null,
+  setAllMentees: () => {}
 };
 
 export const useAdminAuthStore = create<AdminAuthState>()(
@@ -206,7 +211,9 @@ export const useAdminAuthStore = create<AdminAuthState>()(
             courses: state.adminData?.courses?.filter(course => course.id !== courseId) || []
           }
         }));
-      }
+      },
+
+      setAllMentees: (mentees) => set({ allMentees: mentees })
     }),
     {
       name: 'admin-auth-storage',

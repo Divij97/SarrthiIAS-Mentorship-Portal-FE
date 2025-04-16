@@ -4,14 +4,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { RegisterMenteeModal } from '@/components/app/admin/mentees/register-mentee-modal';
 import MenteesList from '@/components/Admin/mentees/MenteesList';
-import { fetchMentees, MenteesFilters } from '@/services/admin';
+import { fetchMentees, MenteesFilters, fullMenteesList } from '@/services/admin';
 import { toast } from 'react-hot-toast';
 import { MenteesForCsvExport } from '@/types/mentee';
-import { KeyIcon } from '@heroicons/react/24/outline';
+import { KeyIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import ResetPasswordModal from '@/components/Admin/ResetPasswordModal';
 
 export default function MenteesPage() {
-  const { adminData, getCourseGroups, getAuthHeader } = useAdminAuthStore();
+  const { adminData, getCourseGroups, getAuthHeader, setAllMentees, allMentees } = useAdminAuthStore();
   const [mentees, setMentees] = useState<MenteesForCsvExport[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
@@ -20,6 +20,10 @@ export default function MenteesPage() {
     skip: 0
   });
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [searchEnabled, setSearchEnabled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [fetchingAllMentees, setFetchingAllMentees] = useState(false);
+  const [searchResults, setSearchResults] = useState<MenteesForCsvExport[] | null>(null);
 
   useEffect(() => {
     fetchMenteesData();
@@ -37,6 +41,37 @@ export default function MenteesPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFetchAllMentees = async () => {
+    try {
+      setFetchingAllMentees(true);
+      const response = await fullMenteesList(getAuthHeader());
+      setAllMentees(response.mentees);
+      setSearchEnabled(true);
+      toast.success('Successfully fetched all mentees');
+    } catch (error) {
+      console.error('Error fetching all mentees:', error);
+      toast.error('Failed to fetch all mentees');
+    } finally {
+      setFetchingAllMentees(false);
+    }
+  };
+
+  const handleSearch = () => {
+    if (!allMentees || !searchQuery.trim()) {
+      setSearchResults(null);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    const results = allMentees.filter(mentee => 
+      mentee.name.toLowerCase().includes(query) ||
+      mentee.email.toLowerCase().includes(query) ||
+      mentee.phone.toLowerCase().includes(query)
+    );
+
+    setSearchResults(results);
   };
 
   if (!adminData) {
@@ -107,7 +142,117 @@ export default function MenteesPage() {
           <RegisterMenteeModal onSuccess={handleRefresh}/>
         </div>
       </div>
-      
+
+      {/* Search all mentees search bar */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <div className="flex flex-col space-y-2">
+          <h3 className="text-sm font-medium text-gray-700">Search All Mentees</h3>
+          <div className="flex space-x-4">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Search by name, email, or phone..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                disabled={!searchEnabled}
+                className={`w-full pl-10 pr-4 py-2 border rounded-md ${
+                  searchEnabled 
+                    ? 'border-gray-300 focus:ring-orange-500 focus:border-orange-500' 
+                    : 'bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed'
+                }`}
+              />
+              <MagnifyingGlassIcon 
+                className={`absolute left-3 top-2.5 h-5 w-5 ${
+                  searchEnabled ? 'text-gray-400' : 'text-gray-300'
+                }`}
+              />
+            </div>
+            {searchEnabled ? (
+              <button
+                onClick={handleSearch}
+                className="px-4 py-2 rounded-md text-sm font-medium bg-orange-100 text-orange-700 hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              >
+                Search
+              </button>
+            ) : (
+              <button
+                onClick={handleFetchAllMentees}
+                disabled={fetchingAllMentees}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${
+                  fetchingAllMentees
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-orange-100 text-orange-700 hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500'
+                }`}
+              >
+                {fetchingAllMentees ? 'Fetching...' : 'Fetch All Mentees'}
+              </button>
+            )}
+          </div>
+          {searchEnabled && (
+            <p className="text-xs text-gray-500">
+              Search through all mentees by their name, email, or phone number
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Search Results */}
+      {searchResults !== null && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900">
+              Search Results ({searchResults.length})
+            </h3>
+          </div>
+          <div className="divide-y divide-gray-200">
+            {searchResults.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                No mentees found matching your search.
+              </div>
+            ) : (
+              <div className="hidden md:block overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Phone
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Assigned Mentor
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {searchResults.map((mentee) => (
+                      <tr key={mentee.phone}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {mentee.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {mentee.email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {mentee.phone}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <MenteesList 
         courses={courses} 
         groups={groups} 
