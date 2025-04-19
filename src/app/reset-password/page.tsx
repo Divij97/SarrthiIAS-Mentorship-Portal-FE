@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
@@ -20,21 +20,7 @@ export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [countdown, setCountdown] = useState(60);
-  const [canResend, setCanResend] = useState(false);
-  const [resending, setResending] = useState(false);
   const router = useRouter();
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (countdown > 0 && !canResend) {
-      timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-    } else if (countdown === 0 && !canResend) {
-      setCanResend(true);
-    }
-    return () => clearTimeout(timer);
-  }, [countdown, canResend]);
 
   const validateInputs = () => {
     if (!phone) {
@@ -68,16 +54,11 @@ export default function ResetPasswordPage() {
   };
 
   const handleMenteeSignup = () => {
-    
-    // Clear OTP to prevent future redirects back to reset-password
     clearMenteeOTP?.();
-    
-    // Mark that OTP has been verified
     setHasVerifiedOTP?.(true);
 
     const hasOneOnOneMentorship = menteeResponse?.enrolledCourses.some((enrolledCourse) => enrolledCourse.course.isOneOnOneMentorshipCourse) && !menteeResponse?.assignedMentor?.phone;
     
-    // Store necessary information for signup
     localStorage.setItem('tempMenteeData', JSON.stringify({
       phone,
       password: newPassword,
@@ -85,69 +66,19 @@ export default function ResetPasswordPage() {
       hasOneOnOneMentorship: hasOneOnOneMentorship || false 
     }));
     
-    console.log("Redirecting to signup from handleMenteeSignup");
     router.push('/signup');
   };
 
   const handleMentorSignup = () => {
-    
-    // Clear OTP to prevent future redirects back to reset-password
-    // clearMentorOTP?.();
-    
-    // Mark that OTP has been verified
     setHasVerifiedOTP?.(true);
     
-    // Store necessary information for signup
     localStorage.setItem('tempMentorData', JSON.stringify({
       phone,
       password: newPassword,
       verifiedOtp: otp
     }));
     
-    console.log("Redirecting to mentor-signup");
     router.push('/mentor-signup');
-  };
-
-  const handleResendOtp = async () => {
-    if (!phone) {
-      setError('Phone number not found');
-      return;
-    }
-
-    try {
-      setResending(true);
-      setError('');
-
-      const response = await fetch(`/v1/resend-otp`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': getAuthHeader() || ''
-        },
-        body: JSON.stringify({ phone })
-      });
-      
-      if (!response.ok) {
-        try {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to resend OTP');
-        } catch (parseError) {
-          // If we can't parse the error, use the status text
-          throw new Error(`Failed to resend OTP: ${response.statusText}`);
-        }
-      }
-      
-      setCountdown(60);
-      setCanResend(false);
-      
-      // Show success message
-      alert('OTP has been resent to your phone number');
-    } catch (error) {
-      console.error('Failed to resend OTP:', error);
-      setError(error instanceof Error ? error.message : 'Failed to resend OTP. Please try again.');
-    } finally {
-      setResending(false);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -161,34 +92,14 @@ export default function ResetPasswordPage() {
       setLoading(true);
       setError('');
 
-      // Set hasVerifiedOTP early
       setHasVerifiedOTP?.(true);
       
-      // Clear OTP to prevent future redirects
       if (userType === UserType.MENTOR) {
         clearMentorOTP?.();
       } else {
         clearMenteeOTP?.();
       }
 
-      // Store necessary information in localStorage
-      // const navigateData = {
-      //   phone,
-      //   password: newPassword,
-      //   verifiedOtp: otp
-      // };
-      
-      // if (userType === UserType.MENTOR) {
-      //   localStorage.setItem('tempMentorData', JSON.stringify(navigateData));
-      //   console.log("Setting up mentor navigation to /mentor-signup");
-      //   // router.push('/mentor-signup');
-      // } else {
-      //   localStorage.setItem('tempMenteeData', JSON.stringify(navigateData));
-      //   console.log("Setting up mentee navigation to /signup");
-      //   // router.push('/signup');
-      // }
-
-      // Still try the normal navigation functions
       if (userType === UserType.MENTOR) {
         handleMentorSignup();
       } else {
@@ -252,61 +163,41 @@ export default function ResetPasswordPage() {
                   required
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900"
-                  placeholder="Enter OTP"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                 />
-              </div>
-              <div className="mt-2 flex justify-between items-center">
-                <span className="text-sm text-gray-500">
-                  {!canResend && countdown > 0 ? `Resend OTP in ${countdown}s` : ''}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  disabled={!canResend || resending}
-                  className={`text-sm font-medium ${
-                    canResend && !resending
-                      ? 'text-orange-600 hover:text-orange-500'
-                      : 'text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  {resending ? 'Sending...' : 'Resend OTP'}
-                </button>
               </div>
             </div>
 
             <div>
-              <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
-                {'Create Password'}
+              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+                New Password
               </label>
               <div className="mt-1">
                 <input
-                  id="new-password"
-                  name="new-password"
+                  id="newPassword"
+                  name="newPassword"
                   type="password"
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900"
-                  placeholder={'Create a strong password'}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                 Confirm Password
               </label>
               <div className="mt-1">
                 <input
-                  id="confirm-password"
-                  name="confirm-password"
+                  id="confirmPassword"
+                  name="confirmPassword"
                   type="password"
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-900"
-                  placeholder="Confirm your password"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                 />
               </div>
             </div>
@@ -315,9 +206,13 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300"
+                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                  loading
+                    ? 'bg-orange-400 cursor-not-allowed'
+                    : 'bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500'
+                }`}
               >
-                {loading ? 'Processing...' : 'Continue to Sign Up'}
+                {loading ? 'Processing...' : 'Continue'}
               </button>
             </div>
           </form>

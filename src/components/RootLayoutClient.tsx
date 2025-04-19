@@ -62,12 +62,12 @@ export default function RootLayoutClient({
       }
       
       // If authenticated but has OTP and hasn't verified it yet, redirect to reset password
-      if (isAuthenticated && hasOTP && !hasVerifiedOTP && !pathname.startsWith('/reset-password') && !isInSignupFlow) {
-        console.log("RootLayoutClient detected OTP that hasn't been verified, redirecting to reset password");
-        router.replace(`/reset-password?phone=${phone}`);
-        setIsLoading(false);
-        return;
-      }
+      // if (isAuthenticated && hasOTP && !hasVerifiedOTP && !pathname.startsWith('/reset-password') && !isInSignupFlow) {
+      //   console.log("RootLayoutClient detected OTP that hasn't been verified, redirecting to reset password");
+      //   router.replace(`/reset-password?phone=${phone}`);
+      //   setIsLoading(false);
+      //   return;
+      // }
 
       // Check for valid user based on userType
       const hasValidUser = userType === UserType.MENTOR 

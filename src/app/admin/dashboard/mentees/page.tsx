@@ -7,9 +7,11 @@ import MenteesList from '@/components/Admin/mentees/MenteesList';
 import { fetchMentees, MenteesFilters, fullMenteesList } from '@/services/admin';
 import { toast } from 'react-hot-toast';
 import { MenteesForCsvExport } from '@/types/mentee';
-import { KeyIcon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { KeyIcon, MagnifyingGlassIcon, PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import ResetPasswordModal from '@/components/Admin/ResetPasswordModal';
 import AssignToCourseModal from '@/components/Admin/mentees/AssignToCourseModal';
+import { AssignMentorModal } from '@/components/Admin/mentees/assign-mentor-modal';
+import { assignMentorToMentee } from '@/services/admin'
 
 export default function MenteesPage() {
   const { adminData, getCourseGroups, getAuthHeader, setAllMentees, allMentees } = useAdminAuthStore();
@@ -27,6 +29,9 @@ export default function MenteesPage() {
   const [searchResults, setSearchResults] = useState<MenteesForCsvExport[] | null>(null);
   const [showAssignToCourseModal, setShowAssignToCourseModal] = useState(false);
   const [selectedMenteeForCourse, setSelectedMenteeForCourse] = useState<MenteesForCsvExport | null>(null);
+  const [showAssignMentorModal, setShowAssignMentorModal] = useState(false);
+  const [selectedMenteeForMentor, setSelectedMenteeForMentor] = useState<MenteesForCsvExport | null>(null);
+  const [assigningMentor, setAssigningMentor] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMenteesData();
@@ -82,6 +87,43 @@ export default function MenteesPage() {
     setSearchResults(results);
   };
 
+  const handleAssignMentor = async (mentorPhone: string) => {
+    if (!getAuthHeader || !selectedMenteeForMentor || !mentorPhone) return;
+
+    setAssigningMentor(selectedMenteeForMentor.phone);
+    try {
+      await assignMentorToMentee(
+        selectedMenteeForMentor.phone,
+        {
+          mentorUserName: mentorPhone,
+          mentee: {
+            n: selectedMenteeForMentor.name,
+            p: selectedMenteeForMentor.phone,
+            e: selectedMenteeForMentor.email
+          }
+        },
+        getAuthHeader()
+      );
+
+      toast.success(`Mentor assigned successfully to ${selectedMenteeForMentor.name}`);
+      setShowAssignMentorModal(false);
+      setSelectedMenteeForMentor(null);
+      
+      // Re-trigger search to update the UI
+      if (searchResults !== null) {
+        handleSearch();
+      }
+      
+      // Refresh the main mentees list
+      await handleRefresh();
+    } catch (error) {
+      console.error('Failed to assign mentor:', error);
+      toast.error(`Failed to assign mentor to ${selectedMenteeForMentor.name}`);
+    } finally {
+      setAssigningMentor(null);
+    }
+  };
+
   if (!adminData) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -134,7 +176,7 @@ export default function MenteesPage() {
         <div className="flex space-x-4">
           <button
             onClick={() => setShowResetPasswordModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-orange-700 bg-orange-100 hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
           >
             <KeyIcon className="h-5 w-5 mr-2" />
             Reset User Password
@@ -231,9 +273,9 @@ export default function MenteesPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Assigned Mentor
                       </th>
-                      {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
-                      </th> */}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -251,18 +293,25 @@ export default function MenteesPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
                         </td>
-                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <button
-                            onClick={() => {
-                              setSelectedMenteeForCourse(mentee);
-                              setShowAssignToCourseModal(true);
-                            }}
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                          >
-                            <PlusIcon className="h-4 w-4 mr-1" />
-                            Assign To Course
-                          </button>
-                        </td> */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => {
+                                setSelectedMenteeForMentor(mentee);
+                                setShowAssignMentorModal(true);
+                              }}
+                              disabled={assigningMentor === mentee.phone}
+                              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                                assigningMentor === mentee.phone
+                                  ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                                  : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                              }`}
+                            >
+                              <UserPlusIcon className="h-4 w-4 mr-1" />
+                              {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -291,6 +340,17 @@ export default function MenteesPage() {
         isOpen={showResetPasswordModal}
         onClose={() => setShowResetPasswordModal(false)}
         authHeader={getAuthHeader()}
+      />
+
+      <AssignMentorModal
+        isOpen={showAssignMentorModal}
+        onClose={() => {
+          setShowAssignMentorModal(false);
+          setSelectedMenteeForMentor(null);
+        }}
+        onSubmit={handleAssignMentor}
+        mentors={adminData?.mentors || []}
+        loading={!!assigningMentor}
       />
 
       {/* <AssignToCourseModal
