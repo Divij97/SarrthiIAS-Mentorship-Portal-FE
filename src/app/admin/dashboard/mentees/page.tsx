@@ -66,25 +66,59 @@ export default function MenteesPage() {
     }
   };
 
-  const handleSearch = () => {
-    if (!allMentees || !searchQuery.trim()) {
-      setSearchResults(null);
-      return;
+  const handleSearch = async () => {
+    if (!allMentees) {
+      try {
+        setFetchingAllMentees(true);
+        const response = await fullMenteesList(getAuthHeader());
+        setAllMentees(response.mentees);
+        setSearchEnabled(true);
+        toast.success('Successfully fetched all mentees');
+        
+        // Only proceed with search after mentees are fetched
+        if (!searchQuery.trim()) {
+          setSearchResults(null);
+          return;
+        }
+
+        const query = searchQuery.toLowerCase().trim();
+        const results = response.mentees.filter(mentee => {
+          const name = mentee.name?.toLowerCase() || '';
+          const email = mentee.email?.toLowerCase() || '';
+          const phone = mentee.phone?.toLowerCase() || '';
+
+          return name.includes(query) ||
+                 email.includes(query) ||
+                 phone.includes(query);
+        });
+
+        setSearchResults(results);
+      } catch (error) {
+        console.error('Error fetching all mentees:', error);
+        toast.error('Failed to fetch all mentees');
+      } finally {
+        setFetchingAllMentees(false);
+      }
+    } else {
+      // If mentees are already fetched, proceed with search directly
+      if (!searchQuery.trim()) {
+        setSearchResults(null);
+        return;
+      }
+
+      const query = searchQuery.toLowerCase().trim();
+      const results = allMentees.filter(mentee => {
+        const name = mentee.name?.toLowerCase() || '';
+        const email = mentee.email?.toLowerCase() || '';
+        const phone = mentee.phone?.toLowerCase() || '';
+
+        return name.includes(query) ||
+               email.includes(query) ||
+               phone.includes(query);
+      });
+
+      setSearchResults(results);
     }
-
-    const query = searchQuery.toLowerCase().trim();
-    const results = allMentees.filter(mentee => {
-      // Safely handle null/undefined values
-      const name = mentee.name?.toLowerCase() || '';
-      const email = mentee.email?.toLowerCase() || '';
-      const phone = mentee.phone?.toLowerCase() || '';
-
-      return name.includes(query) ||
-             email.includes(query) ||
-             phone.includes(query);
-    });
-
-    setSearchResults(results);
   };
 
   const handleAssignMentor = async (mentorPhone: string) => {
@@ -197,49 +231,31 @@ export default function MenteesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && searchEnabled) {
+                  if (e.key === 'Enter') {
                     handleSearch();
                   }
                 }}
-                disabled={!searchEnabled}
-                className={`w-full pl-10 pr-4 py-2 border rounded-md ${
-                  searchEnabled 
-                    ? 'border-gray-300 focus:ring-orange-500 focus:border-orange-500' 
-                    : 'bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed'
-                }`}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
               />
               <MagnifyingGlassIcon 
-                className={`absolute left-3 top-2.5 h-5 w-5 ${
-                  searchEnabled ? 'text-gray-400' : 'text-gray-300'
-                }`}
+                className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
               />
             </div>
-            {searchEnabled ? (
-              <button
-                onClick={handleSearch}
-                className="px-4 py-2 rounded-md text-sm font-medium bg-orange-100 text-orange-700 hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-              >
-                Search
-              </button>
-            ) : (
-              <button
-                onClick={handleFetchAllMentees}
-                disabled={fetchingAllMentees}
-                className={`px-4 py-2 rounded-md text-sm font-medium ${
-                  fetchingAllMentees
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-orange-100 text-orange-700 hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500'
-                }`}
-              >
-                {fetchingAllMentees ? 'Fetching...' : 'Fetch All Mentees'}
-              </button>
-            )}
+            <button
+              onClick={handleSearch}
+              disabled={fetchingAllMentees}
+              className={`px-4 py-2 rounded-md text-sm font-medium ${
+                fetchingAllMentees
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-orange-100 text-orange-700 hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500'
+              }`}
+            >
+              {fetchingAllMentees ? 'Fetching...' : 'Search'}
+            </button>
           </div>
-          {searchEnabled && (
-            <p className="text-xs text-gray-500">
-              Search through all mentees by their name, email, or phone number
-            </p>
-          )}
+          <p className="text-xs text-gray-500">
+            Search through all mentees by their name, email, or phone number
+          </p>
         </div>
       </div>
 
