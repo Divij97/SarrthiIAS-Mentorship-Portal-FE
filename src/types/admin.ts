@@ -105,3 +105,8 @@ export interface GroupMentee {
     givenMains: boolean;
     assignedMentor: StrippedDownMentor;
 }
+
+export interface PasswordResetRequest {
+    newPassword: string;
+    authOtp: string; 
+}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { toast } from 'react-hot-toast';
-import { resetPasswordForUser } from '@/services/admin';
+import { resetPasswordByAdmin } from '@/services/admin';
 import { BackendError, FetchError } from '@/types/error';
 
 interface ResetPasswordModalProps {
@@ -12,14 +12,27 @@ interface ResetPasswordModalProps {
 
 export default function ResetPasswordModal({ isOpen, onClose, authHeader }: ResetPasswordModalProps) {
   const [phone, setPhone] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters long');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await resetPasswordForUser(phone, authHeader)
+      await resetPasswordByAdmin(phone, newPassword, authHeader);
 
       toast.success('Password reset successfully', {
         duration: 3000,
@@ -27,6 +40,8 @@ export default function ResetPasswordModal({ isOpen, onClose, authHeader }: Rese
       });
       onClose();
       setPhone('');
+      setNewPassword('');
+      setConfirmPassword('');
     } catch (error) {
       const errorResponse = error as FetchError<BackendError>;
       if (errorResponse.errorData && errorResponse.status) {
@@ -71,7 +86,7 @@ export default function ResetPasswordModal({ isOpen, onClose, authHeader }: Rese
                 <Dialog.Title className="text-lg font-medium text-gray-900">
                   Reset Mentee Password
                 </Dialog.Title>
-                <form onSubmit={handleSubmit} className="mt-4">
+                <form onSubmit={handleSubmit} className="mt-4 space-y-4">
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                       Phone Number
@@ -83,6 +98,34 @@ export default function ResetPasswordModal({ isOpen, onClose, authHeader }: Rese
                       onChange={(e) => setPhone(e.target.value)}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
                       placeholder="Enter mentee's phone number"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      id="new-password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
+                      placeholder="Enter new password"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
+                      Confirm Password
+                    </label>
+                    <input
+                      type="password"
+                      id="confirm-password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
+                      placeholder="Confirm new password"
                       required
                     />
                   </div>

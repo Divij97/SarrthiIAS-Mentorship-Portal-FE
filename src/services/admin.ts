@@ -1,8 +1,9 @@
-import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorshipSessionsResponse, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
+import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorshipSessionsResponse, PasswordResetRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
 import { MenteesForCsvExport } from '@/types/mentee';
 import { fetchSafe } from '@/utils/api';
+import { SHA256 } from 'crypto-js';
 
 export const loginAdmin = async (authHeader: string): Promise<AdminData> => {
   return await fetchSafe<AdminData>(`${config.api.url}/v1/admin/me`, {
@@ -303,16 +304,31 @@ export const assignMentorToMentee = async (menteeUserName: string, request: Ment
   }
 }
 
-export const resetPasswordForUser = async (username: string, authHeader: string): Promise<void> => {
-  return await fetchSafe<void>(`${config.api.url}/v1/internal/reset-password/${username}`, {
+export const resetPasswordForUser = async (username: string, request: PasswordResetRequest, authHeader: string): Promise<void> => {
+  return await fetchSafe<void>(`${config.api.url}/v1/internal/users/${username}/resetPassword`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': authHeader
-    }
+    },
+    body: JSON.stringify(request)
   });
 }
 
+export const resetPasswordByAdmin = async (username: string, newPassword: string, authHeader: string): Promise<void> => {
+  const resetPasswordRequest = {
+    username: username,
+    passwordSHA: SHA256(newPassword).toString()
+  }
+  return await fetchSafe<void>(`${config.api.url}/v1/mentees?assignMentor=false`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    },
+    body: JSON.stringify(resetPasswordRequest)
+  });
+}
 export const fullMenteesList = async (authHeader: string): Promise<MenteesResponse> => {
   const BATCH_SIZE = 300;
   let allMentees: MenteesForCsvExport[] = [];

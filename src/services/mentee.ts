@@ -3,6 +3,7 @@ import { config } from '@/config/env';
 import { useLoginStore } from '@/stores/auth/store';
 import { MentorshipGroup } from '@/types/session';
 import { StrippedDownMentor } from '@/types/mentor';
+import { fetchSafe } from '@/utils/api';
 
 export const getMenteeByPhone = async (phone: string, authHeader: string): Promise<MenteeResponse> => {
   try {
@@ -159,3 +160,14 @@ export const requestSessionCancellation = async (
     throw error;
   }
 };
+
+export const forgotPassword = async (username: string, authHeader: string): Promise<void> => {
+  return await fetchSafe<void>(`${config.api.url}/v1/internal/users/${username}/forgotPassword`, {
+    method: 'POST',
+    headers: {
+      'Authorization': authHeader,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    }
+  });
+}

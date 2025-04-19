@@ -1,18 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { Base64 } from 'js-base64';
+import { useState } from 'react';
 import { SHA256 } from 'crypto-js';
 import { useSearchParams } from 'next/navigation';
 
 import { useLoginStore } from '@/stores/auth/store';
 import { UserType } from '@/types/auth';
-import { useMentorStore } from '@/stores/mentor/store';
-import { useMenteeStore } from '@/stores/mentee/store';
-import { getMentorByPhone } from '@/services/mentors';
-import { resetUserPassword } from '@/services/login';
-import { config } from '@/config/env';
+import { resetPasswordForUser } from '@/services/admin';
+import { PasswordResetRequest } from '@/types/admin';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export default function UpdatePasswordPage() {
     const searchParams = useSearchParams();
@@ -23,34 +21,18 @@ export default function UpdatePasswordPage() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        const resetPassword = async () => {
-            if (!phone) {
-                setError('Phone number is required');
-                return;
-            }
-            const authHeader = Base64.encode(`${phone}:${SHA256(config.auth.defaultPassword).toString()}`);
-            try {
-                const resetPasswordResponse = await resetUserPassword(authHeader, phone);
-                console.log(resetPasswordResponse);
-            } catch (error) {
-                setError('Failed to reset password. Please try again.');
-                console.error('Failed to reset password:', error);
-            }
-        };
-
-        resetPassword();
-    }, [userType, phone, setError]);
-
+    const authHeader = useLoginStore.getState().getAuthHeader();
+    const router = useRouter();
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        //todo: update password
+        const passwordResetRequest: PasswordResetRequest = {
+          newPassword: SHA256(newPassword).toString(),
+          authOtp: otp
+        }
         try {
-            setLoading(true);
-            setTimeout(() => {
-                setLoading(false);
-            }, 2000);
+            await resetPasswordForUser(phone, passwordResetRequest, authHeader)
+            toast.success('Password reset successful. Please login to continue.');
+            router.push('/login');
         } catch (error) {
             console.error('Password reset error:', error);
             setError('Failed to process your request. Please try again.');

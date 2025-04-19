@@ -10,6 +10,7 @@ import { useMentorStore } from '@/stores/mentor/store';
 import { UserType } from '@/types/auth';
 import { MentorResponse } from '@/types/mentor';
 import { MenteeResponse } from '@/types/mentee';
+import { forgotPassword } from '@/services/mentee';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -100,6 +101,19 @@ export default function LoginPage() {
       }, 500);
     }
   };
+
+  const handleForgotPassword = async () => {
+    if (!phone || phone.length !== 10) {
+      setError('Please enter a valid phone number first');
+      return;
+    }
+    try {
+      await forgotPassword(phone, getAuthHeader());
+      router.push(`/update-password?phone=${phone}`);
+    } catch (error) {
+      console.error('Forgot password error:', error);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -203,22 +217,16 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* <div className="text-sm text-right">
+            <div className="text-sm text-right">
               <button 
                 type="button"
-                onClick={() => {
-                  if (!phone || phone.length !== 10) {
-                    setError('Please enter a valid phone number first');
-                    return;
-                  }
-                  router.push(`/update-password?phone=${phone}`);
-                }}
+                onClick={handleForgotPassword}
                 className="font-medium text-orange-600 hover:text-orange-500"
                 disabled={isFirstTimeLogin}
               >
                 Forgot your password?
               </button>
-            </div> */}
+            </div>
 
             {error && (
               <div className="text-red-600 text-sm">{error}</div>

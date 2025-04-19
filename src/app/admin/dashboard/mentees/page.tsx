@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { RegisterMenteeModal } from '@/components/app/admin/mentees/register-mentee-modal';
 import MenteesList from '@/components/Admin/mentees/MenteesList';
 import { fetchMentees, MenteesFilters, fullMenteesList } from '@/services/admin';
 import { toast } from 'react-hot-toast';
 import { MenteesForCsvExport } from '@/types/mentee';
-import { KeyIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { KeyIcon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
 import ResetPasswordModal from '@/components/Admin/ResetPasswordModal';
+import AssignToCourseModal from '@/components/Admin/mentees/AssignToCourseModal';
 
 export default function MenteesPage() {
   const { adminData, getCourseGroups, getAuthHeader, setAllMentees, allMentees } = useAdminAuthStore();
@@ -24,6 +25,8 @@ export default function MenteesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [fetchingAllMentees, setFetchingAllMentees] = useState(false);
   const [searchResults, setSearchResults] = useState<MenteesForCsvExport[] | null>(null);
+  const [showAssignToCourseModal, setShowAssignToCourseModal] = useState(false);
+  const [selectedMenteeForCourse, setSelectedMenteeForCourse] = useState<MenteesForCsvExport | null>(null);
 
   useEffect(() => {
     fetchMenteesData();
@@ -87,14 +90,8 @@ export default function MenteesPage() {
     );
   }
 
-  // Extract courses from adminData
-  const courses = adminData.courses?.map(course => ({
-    id: course.id,
-    name: course.name
-  })) || [];
-
   // Get all groups from all courses
-  const groups = courses.flatMap(course => {
+  const groups = (adminData.courses || []).flatMap(course => {
     const courseGroups = getCourseGroups(course.id) || [];
     return courseGroups.map(group => ({
       groupId: group.groupId,
@@ -135,15 +132,13 @@ export default function MenteesPage() {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold text-gray-900">Mentees Management</h2>
         <div className="flex space-x-4">
-          
-          {/* TODO uncomment it after backend implementation 
           <button
             onClick={() => setShowResetPasswordModal(true)}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-orange-700 bg-orange-100 hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
           >
             <KeyIcon className="h-5 w-5 mr-2" />
-            Reset Password
-          </button> */}
+            Reset User Password
+          </button>
           <RegisterMenteeModal onSuccess={handleRefresh}/>
         </div>
       </div>
@@ -236,6 +231,9 @@ export default function MenteesPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Assigned Mentor
                       </th>
+                      {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th> */}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -253,6 +251,18 @@ export default function MenteesPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
                         </td>
+                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <button
+                            onClick={() => {
+                              setSelectedMenteeForCourse(mentee);
+                              setShowAssignToCourseModal(true);
+                            }}
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                          >
+                            <PlusIcon className="h-4 w-4 mr-1" />
+                            Assign To Course
+                          </button>
+                        </td> */}
                       </tr>
                     ))}
                   </tbody>
@@ -264,7 +274,7 @@ export default function MenteesPage() {
       )}
 
       <MenteesList 
-        courses={courses} 
+        courses={adminData.courses || []} 
         groups={groups} 
         mentees={mentees}
         loading={loading}
@@ -282,6 +292,18 @@ export default function MenteesPage() {
         onClose={() => setShowResetPasswordModal(false)}
         authHeader={getAuthHeader()}
       />
+
+      {/* <AssignToCourseModal
+        isOpen={showAssignToCourseModal}
+        onClose={() => {
+          setShowAssignToCourseModal(false);
+          setSelectedMenteeForCourse(null);
+        }}
+        mentee={selectedMenteeForCourse!}
+        courses={adminData.courses || []}
+        authHeader={getAuthHeader()}
+        onSuccess={handleRefresh}
+      /> */}
     </div>
   );
 } 
