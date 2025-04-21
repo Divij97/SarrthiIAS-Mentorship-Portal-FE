@@ -48,11 +48,13 @@ export default function MenteesList({
     }
 
     if (currentFilters.searchQuery && currentFilters.searchQuery.trim()) {
-      filteredMentees = filteredMentees.filter(mentee => 
-        mentee.name.toLowerCase().includes(currentFilters.searchQuery.toLowerCase()) ||
-        mentee.email.toLowerCase().includes(currentFilters.searchQuery.toLowerCase()) ||
-        mentee.phone.includes(currentFilters.searchQuery)
-      );
+      const query = currentFilters.searchQuery.toLowerCase().trim();
+      filteredMentees = filteredMentees.filter(mentee => {
+        const name = mentee.name?.toLowerCase() || '';
+        const email = mentee.email?.toLowerCase() || '';
+        const phone = mentee.phone || '';
+        return name.includes(query) || email.includes(query) || phone.includes(query);
+      });
     }
 
     if (currentFilters.limit === 99999) {
