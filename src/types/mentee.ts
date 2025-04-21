@@ -224,6 +224,7 @@ export interface MenteesForCsvExport {
   email: string;
   attemptCount: number;
   assignedGroupName: string;
+  assignedCourses: string[];
   givenInterview: boolean;
   givenMains: boolean;
   menteeUpscExperience: MenteeUpscExperience;

@@ -143,6 +143,7 @@ export interface MenteesFilters {
   groupId?: string;
   limit: number;
   skip?: number;
+  searchQuery?: string;
 }
 
 export const fetchMentees = async (filters: MenteesFilters, authHeader: string): Promise<MenteesResponse> => {

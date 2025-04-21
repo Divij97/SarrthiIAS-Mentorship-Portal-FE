@@ -70,7 +70,7 @@ export default function MenteeMobileCard({
           >
             {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
           </button>
-          {!mentee.assignedMentor && (
+          {
             <button
               onClick={() => onAssignMentor(mentee)}
               disabled={assigningMentor === mentee.phone}
@@ -83,7 +83,7 @@ export default function MenteeMobileCard({
               <UserPlusIcon className="h-4 w-4 mr-1" />
               {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
             </button>
-          )}
+          }
         </div>
       </div>
     </div>
