@@ -139,14 +139,37 @@ export default function MenteesPage() {
         getAuthHeader()
       );
 
+      // Find the mentor details from adminData
+      const assignedMentor = adminData?.mentors.find(mentor => mentor.phone === mentorPhone);
+      
+      // Update the mentee in allMentees with the new mentor details
+      if (allMentees) {
+        const updatedMentees = allMentees.map(mentee => 
+          mentee.phone === selectedMenteeForMentor.phone
+            ? { ...mentee, assignedMentor }
+            : mentee
+        );
+        setAllMentees(updatedMentees);
+        
+        // Update search results if they exist
+        if (searchResults !== null) {
+          const query = searchQuery.toLowerCase().trim();
+          const updatedResults = updatedMentees.filter(mentee => {
+            const name = mentee.name?.toLowerCase() || '';
+            const email = mentee.email?.toLowerCase() || '';
+            const phone = mentee.phone?.toLowerCase() || '';
+
+            return name.includes(query) ||
+                   email.includes(query) ||
+                   phone.includes(query);
+          });
+          setSearchResults(updatedResults);
+        }
+      }
+
       toast.success(`Mentor assigned successfully to ${selectedMenteeForMentor.name}`);
       setShowAssignMentorModal(false);
       setSelectedMenteeForMentor(null);
-      
-      // Re-trigger search to update the UI
-      if (searchResults !== null) {
-        handleSearch();
-      }
       
       // Refresh the main mentees list
       await handleRefresh();
@@ -273,66 +296,104 @@ export default function MenteesPage() {
                 No mentees found matching your search.
               </div>
             ) : (
-              <div className="hidden md:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Phone
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Assigned Mentor
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {searchResults.map((mentee) => (
-                      <tr key={mentee.phone}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {mentee.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {mentee.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {mentee.phone}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => {
-                                setSelectedMenteeForMentor(mentee);
-                                setShowAssignMentorModal(true);
-                              }}
-                              disabled={assigningMentor === mentee.phone}
-                              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                                assigningMentor === mentee.phone
-                                  ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
-                                  : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
-                              }`}
-                            >
-                              <UserPlusIcon className="h-4 w-4 mr-1" />
-                              {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
-                            </button>
-                          </div>
-                        </td>
+              <>
+                {/* Desktop View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Phone
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Assigned Mentor
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {searchResults.map((mentee) => (
+                        <tr key={mentee.phone}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {mentee.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {mentee.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {mentee.phone}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedMenteeForMentor(mentee);
+                                  setShowAssignMentorModal(true);
+                                }}
+                                disabled={assigningMentor === mentee.phone}
+                                className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                                  assigningMentor === mentee.phone
+                                    ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                                    : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                                }`}
+                              >
+                                <UserPlusIcon className="h-4 w-4 mr-1" />
+                                {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile View */}
+                <div className="md:hidden">
+                  <div className="divide-y divide-gray-200">
+                    {searchResults.map((mentee) => (
+                      <div key={mentee.phone} className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-900">{mentee.name}</h3>
+                            <p className="text-sm text-gray-500">{mentee.email}</p>
+                            <p className="text-sm text-gray-500">{mentee.phone}</p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              Mentor: {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setSelectedMenteeForMentor(mentee);
+                              setShowAssignMentorModal(true);
+                            }}
+                            disabled={assigningMentor === mentee.phone}
+                            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                              assigningMentor === mentee.phone
+                                ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                                : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                            }`}
+                          >
+                            <UserPlusIcon className="h-4 w-4 mr-1" />
+                            {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
+                          </button>
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>

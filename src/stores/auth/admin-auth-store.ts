@@ -145,7 +145,8 @@ export const useAdminAuthStore = create<AdminAuthState>()(
           adminData: null,
           error: '',
           loading: false,
-          _authHeader: null
+          _authHeader: null,
+          allMentees: null
         });
       },
       setCourseGroups: (courseName, groups) => set((state) => ({
