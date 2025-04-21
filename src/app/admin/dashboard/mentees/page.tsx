@@ -35,7 +35,10 @@ export default function MenteesPage() {
 
   useEffect(() => {
     fetchMenteesData();
-  }, [filters]); // Add filters as dependency
+    if (!allMentees) {
+      handleFetchAllMentees();
+    }
+  }, [filters]);
 
   const fetchMenteesData = async () => {
     try {
@@ -68,57 +71,27 @@ export default function MenteesPage() {
 
   const handleSearch = async () => {
     if (!allMentees) {
-      try {
-        setFetchingAllMentees(true);
-        const response = await fullMenteesList(getAuthHeader());
-        setAllMentees(response.mentees);
-        setSearchEnabled(true);
-        toast.success('Successfully fetched all mentees');
-        
-        // Only proceed with search after mentees are fetched
-        if (!searchQuery.trim()) {
-          setSearchResults(null);
-          return;
-        }
-
-        const query = searchQuery.toLowerCase().trim();
-        const results = response.mentees.filter(mentee => {
-          const name = mentee.name?.toLowerCase() || '';
-          const email = mentee.email?.toLowerCase() || '';
-          const phone = mentee.phone?.toLowerCase() || '';
-
-          return name.includes(query) ||
-                 email.includes(query) ||
-                 phone.includes(query);
-        });
-
-        setSearchResults(results);
-      } catch (error) {
-        console.error('Error fetching all mentees:', error);
-        toast.error('Failed to fetch all mentees');
-      } finally {
-        setFetchingAllMentees(false);
-      }
-    } else {
-      // If mentees are already fetched, proceed with search directly
-      if (!searchQuery.trim()) {
-        setSearchResults(null);
-        return;
-      }
-
-      const query = searchQuery.toLowerCase().trim();
-      const results = allMentees.filter(mentee => {
-        const name = mentee.name?.toLowerCase() || '';
-        const email = mentee.email?.toLowerCase() || '';
-        const phone = mentee.phone?.toLowerCase() || '';
-
-        return name.includes(query) ||
-               email.includes(query) ||
-               phone.includes(query);
-      });
-
-      setSearchResults(results);
+      toast.error('Please wait while we fetch all mentees first');
+      return;
     }
+
+    if (!searchQuery.trim()) {
+      setSearchResults(null);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    const results = allMentees.filter(mentee => {
+      const name = mentee.name?.toLowerCase() || '';
+      const email = mentee.email?.toLowerCase() || '';
+      const phone = mentee.phone?.toLowerCase() || '';
+
+      return name.includes(query) ||
+             email.includes(query) ||
+             phone.includes(query);
+    });
+
+    setSearchResults(results);
   };
 
   const handleAssignMentor = async (mentorPhone: string) => {
