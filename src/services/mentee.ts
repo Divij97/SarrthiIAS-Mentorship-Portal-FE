@@ -171,3 +171,13 @@ export const forgotPassword = async (username: string, authHeader: string): Prom
     }
   });
 }
+
+export const refreshSessions = async (authHeader: string): Promise<MenteeResponse> => {
+  return await fetchSafe<MenteeResponse>(`${config.api.url}/v1/mentees/me`, {
+    method: 'GET',
+    headers: {
+      'Authorization': authHeader,
+      'Content-Type': 'application/json',
+    }
+  });
+}

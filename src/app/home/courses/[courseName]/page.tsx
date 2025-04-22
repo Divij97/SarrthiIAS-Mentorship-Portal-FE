@@ -6,7 +6,7 @@ import { useMenteeStore } from '@/stores/mentee/store';
 import { useLoginStore } from '@/stores/auth/store';
 import { getGroupById, bookOnDemandSession } from '@/services/mentee';
 import { GroupMentorshipSession } from '@/types/session';
-import { VideoCameraIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { VideoCameraIcon, ClockIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import MenteeSessions from '@/components/Courses/MenteeSessions';
 import { toast } from 'react-hot-toast';
 import CourseDocuments from '@/components/Courses/CourseDocuments';
@@ -19,7 +19,7 @@ export default function CourseDetailsPage({
   const router = useRouter();
   const { courseName } = use(params);
   const courseId = decodeURIComponent(courseName);
-  const { getGroupIdByCourseName } = useMenteeStore();
+  const { getGroupIdByCourseName, refreshSessions } = useMenteeStore();
   const authHeader = useLoginStore((state) => state.getAuthHeader());
   const [groupSessions, setGroupSessions] = useState<GroupMentorshipSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,6 +121,14 @@ export default function CourseDetailsPage({
     });
   };
 
+  const handleSessionsRefresh = async () => {
+    try {
+      await refreshSessions(authHeader || '');
+    } catch (error) {
+      console.error('Error refreshing sessions:', error);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="bg-white rounded-lg shadow-lg p-8">
@@ -190,10 +198,21 @@ export default function CourseDetailsPage({
         mentorshipSessions && (
           <div className="bg-white rounded-lg shadow-lg p-8">
             <div className="border-b border-gray-200 pb-4 mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">Course Schedule</h2>
-              <p className="mt-2 text-sm text-gray-500">
-                You have {Object.keys(mentorshipSessions).length} mentorship sessions scheduled
-              </p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">Course Schedule</h2>
+                  <p className="mt-2 text-sm text-gray-500">
+                    You have {Object.keys(mentorshipSessions).length} mentorship sessions scheduled
+                  </p>
+                </div>
+                <button
+                  onClick={handleSessionsRefresh}
+                  className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
+                >
+                  <ArrowPathIcon className="h-4 w-4 mr-2" />
+                  Refresh
+                </button>
+              </div>
             </div>
             <MenteeSessions 
               sessions={mentorshipSessions} 
