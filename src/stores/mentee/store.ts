@@ -44,6 +44,9 @@ export const useMenteeStore = create<MenteeStore>()(
         const response = await refreshSessions(authHeader);
         set({ menteeResponse: {
           ...response,
+          assignedMentor: {
+            ...response.assignedMentor,
+          },
           mentorshipSessions: {
             ...response.mentorshipSessions
           }
