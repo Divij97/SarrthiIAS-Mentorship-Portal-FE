@@ -143,9 +143,9 @@ export default function CourseDetailsPage({
         <div className="mt-6 space-y-2">
           <p className="text-sm text-gray-500">
             Course Type: {course.isOneOnOneMentorshipCourse ? 'One-on-One Mentorship' : 'Group Mentorship'}
-            {course.isOneOnOneMentorshipCourse && mentor && (
+            {course.isOneOnOneMentorshipCourse && (
               <span className="block mt-1">
-                Your Mentor: {mentor.name} ({mentor.email})
+                {mentor != null && (mentor.name !== undefined || mentor.email !== undefined)? `Your Mentor: ${mentor.name} (${mentor.email})` : `You'll be assigned a mentor shortly.`}
               </span>
             )}
           </p>
@@ -195,7 +195,7 @@ export default function CourseDetailsPage({
           <p className="text-red-500">{error}</p>
         </div>
       ) : course.isOneOnOneMentorshipCourse ? (
-        mentorshipSessions && (
+        mentorshipSessions ? (
           <div className="bg-white rounded-lg shadow-lg p-8">
             <div className="border-b border-gray-200 pb-4 mb-6">
               <div className="flex justify-between items-center">
@@ -218,6 +218,17 @@ export default function CourseDetailsPage({
               sessions={mentorshipSessions} 
               mentor={mentor}
             />
+          </div>
+        ) : (
+          <div className="flex justify-between items-center bg-white rounded-lg shadow-lg p-8">
+            <p className="text-gray-500">No sessions scheduled yet.</p>
+            <button
+                  onClick={handleSessionsRefresh}
+                  className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
+                >
+                  <ArrowPathIcon className="h-4 w-4 mr-2" />
+                  Refresh
+                </button>
           </div>
         )
       ) : getGroupIdByCourseName(courseId) === "UNASSIGNED" ? (
