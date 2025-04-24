@@ -4,7 +4,9 @@ import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useLoginStore } from '@/stores/auth/store';
 import { useMentorStore } from '@/stores/mentor/store';
+import { useMenteeStore } from '@/stores/mentee/store';
 import { getMentorByPhone } from '@/services/mentors';
+import { getMenteeByPhone } from '@/services/mentee';
 import ResponsiveNavbar from '@/components/Home/ResponsiveNavbar';
 import { UserType } from '@/types/auth';
 
@@ -17,6 +19,7 @@ export default function HomeLayout({
   const pathname = usePathname();
   const { userType, phone, getAuthHeader, logout } = useLoginStore();
   const { setMentorResponse } = useMentorStore();
+  const { setMenteeResponse } = useMenteeStore();
   const refreshInProgress = useRef(false);
   const mountCount = useRef(0);
 
@@ -27,16 +30,15 @@ export default function HomeLayout({
       strictMode: true
     });
 
-    const refreshMentorData = async () => {
+    const refreshData = async () => {
       // Prevent concurrent refreshes
       if (refreshInProgress.current) {
         console.log('Refresh already in progress, skipping');
         return;
       }
 
-      // Only fetch mentor data if user is a mentor
-      if (userType !== UserType.MENTOR || !phone) {
-        console.log('Skipping refresh - not a mentor or no phone', { userType, phone });
+      if (!phone) {
+        console.log('Skipping refresh - no phone', { phone });
         return;
       }
 
@@ -48,25 +50,35 @@ export default function HomeLayout({
 
       try {
         refreshInProgress.current = true;
-        console.log('Fetching mentor data for', phone, 'Mount count:', mountCount.current);
-        const mentorData = await getMentorByPhone(phone, authHeader);
-        console.log('Successfully fetched mentor data');
-        setMentorResponse(mentorData);
+        
+        if (userType === UserType.MENTOR) {
+          console.log('Fetching mentor data for', phone, 'Mount count:', mountCount.current);
+          const mentorData = await getMentorByPhone(phone, authHeader);
+          console.log('Successfully fetched mentor data');
+          setMentorResponse(mentorData);
+        } else if (userType === UserType.MENTEE && pathname.includes('/courses')) {
+          console.log('Fetching mentee data for', phone, 'Mount count:', mountCount.current);
+          const menteeData = await getMenteeByPhone(phone, authHeader);
+          console.log('Successfully fetched mentee data');
+          if (menteeData && menteeData.mentee) {
+            setMenteeResponse(menteeData);
+          }
+        }
       } catch (error) {
-        // console.error('Failed to refresh mentor data:', error);
+        console.error('Failed to refresh data:', error);
       } finally {
         refreshInProgress.current = false;
       }
     };
 
     // Initial load and refresh
-    refreshMentorData();
+    refreshData();
 
     // Handle visibility changes
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         console.log('Page became visible, refreshing data');
-        refreshMentorData();
+        refreshData();
       }
     };
 
@@ -75,7 +87,7 @@ export default function HomeLayout({
       console.log('Cleaning up effect, mount count:', mountCount.current);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [userType, phone, getAuthHeader, setMentorResponse]);
+  }, [userType, phone, getAuthHeader, setMentorResponse, setMenteeResponse, pathname]);
 
   const handleLogout = () => {
     logout();
