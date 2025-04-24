@@ -60,7 +60,7 @@ export default function MenteeSessions({ sessions, mentor }: MenteeSessionsProps
           
           return (
             <div
-              key={session.id}
+              key={session.id + session.date}
               className="bg-white rounded-lg shadow p-6 border border-gray-200"
             >
               <div className="flex justify-between items-start">

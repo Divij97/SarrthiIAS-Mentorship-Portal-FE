@@ -21,14 +21,8 @@ export default function HomeLayout({
   const { setMentorResponse } = useMentorStore();
   const { setMenteeResponse } = useMenteeStore();
   const refreshInProgress = useRef(false);
-  const mountCount = useRef(0);
 
   useEffect(() => {
-    mountCount.current += 1;
-    console.log(`Component mounted ${mountCount.current} times`, {
-      isDevelopment: process.env.NODE_ENV === 'development',
-      strictMode: true
-    });
 
     const refreshData = async () => {
       // Prevent concurrent refreshes
@@ -52,12 +46,12 @@ export default function HomeLayout({
         refreshInProgress.current = true;
         
         if (userType === UserType.MENTOR) {
-          console.log('Fetching mentor data for', phone, 'Mount count:', mountCount.current);
+          console.log('Fetching mentor data for', phone);
           const mentorData = await getMentorByPhone(phone, authHeader);
           console.log('Successfully fetched mentor data');
           setMentorResponse(mentorData);
         } else if (userType === UserType.MENTEE && pathname.includes('/courses')) {
-          console.log('Fetching mentee data for', phone, 'Mount count:', mountCount.current);
+          console.log('Fetching mentee data for', phone);
           const menteeData = await getMenteeByPhone(phone, authHeader);
           console.log('Successfully fetched mentee data');
           if (menteeData && menteeData.mentee) {
@@ -84,7 +78,6 @@ export default function HomeLayout({
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
-      console.log('Cleaning up effect, mount count:', mountCount.current);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [userType, phone, getAuthHeader, setMentorResponse, setMenteeResponse, pathname]);
