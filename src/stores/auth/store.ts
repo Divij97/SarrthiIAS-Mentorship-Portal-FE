@@ -34,6 +34,25 @@ interface AuthState {
   reset: () => void;
 }
 
+// Initialize store with cleanup for mentee
+const initializeStore = () => {
+  if (typeof window !== 'undefined') {
+    const storedState = localStorage.getItem('auth-storage');
+    if (storedState) {
+      const parsedState = JSON.parse(storedState);
+      if (parsedState.state?.userType === UserType.MENTEE) {
+        // Clear mentee data from localStorage
+        localStorage.removeItem('auth-storage');
+        // Clear mentee store
+        useMenteeStore.getState().clearMentee();
+      }
+    }
+  }
+};
+
+// Call initialization
+initializeStore();
+
 export const useLoginStore = create<AuthState>()(
   persist(
     (set, get) => {
