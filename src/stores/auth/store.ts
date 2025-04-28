@@ -20,7 +20,7 @@ interface AuthState {
   loading: boolean;
   isAuthenticated: boolean;
   userType: UserType | null;
-hasVerifiedOTP: boolean;
+  hasVerifiedOTP: boolean;
   authHeader: string | null;
   setPhone: (phone: string) => void;
   setPassword: (password: string) => void;
@@ -76,7 +76,13 @@ export const useLoginStore = create<AuthState>()(
         setPhone: (phone) => set({ phone }),
         setPassword: (password) => set({ password }),
         setError: (error) => set({ error }),
-        setUserType: (type) => set({ userType: type }),
+        setUserType: (type) => {
+          set({ userType: type });
+          // Clear mentee data when switching to mentee type
+          if (type === UserType.MENTEE) {
+            useMenteeStore.getState().clearMentee();
+          }
+        },
         setHasVerifiedOTP: (value) => set({ hasVerifiedOTP: value }),
         setAuthHeader: (header) => set({ authHeader: header, isAuthenticated: true }),
         getAuthHeader: () => get().authHeader,
@@ -155,13 +161,30 @@ export const useLoginStore = create<AuthState>()(
     },
     {
       name: 'auth-storage',
-      partialize: (state) => ({ 
-        isAuthenticated: state.isAuthenticated,
-        phone: state.phone,
-        userType: state.userType,
-        hasVerifiedOTP: state.hasVerifiedOTP,
-        authHeader: state.authHeader
-      })
+      partialize: (state) => {
+        // Only persist data for mentors
+        if (state.userType === UserType.MENTOR) {
+          return { 
+            isAuthenticated: state.isAuthenticated,
+            phone: state.phone,
+            userType: state.userType,
+            hasVerifiedOTP: state.hasVerifiedOTP,
+            authHeader: state.authHeader
+          };
+        }
+        // For mentees, only persist userType
+        return { userType: state.userType };
+      }
     }
   )
-); 
+);
+
+// Add event listener for tab close
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    const { userType } = useLoginStore.getState();
+    if (userType === UserType.MENTEE) {
+      useLoginStore.getState().logout();
+    }
+  });
+} 
