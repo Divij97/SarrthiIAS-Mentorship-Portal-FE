@@ -24,10 +24,10 @@ export const MenteeScheduleTile = ({ mentee, onScheduleClick }: MenteeScheduleTi
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center text-sm text-gray-600">
+          {/* <div className="flex items-center text-sm text-gray-600">
             <span className="font-medium">Preferred Slot:</span>
             <span className="ml-2">{mentee.preferredSlot}</span>
-          </div>
+          </div> */}
           <div className="flex items-center text-sm text-gray-600">
             <span className="font-medium">Phone:</span>
             <span className="ml-2">{mentee.p}</span>

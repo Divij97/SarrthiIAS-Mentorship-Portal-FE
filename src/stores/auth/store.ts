@@ -139,7 +139,7 @@ export const useLoginStore = create<AuthState>()(
             }
             
             return response;
-          } catch (error) {
+          } catch (error) { 
             set({ error: 'Invalid credentials or server error' });
             console.error('Login error:', error);
             throw error;

@@ -1,4 +1,4 @@
-import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorshipSessionsResponse, PasswordResetRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
+import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorFeedbackResponse, MentorshipSessionsResponse, PasswordResetRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
 import { MenteesForCsvExport } from '@/types/mentee';
@@ -363,4 +363,14 @@ export const fullMenteesList = async (authHeader: string): Promise<MenteesRespon
     console.error('Error fetching all mentees:', error);
     throw error;
   }
+}
+
+export const getMentorFeedback = async (mentorUsername: string, authHeader: string): Promise<MentorFeedbackResponse> => {
+  return await fetchSafe<MentorFeedbackResponse>(`${config.api.url}/v1/admin/feedback?mentorUsername=${mentorUsername}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': authHeader,
+      'Content-Type': 'application/json',
+    }
+  });
 }

@@ -7,6 +7,7 @@ import { CreateCourseRequest, CreateDocumentRequest } from '@/types/course';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { toast } from 'react-hot-toast';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { RecurrenceType } from '@/types/session';
 
 interface CourseFormData {
   title: string;
@@ -15,6 +16,7 @@ interface CourseFormData {
   isOneOnOneMentorship: boolean;
   isGroupMentorshipEnabled: boolean;
   documents: CreateDocumentRequest[];
+  recurrenceType: RecurrenceType;
 }
 
 interface DocumentFormData {
@@ -31,7 +33,8 @@ export default function CourseForm() {
     endDate: '',
     isOneOnOneMentorship: true,
     isGroupMentorshipEnabled: false,
-    documents: []
+    documents: [],
+    recurrenceType: RecurrenceType.WEEKLY
   });
 
   const [documentForm, setDocumentForm] = useState<DocumentFormData>({
@@ -151,7 +154,8 @@ export default function CourseForm() {
         month: '2-digit',
         year: 'numeric'
       }),
-      documents: formData.documents
+      documents: formData.documents,
+      recurrenceType: formData.recurrenceType
     };
 
     try {
@@ -245,6 +249,24 @@ export default function CourseForm() {
         />
         <p className="mt-1 text-sm text-gray-500">
           Course end date must be today or later (DD/MM/YYYY)
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor="recurrenceType" className="block text-sm font-medium text-gray-700">
+          Recurrence Type
+        </label>
+        <select
+          id="recurrenceType"
+          value={formData.recurrenceType}
+          onChange={(e) => setFormData(prev => ({ ...prev, recurrenceType: e.target.value as RecurrenceType }))}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-black"
+        >
+          <option value={RecurrenceType.WEEKLY}>Weekly</option>
+          <option value={RecurrenceType.BI_WEEKLY}>Bi-Weekly</option>
+        </select>
+        <p className="mt-1 text-sm text-gray-500">
+          Select how often the mentorship sessions will occur
         </p>
       </div>
 

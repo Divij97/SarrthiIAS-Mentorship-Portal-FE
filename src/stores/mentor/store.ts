@@ -93,17 +93,18 @@ export const useMentorStore = create<MentorStore>()(
       onMenteeScheduled: (menteeUserName: string) => {
         const current = get().mentorResponse;
         if (current) {
-          const updatedUnscheduledMentees = current.um.strippedDownMentees.filter(
-            m => m.p !== menteeUserName
+          const updatedMentee = current.am.find(
+            m => m.p === menteeUserName
           );
+          updatedMentee.iu = false;
           
           set({ 
             mentorResponse: { 
               ...current, 
-              um: { 
-                ...current.um, 
-                strippedDownMentees: updatedUnscheduledMentees 
-              } 
+              am: [ 
+                ...current.am.filter(m => m.p !== menteeUserName), 
+                updatedMentee 
+              ]  
             } 
           });
         }

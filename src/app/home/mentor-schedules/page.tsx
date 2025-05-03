@@ -177,9 +177,9 @@ export default function MentorSchedulesPage() {
               </p>
             </div>
 
-            {mentorResponse?.um?.strippedDownMentees?.length ? (
+            {mentorResponse?.am?.length ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mentorResponse.um.strippedDownMentees.map((mentee: StrippedDownMentee) => (
+                {mentorResponse.am.filter((mentee: StrippedDownMentee) => mentee.iu).map((mentee: StrippedDownMentee) => (
                   <MenteeScheduleTile
                     key={mentee.p}
                     mentee={mentee}

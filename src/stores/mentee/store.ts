@@ -5,6 +5,7 @@ import { refreshSessions } from '@/services/mentee';
 interface MenteeStore {
   menteeResponse: MenteeResponse | null;
   courses: CourseGroupInfo[];
+  pastSessions: { [key: string]: MenteeSession[] };
 
   setMenteeResponse: (response: MenteeResponse) => void;
   setCourses: (courses: CourseGroupInfo[]) => void;
@@ -13,11 +14,13 @@ interface MenteeStore {
   reset: () => void;
   getGroupIdByCourseName: (courseId: string) => string | null;
   refreshSessions: (authHeader: string) => Promise<void>;
+  setPastSessions: (pastSessions: { [key: string]: MenteeSession[] }) => void;
 }
 
 export const useMenteeStore = create<MenteeStore>()((set, get) => ({
   menteeResponse: null,
   courses: [],
+  pastSessions: {},
   setMenteeResponse: (response) => set({ menteeResponse: response }),
   setCourses: (courses) => set({ courses }),
   clearMentee: () => set({ menteeResponse: null, courses: [] }),
@@ -48,5 +51,9 @@ export const useMenteeStore = create<MenteeStore>()((set, get) => ({
         ...response.mentorshipSessions
       }
     } });
-  }
+  },
+  setPastSessions: (pastSessions: { [key: string]: MenteeSession[] }) => {
+    console.log('pastSessions', pastSessions);
+    set({ pastSessions });
+  },
 })); 
