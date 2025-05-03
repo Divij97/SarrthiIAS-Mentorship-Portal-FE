@@ -37,7 +37,6 @@ export interface MentorResponse {
   sw: { [key in DayOfWeek]?: MentorshipSession[] };
   sd: { [date: string]: MentorshipSession[] };
   g: string[];
-  um: UnscheduledMenteeDetails;
   am: StrippedDownMentee[];
 }
 

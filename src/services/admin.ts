@@ -1,9 +1,10 @@
-import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorshipSessionsResponse, PasswordResetRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
+import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorFeedbackResponse, MentorshipSessionsResponse, PasswordResetRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
 import { MenteesForCsvExport } from '@/types/mentee';
 import { fetchSafe } from '@/utils/api';
 import { SHA256 } from 'crypto-js';
+import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 
 export const loginAdmin = async (authHeader: string): Promise<AdminData> => {
   return await fetchSafe<AdminData>(`${config.api.url}/v1/admin/me`, {
@@ -361,6 +362,49 @@ export const fullMenteesList = async (authHeader: string): Promise<MenteesRespon
     };
   } catch (error) {
     console.error('Error fetching all mentees:', error);
+    throw error;
+  }
+}
+
+export const getMentorFeedback = async (mentorUsername: string, authHeader: string): Promise<MentorFeedbackResponse> => {
+  return await fetchSafe<MentorFeedbackResponse>(`${config.api.url}/v1/feedback?mentorUsername=${mentorUsername}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': authHeader,
+      'Content-Type': 'application/json',
+    }
+  });
+}
+
+export const getAllMentorsFeedback = async (authHeader: string): Promise<MentorFeedbackResponse> => {
+  try {
+    // Get all mentors from the admin store
+    const adminData = useAdminAuthStore.getState().adminData;
+    if (!adminData?.mentors) {
+      throw new Error('No mentors found');
+    }
+
+    // Collect feedbacks from all mentors
+    const allFeedbacks = await Promise.all(
+      adminData.mentors.map(async (mentor) => {
+        try {
+          const response = await getMentorFeedback(mentor.phone, authHeader);
+          return response.feedbacksSortedByDate;
+        } catch (error) {
+          console.error(`Error fetching feedback for mentor ${mentor.phone}:`, error);
+          return []; // Return empty array for failed requests
+        }
+      })
+    );
+
+    // Flatten the array of feedbacks
+    const flattenedFeedbacks = allFeedbacks.flat();
+
+    return {
+      feedbacksSortedByDate: flattenedFeedbacks
+    };
+  } catch (error) {
+    console.error('Error fetching all mentors feedback:', error);
     throw error;
   }
 }

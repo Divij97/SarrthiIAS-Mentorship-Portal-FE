@@ -6,6 +6,10 @@ interface MentorViewProps {
 }
 
 export default function MentorView({ mentor }: MentorViewProps) {
+  if (!mentor) {
+    return <div className="min-h-screen flex items-center justify-center">Loading mentor data...</div>;
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome, {mentor.name}!</h1>
@@ -33,15 +37,21 @@ export default function MentorView({ mentor }: MentorViewProps) {
             <div className="space-y-3">
               <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs sm:text-sm font-medium text-gray-500">Optional Subject</p>
-                <p className="text-sm sm:text-base text-gray-900">{mentor.optionalSubject.split('_').join(' ')}</p>
+                <p className="text-sm sm:text-base text-gray-900">
+                  {mentor.optionalSubject ? mentor.optionalSubject.split('_').join(' ') : 'Not specified'}
+                </p>
               </div>
               <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs sm:text-sm font-medium text-gray-500">UPSC Interview Experience</p>
-                <p className="text-sm sm:text-base text-gray-900">{mentor.givenInterview ? 'Yes' : 'No'}</p>
+                <p className="text-sm sm:text-base text-gray-900">
+                  {mentor.givenInterview !== undefined ? (mentor.givenInterview ? 'Yes' : 'No') : 'Not specified'}
+                </p>
               </div>
               <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs sm:text-sm font-medium text-gray-500">UPSC Attempts</p>
-                <p className="text-sm sm:text-base text-gray-900">{mentor.numberOfAttemptsInUpsc}</p>
+                <p className="text-sm sm:text-base text-gray-900">
+                  {mentor.numberOfAttemptsInUpsc !== undefined ? mentor.numberOfAttemptsInUpsc : 'Not specified'}
+                </p>
               </div>
             </div>
           </div>

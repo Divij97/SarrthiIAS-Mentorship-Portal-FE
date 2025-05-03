@@ -1,4 +1,4 @@
-import { GroupMentorshipSession } from "./session";
+import { GroupMentorshipSession, RecurrenceType } from "./session";
 import { CriterionSubCategoryRequest } from "./admin";
 
 export interface CreateCourseRequest {
@@ -8,6 +8,7 @@ export interface CreateCourseRequest {
   startDate: string;
   endDate: string;
   documents?: CreateDocumentRequest[];
+  recurrenceType?: RecurrenceType;
 }
 
 export interface Course {
@@ -20,6 +21,7 @@ export interface Course {
   deleted: boolean;
   documents?: CourseDocuments[];
   assignmentStatus: AssigmentStatus;
+  recurrenceType?: RecurrenceType;
 }
 
 export interface CourseGroup {

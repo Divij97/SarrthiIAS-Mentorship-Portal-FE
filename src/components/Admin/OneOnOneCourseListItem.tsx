@@ -9,6 +9,18 @@ import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { deleteResource } from '@/services/admin';
 import { ResourceType } from '@/types/admin';
 import toast from 'react-hot-toast';
+import { RecurrenceType } from '@/types/session';
+
+const formatRecurrenceType = (type: RecurrenceType): string => {
+  switch (type) {
+    case RecurrenceType.WEEKLY:
+      return 'Weekly';
+    case RecurrenceType.BI_WEEKLY:
+      return 'Bi-Weekly';
+    default:
+      return type;
+  }
+};
 
 interface OneOnOneCourseListItemProps {
   course: Course;
@@ -104,6 +116,9 @@ export function OneOnOneCourseListItem({ course }: OneOnOneCourseListItemProps) 
       )}
       {course.endDate && (
         <p className="mt-2 text-sm text-gray-500">ends: {course.endDate}</p>
+      )}
+      {course.recurrenceType && (
+        <p className="mt-2 text-sm text-gray-500">recurrence: {formatRecurrenceType(course.recurrenceType)}</p>
       )}
       
 

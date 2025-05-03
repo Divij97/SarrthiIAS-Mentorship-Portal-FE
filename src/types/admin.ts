@@ -110,3 +110,17 @@ export interface PasswordResetRequest {
     newPassword: string;
     authOtp: string; 
 }
+
+export interface MentorFeedbackResponse {
+    feedbacksSortedByDate: MentorFeedback[];
+}
+
+
+export interface MentorFeedback {
+    sessionDate: string;
+    rating: number;
+    additionalComments: string;
+    satisfied: boolean;
+    mentor: StrippedDownMentor;
+    mentee: StrippedDownMentee;
+}

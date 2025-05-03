@@ -4,12 +4,14 @@ import { use, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { useLoginStore } from '@/stores/auth/store';
-import { getGroupById, bookOnDemandSession } from '@/services/mentee';
-import { GroupMentorshipSession } from '@/types/session';
+import { getGroupById, bookOnDemandSession, getPastSessions } from '@/services/mentee';
+import { GroupMentorshipSession, RecurrenceType } from '@/types/session';
 import { VideoCameraIcon, ClockIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import MenteeSessions from '@/components/Courses/MenteeSessions';
 import { toast } from 'react-hot-toast';
 import CourseDocuments from '@/components/Courses/CourseDocuments';
+import { Tab } from '@headlessui/react';
+import PastSessions from '@/components/Home/PastSessions';
 
 export default function CourseDetailsPage({
   params,
@@ -19,21 +21,53 @@ export default function CourseDetailsPage({
   const router = useRouter();
   const { courseName } = use(params);
   const courseId = decodeURIComponent(courseName);
-  const { getGroupIdByCourseName, refreshSessions } = useMenteeStore();
+  const { getGroupIdByCourseName, refreshSessions, setPastSessions, pastSessions } = useMenteeStore();
   const authHeader = useLoginStore((state) => state.getAuthHeader());
   const [groupSessions, setGroupSessions] = useState<GroupMentorshipSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTab, setSelectedTab] = useState(0);
+  const [showFeedbackTooltip, setShowFeedbackTooltip] = useState(false);
   
   // First get the raw courses data from the store
   const rawCourses = useMenteeStore((state) => state.courses);
   const mentorshipSessions = useMenteeStore((state) => state.menteeResponse?.mentorshipSessions);
   const mentor = useMenteeStore((state) => state.menteeResponse?.assignedMentor);
+
   // Then memoize the transformation
   const courses = useMemo(() => 
     rawCourses.map(c => c.course),
     [rawCourses]
   );
+
+  useEffect(() => {
+    const fetchPastSessions = async () => {
+      try {
+        const pastSessionsResponse = await getPastSessions(authHeader || '');
+        setPastSessions(pastSessionsResponse.sessionsByDate);
+        console.log('pastSessions loaded', pastSessionsResponse.sessionsByDate);
+      } catch (error) {
+        console.error('Error fetching past sessions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (course?.isOneOnOneMentorshipCourse) {
+      fetchPastSessions();
+    }
+  }, [authHeader, setPastSessions]);
+
+  const formatRecurrenceType = (type: RecurrenceType): string => {
+    switch (type) {
+      case RecurrenceType.WEEKLY:
+        return 'Weekly';
+      case RecurrenceType.BI_WEEKLY:
+        return 'Bi-Weekly';
+      default:
+        return type;
+    }
+  };
   
   const course = courses.find(c => c.id === courseId);
 
@@ -129,6 +163,13 @@ export default function CourseDetailsPage({
     }
   };
 
+  const handleSubmitFeedbackClick = () => {
+    setSelectedTab(1); // Switch to Past Sessions tab
+    setShowFeedbackTooltip(true);
+    // Hide tooltip after 5 seconds
+    setTimeout(() => setShowFeedbackTooltip(false), 5000);
+  };
+
   return (
     <div className="space-y-8">
       <div className="bg-white rounded-lg shadow-lg p-8">
@@ -142,7 +183,7 @@ export default function CourseDetailsPage({
         <p className="mt-4 text-gray-600">{course.description}</p>
         <div className="mt-6 space-y-2">
           <p className="text-sm text-gray-500">
-            Course Type: {course.isOneOnOneMentorshipCourse ? 'One-on-One Mentorship' : 'Group Mentorship'}
+            Course Type: {course.isOneOnOneMentorshipCourse ? 'One-on-One Mentorship' : 'Group Mentorship'} {course.recurrenceType ? `(Sessions held: ${formatRecurrenceType(course.recurrenceType)})` : ''}
             {course.isOneOnOneMentorshipCourse && (
               <span className="block mt-1">
                 {mentor != null && (mentor.name !== undefined || mentor.email !== undefined)? `Your Mentor: ${mentor.name} (${mentor.email})` : `You'll be assigned a mentor shortly.`}
@@ -205,30 +246,84 @@ export default function CourseDetailsPage({
                     You have {Object.keys(mentorshipSessions).length} mentorship sessions scheduled
                   </p>
                 </div>
-                <button
-                  onClick={handleSessionsRefresh}
-                  className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
-                >
-                  <ArrowPathIcon className="h-4 w-4 mr-2" />
-                  Refresh
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleSubmitFeedbackClick}
+                    className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
+                  >
+                    Submit Feedback
+                  </button>
+                  <button
+                    onClick={handleSessionsRefresh}
+                    className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
+                  >
+                    <ArrowPathIcon className="h-4 w-4 mr-2" />
+                    Refresh
+                  </button>
+                </div>
               </div>
             </div>
-            <MenteeSessions 
-              sessions={mentorshipSessions} 
-              mentor={mentor}
-            />
+            <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
+              <Tab.List className="flex space-x-1 rounded-xl bg-orange-100/20 p-1 mb-6">
+                <Tab
+                  className={({ selected }) =>
+                    `w-full rounded-lg py-2.5 text-sm font-medium leading-5
+                    ${selected
+                      ? 'bg-white text-orange-700 shadow'
+                      : 'text-gray-600 hover:bg-white/[0.12] hover:text-orange-600'
+                    }`
+                  }
+                >
+                  Upcoming Sessions
+                </Tab>
+                <Tab
+                  className={({ selected }) =>
+                    `w-full rounded-lg py-2.5 text-sm font-medium leading-5
+                    ${selected
+                      ? 'bg-white text-orange-700 shadow'
+                      : 'text-gray-600 hover:bg-white/[0.12] hover:text-orange-600'
+                    }`
+                  }
+                >
+                  Past Sessions
+                </Tab>
+              </Tab.List>
+              <Tab.Panels>
+                <Tab.Panel>
+                  <MenteeSessions 
+                    sessions={mentorshipSessions} 
+                    mentor={mentor}
+                  />
+                </Tab.Panel>
+                <Tab.Panel>
+                  <div className="relative">
+                    {showFeedbackTooltip && (
+                      <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-white p-4 rounded-lg shadow-lg border border-orange-200 z-10">
+                        <div className="text-sm text-gray-700">
+                          Click on the "Submit Feedback" button next to any past session to provide your feedback.
+                        </div>
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-3 h-3 bg-white border-r border-b border-orange-200"></div>
+                      </div>
+                    )}
+                    <PastSessions 
+                      courseName={courseId} 
+                      pastSessions={pastSessions}
+                    />
+                  </div>
+                </Tab.Panel>
+              </Tab.Panels>
+            </Tab.Group>
           </div>
         ) : (
           <div className="flex justify-between items-center bg-white rounded-lg shadow-lg p-8">
             <p className="text-gray-500">No sessions scheduled yet.</p>
             <button
-                  onClick={handleSessionsRefresh}
-                  className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
-                >
-                  <ArrowPathIcon className="h-4 w-4 mr-2" />
-                  Refresh
-                </button>
+              onClick={handleSessionsRefresh}
+              className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
+            >
+              <ArrowPathIcon className="h-4 w-4 mr-2" />
+              Refresh
+            </button>
           </div>
         )
       ) : getGroupIdByCourseName(courseId) === "UNASSIGNED" ? (

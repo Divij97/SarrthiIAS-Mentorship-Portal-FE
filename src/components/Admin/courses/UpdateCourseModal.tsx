@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Course, CourseDocuments, CreateDocumentRequest } from '@/types/course';
 import { MinusCircleIcon, PlusIcon } from '@heroicons/react/24/outline';
 import AddDocumentModal from './AddDocumentModal';
+import { RecurrenceType } from '@/types/session';
 
 interface UpdateCourseModalProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ export default function UpdateCourseModal({
     description: course.description,
     startDate: formatDateForInput(course.startDate),
     endDate: formatDateForInput(course.endDate),
+    recurrenceType: course.recurrenceType || RecurrenceType.BI_WEEKLY
   });
 
   const [documents, setDocuments] = useState<CourseDocuments[]>(course.documents || []);
@@ -49,6 +51,7 @@ export default function UpdateCourseModal({
       startDate: formatDateForSubmission(formData.startDate),
       endDate: formatDateForSubmission(formData.endDate),
       documents: documents,
+      recurrenceType: formData.recurrenceType
     });
   };
 
@@ -77,10 +80,12 @@ export default function UpdateCourseModal({
                 type="text"
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-                required
+                disabled
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed sm:text-sm"
               />
+              <p className="mt-1 text-sm text-gray-500">
+                Course name cannot be modified
+              </p>
             </div>
 
             <div>
@@ -123,6 +128,24 @@ export default function UpdateCourseModal({
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
                 required
               />
+            </div>
+
+            <div>
+              <label htmlFor="recurrenceType" className="block text-sm font-medium text-gray-700">
+                Recurrence Type
+              </label>
+              <select
+                id="recurrenceType"
+                value={formData.recurrenceType}
+                onChange={(e) => setFormData({ ...formData, recurrenceType: e.target.value as RecurrenceType })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
+              >
+                <option value={RecurrenceType.WEEKLY}>Weekly</option>
+                <option value={RecurrenceType.BI_WEEKLY}>Bi-Weekly</option>
+              </select>
+              <p className="mt-1 text-sm text-gray-500">
+                Select how often the mentorship sessions will occur
+              </p>
             </div>
 
             {/* Documents Section */}

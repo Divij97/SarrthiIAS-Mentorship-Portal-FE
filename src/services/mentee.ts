@@ -1,4 +1,4 @@
-import { MenteeResponse, MenteeWithAuth } from '@/types/mentee';
+import { MenteeResponse, MenteeWithAuth, PastSessionsResponse, SubmitFeedbackRequest } from '@/types/mentee';
 import { config } from '@/config/env';
 import { useLoginStore } from '@/stores/auth/store';
 import { MentorshipGroup } from '@/types/session';
@@ -178,6 +178,27 @@ export const refreshSessions = async (authHeader: string): Promise<MenteeRespons
     headers: {
       'Authorization': authHeader,
       'Content-Type': 'application/json',
+    }
+  });
+}
+
+export const submitFeedback = async (feedbackData: SubmitFeedbackRequest, authHeader: string): Promise<void> => {
+  return await fetchSafe<void>(`${config.api.url}/v1/feedback`, {
+    method: 'POST',
+    headers: {
+      'Authorization': authHeader,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(feedbackData),
+  });
+}
+
+export const getPastSessions = async (authHeader: string): Promise<PastSessionsResponse> => {
+  return await fetchSafe<PastSessionsResponse>(`${config.api.url}/v1/mentees/me/sessions`, {
+    method: 'GET',
+    headers: {
+      'Authorization': authHeader,
     }
   });
 }

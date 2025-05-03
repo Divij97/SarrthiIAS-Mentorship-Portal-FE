@@ -1,7 +1,7 @@
 import { Course } from "./course";
 import { ZoomMeetingInfo } from "./meeting";
 import { DayOfWeek, StrippedDownMentor } from "./mentor";
-import { SessionType, SuggestedInterval } from "./session";
+import { RecurrenceType, SessionType, SuggestedInterval } from "./session";
 
 export enum Region {
   NORTH = 'NORTH',
@@ -156,6 +156,7 @@ export interface Mentee {
   n: string;
   e: string;
   p: string;
+  iu?: boolean;
   region: Region;
   gender: Gender;
   mode?: MenteeMode;
@@ -214,8 +215,8 @@ export interface StrippedDownMentee {
   n: string;
   p: string;
   e: string;
-  preferredSlot?: PreferredSlot;
-  mode?: MenteeMode;
+  rt?: Set<RecurrenceType>;
+  iu: boolean;
 }
 
 export interface MenteesForCsvExport {
@@ -245,4 +246,20 @@ export interface MenteeSession {
 export enum MenteeMode {
   ONLINE = 'ONLINE',
   OFFLINE = 'OFFLINE'
+}
+
+export interface SubmitFeedbackRequest {
+  mentor: StrippedDownMentor;
+  mentee: StrippedDownMentee;
+  feedback: Feedback;
+}
+export interface Feedback {
+  sessionDate: string;
+  rating: number;
+  additionalComments: string;
+  satisfied: boolean;
+}
+
+export interface PastSessionsResponse {
+  sessionsByDate: { [key: string]: MenteeSession[] };
 }
