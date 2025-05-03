@@ -112,7 +112,7 @@ export interface PasswordResetRequest {
 }
 
 export interface MentorFeedbackResponse {
-    feedbacks: MentorFeedback[];
+    feedbacksSortedByDate: MentorFeedback[];
 }
 
 

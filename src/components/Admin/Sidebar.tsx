@@ -40,7 +40,7 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
     },
     { name: 'Mentors', path: '/admin/dashboard/mentors' },
     { name: 'Mentees', path: '/admin/dashboard/mentees' },
-    // { name: 'Feedback', path: '/admin/dashboard/feedback' }
+    { name: 'Feedback', path: '/admin/dashboard/feedback' }
   ];
 
   // Update the indicator position based on the active tab
