@@ -21,7 +21,7 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-gray-50">
       <AdminSidebar onLogout={handleLogout} />
       <div className="md:pt-16">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[98%] mx-auto py-6 px-2 sm:px-4 lg:px-6">
           {children}
         </div>
       </div>

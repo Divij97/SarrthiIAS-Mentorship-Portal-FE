@@ -105,7 +105,7 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-[95%] mx-auto">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">Session Feedbacks</h2>
         <div className="flex items-center gap-4">
