@@ -82,20 +82,7 @@ export default function MenteeRow({
             {mentee.phone !== null && sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
           </button>
 
-          {mentee.assignedMentor ? (
-            <button
-              onClick={() => onUnassignMentor(mentee.phone)}
-              disabled={unassigningMentor === mentee.phone}
-              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                unassigningMentor === mentee.phone
-                  ? 'bg-red-100 text-red-400 cursor-not-allowed'
-                  : 'text-red-700 bg-red-100 hover:bg-red-200'
-              }`}
-            >
-              <UserMinusIcon className="h-4 w-4 mr-1" />
-              {unassigningMentor === mentee.phone ? 'Unassigning...' : 'Unassign Mentor'}
-            </button>
-          ) : (
+          <div className="flex items-center gap-2">
             <button
               onClick={() => onAssignMentor(mentee)}
               disabled={assigningMentor === mentee.phone}
@@ -108,7 +95,19 @@ export default function MenteeRow({
               <UserPlusIcon className="h-4 w-4 mr-1" />
               {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
             </button>
-          )}
+            <button
+              onClick={() => onUnassignMentor(mentee.phone)}
+              disabled={unassigningMentor === mentee.phone}
+              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                unassigningMentor === mentee.phone
+                  ? 'bg-red-100 text-red-400 cursor-not-allowed'
+                  : 'text-red-700 bg-red-100 hover:bg-red-200'
+              }`}
+            >
+              <UserMinusIcon className="h-4 w-4 mr-1" />
+              {unassigningMentor === mentee.phone ? 'Unassigning...' : 'Unassign Mentor'}
+            </button>
+          </div>
 
           <button
             onClick={() => onEditMentee(mentee)}
