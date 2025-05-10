@@ -26,6 +26,7 @@ export default function EducationStep({ formData, handleChange, errors }: Educat
           }`}
         >
           <option value="">Select Optional Subject</option>
+          <option value="NOT_DECIDED">Not Decided</option>
           <option value="AGRICULTURE">Agriculture</option>
           <option value="ANIMAL_HUSBANDRY_AND_VETERINARY_SCIENCE">Animal Husbandry and Veterinary Science</option>
           <option value="ANTHROPOLOGY">Anthropology</option>
@@ -51,7 +52,29 @@ export default function EducationStep({ formData, handleChange, errors }: Educat
           <option value="SOCIOLOGY">Sociology</option>
           <option value="STATISTICS">Statistics</option>
           <option value="ZOOLOGY">Zoology</option>
-          <option value="LITERATURE">Literature</option>
+          <option value="ASSAMESE">Assamese</option>
+          <option value="BENGALI">Bengali</option>
+          <option value="BODO">Bodo</option>
+          <option value="DOGRI">Dogri</option>
+          <option value="GUJARATI">Gujarati</option>
+          <option value="HINDI">Hindi</option>
+          <option value="KANNADA">Kannada</option>
+          <option value="KASHMIRI">Kashmiri</option>
+          <option value="KONKANI">Konkani</option>
+          <option value="MAITHILI">Maithili</option>
+          <option value="MALAYALAM">Malayalam</option>
+          <option value="MANIPURI">Manipuri</option>
+          <option value="MARATHI">Marathi</option>
+          <option value="NEPALI">Nepali</option>
+          <option value="ORIYA">Oriya</option>
+          <option value="PUNJABI">Punjabi</option>
+          <option value="SANSKRIT">Sanskrit</option>
+          <option value="SANTHALI">Santhali</option>
+          <option value="SINDHI">Sindhi</option>
+          <option value="TAMIL">Tamil</option>
+          <option value="TELUGU">Telugu</option>
+          <option value="URDU">Urdu</option>
+          <option value="ENGLISH">English</option>
         </select>
         {errors.optionalSubject && <p className="mt-1 text-sm text-red-600">{errors.optionalSubject}</p>}
       </div>

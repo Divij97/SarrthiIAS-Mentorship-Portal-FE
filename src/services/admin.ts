@@ -1,7 +1,7 @@
 import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorFeedbackResponse, MentorshipSessionsResponse, PasswordResetRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
-import { MenteesForCsvExport } from '@/types/mentee';
+import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
 import { fetchSafe } from '@/utils/api';
 import { SHA256 } from 'crypto-js';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
@@ -407,4 +407,15 @@ export const getAllMentorsFeedback = async (authHeader: string): Promise<MentorF
     console.error('Error fetching all mentors feedback:', error);
     throw error;
   }
+}
+
+export const editMenteeDetails = async (mentee: StrippedDownMentee, authHeader: string): Promise<void> => {
+  return await fetchSafe<void>(`${config.api.url}/v1/internal/mentees/${mentee.p}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    },
+    body: JSON.stringify(mentee)
+  })
 }

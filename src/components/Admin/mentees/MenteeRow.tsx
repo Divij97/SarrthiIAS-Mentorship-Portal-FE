@@ -1,5 +1,5 @@
 import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
-import { UserPlusIcon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, UserMinusIcon } from '@heroicons/react/24/outline';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { useState } from 'react';
 import { sendOnBoardingEmail } from '@/services/mentors';
@@ -10,12 +10,18 @@ interface MenteeRowProps {
   mentee: MenteesForCsvExport;
   assigningMentor: string | null;
   onAssignMentor: (mentee: MenteesForCsvExport) => void;
+  onUnassignMentor: (menteePhone: string) => Promise<void>;
+  unassigningMentor: string | null;
+  onEditMentee: (mentee: MenteesForCsvExport) => void;
 }
 
 export default function MenteeRow({
   mentee,
   assigningMentor,
-  onAssignMentor
+  onAssignMentor,
+  onUnassignMentor,
+  unassigningMentor,
+  onEditMentee
 }: MenteeRowProps) {
 
   const authHeader = useAdminAuthStore.getState().getAuthHeader();
@@ -62,31 +68,55 @@ export default function MenteeRow({
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
-        <button
-          onClick={() => handleSendOnboardingEmail(mentee)}
-          disabled={sendingEmail === mentee.phone}
-          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-            sendingEmail === mentee.phone
-              ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
-              : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
-          }`}
-        >
-          {mentee.phone !== null && sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
-        </button>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => handleSendOnboardingEmail(mentee)}
+            disabled={sendingEmail === mentee.phone}
+            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+              sendingEmail === mentee.phone
+                ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
+                : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
+            }`}
+          >
+            {mentee.phone !== null && sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
+          </button>
 
-        <button
-          onClick={() => onAssignMentor(mentee)}
-          disabled={assigningMentor === mentee.phone}
-          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-            assigningMentor === mentee.phone
-              ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
-              : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
-          }`}
-        >
-          <UserPlusIcon className="h-4 w-4 mr-1" />
-          {mentee.phone !== null && assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
-        </button>
+          {mentee.assignedMentor ? (
+            <button
+              onClick={() => onUnassignMentor(mentee.phone)}
+              disabled={unassigningMentor === mentee.phone}
+              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                unassigningMentor === mentee.phone
+                  ? 'bg-red-100 text-red-400 cursor-not-allowed'
+                  : 'text-red-700 bg-red-100 hover:bg-red-200'
+              }`}
+            >
+              <UserMinusIcon className="h-4 w-4 mr-1" />
+              {unassigningMentor === mentee.phone ? 'Unassigning...' : 'Unassign Mentor'}
+            </button>
+          ) : (
+            <button
+              onClick={() => onAssignMentor(mentee)}
+              disabled={assigningMentor === mentee.phone}
+              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                assigningMentor === mentee.phone
+                  ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                  : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+              }`}
+            >
+              <UserPlusIcon className="h-4 w-4 mr-1" />
+              {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
+            </button>
+          )}
+
+          <button
+            onClick={() => onEditMentee(mentee)}
+            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
+          >
+            Edit Details
+          </button>
+        </div>
       </td>
     </tr>
   );

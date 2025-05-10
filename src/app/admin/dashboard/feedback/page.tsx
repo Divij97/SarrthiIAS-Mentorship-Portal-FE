@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
-import { toast } from 'react-hot-toast';
 import { ArrowPathIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { StrippedDownMentor } from '@/types/mentor';
 import { getAllMentorsFeedback } from '@/services/admin';
@@ -117,7 +116,7 @@ export default function FeedbackPage() {
           >
             <option value="">All Mentors</option>
             {adminData?.mentors.map((mentor: StrippedDownMentor) => (
-              <option key={mentor.email} value={mentor.email}>
+              <option key={mentor.phone} value={mentor.email}>
                 {mentor.name} ({mentor.email})
               </option>
             ))}
@@ -174,6 +173,15 @@ export default function FeedbackPage() {
                     Rating
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Exam Knowledge
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Politeness
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Punctuality
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Satisfied
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -198,6 +206,23 @@ export default function FeedbackPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {feedback.rating}/5
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {feedback.examKnowledge !== -1 ? `${feedback.examKnowledge}/5` : 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        feedback.politeness ? (feedback.politeness === 'Polite' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {feedback.politeness ? (feedback.politeness === 'Not' ? 'Not Polite' : feedback.politeness) : 'N/A'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        feedback.delayed !== undefined ? (!feedback.delayed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {feedback.delayed !== undefined ? (feedback.delayed ? 'Delayed' : 'On Time') : 'N/A'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         feedback.satisfied ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -205,7 +230,7 @@ export default function FeedbackPage() {
                         {feedback.satisfied ? 'Yes' : 'No'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs break-words whitespace-normal">
                       {feedback.additionalComments}
                     </td>
                   </tr>

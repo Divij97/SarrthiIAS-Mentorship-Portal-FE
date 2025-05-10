@@ -123,4 +123,7 @@ export interface MentorFeedback {
     satisfied: boolean;
     mentor: StrippedDownMentor;
     mentee: StrippedDownMentee;
+    examKnowledge: number;
+    politeness: 'Polite' | 'Not';
+    delayed: boolean;
 }

@@ -8,11 +8,15 @@ import { useMenteeStore } from '@/stores/mentee/store';
 import { SubmitFeedbackRequest } from '@/types/mentee';
 import { submitFeedback } from '@/services/mentee';
 import { toast } from 'react-hot-toast';
+
 interface FeedbackFormData {
   sessionDate: string;
   rating: number;
   additionalComments: string;
   satisfied: boolean;
+  examKnowledge: number;
+  politeness: 'Polite' | 'Not';
+  delayed: boolean;
 }
 
 export default function SessionFeedbackPage() {
@@ -34,12 +38,13 @@ export default function SessionFeedbackPage() {
     rating: 0,
     additionalComments: '',
     satisfied: false,
+    examKnowledge: 0,
+    politeness: 'Polite',
+    delayed: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement API call to submit feedback
-    console.log('Submitting feedback:', formData);
     try {
         const authHeader = getAuthHeader();
         const submitFeedbackRequest: SubmitFeedbackRequest = {
@@ -55,6 +60,9 @@ export default function SessionFeedbackPage() {
                 rating: formData.rating,
                 additionalComments: formData.additionalComments,
                 satisfied: formData.satisfied,
+                examKnowledge: formData.examKnowledge,
+                politeness: formData.politeness,
+                delayed: formData.delayed,
             }
         };
         await submitFeedback(submitFeedbackRequest, authHeader);
@@ -108,6 +116,76 @@ export default function SessionFeedbackPage() {
             value={formData.rating}
             onChange={(rating) => setFormData({ ...formData, rating })}
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Mentor's Knowledge of Exam Pattern
+          </label>
+          <select
+            value={formData.examKnowledge}
+            onChange={(e) => setFormData({ ...formData, examKnowledge: Number(e.target.value) })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value={0}>Select rating</option>
+            <option value={1}>1 - Poor</option>
+            <option value={2}>2 - Fair</option>
+            <option value={3}>3 - Good</option>
+            <option value={4}>4 - Very Good</option>
+            <option value={5}>5 - Excellent</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Mentor's Politeness
+          </label>
+          <div className="flex gap-4">
+            <label className="inline-flex items-center">
+              <input
+                type="radio"
+                checked={formData.politeness === 'Polite'}
+                onChange={() => setFormData({ ...formData, politeness: 'Polite' })}
+                className="form-radio h-4 w-4 text-blue-600"
+              />
+              <span className="ml-2">Polite</span>
+            </label>
+            <label className="inline-flex items-center">
+              <input
+                type="radio"
+                checked={formData.politeness === 'Not'}
+                onChange={() => setFormData({ ...formData, politeness: 'Not' })}
+                className="form-radio h-4 w-4 text-blue-600"
+              />
+              <span className="ml-2">Not Polite</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Punctuality
+          </label>
+          <div className="flex gap-4">
+            <label className="inline-flex items-center">
+              <input
+                type="radio"
+                checked={!formData.delayed}
+                onChange={() => setFormData({ ...formData, delayed: false })}
+                className="form-radio h-4 w-4 text-blue-600"
+              />
+              <span className="ml-2">Session started on time</span>
+            </label>
+            <label className="inline-flex items-center">
+              <input
+                type="radio"
+                checked={formData.delayed}
+                onChange={() => setFormData({ ...formData, delayed: true })}
+                className="form-radio h-4 w-4 text-blue-600"
+              />
+              <span className="ml-2">Delayed</span>
+            </label>
+          </div>
         </div>
 
         <div>

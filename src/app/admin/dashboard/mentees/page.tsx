@@ -27,6 +27,7 @@ export default function MenteesPage() {
   const [showAssignMentorModal, setShowAssignMentorModal] = useState(false);
   const [selectedMenteeForMentor, setSelectedMenteeForMentor] = useState<MenteesForCsvExport | null>(null);
   const [assigningMentor, setAssigningMentor] = useState<string | null>(null);
+  const [unassigningMentor, setUnassigningMentor] = useState<string | null>(null);
 
   useEffect(() => {
     if (!allMentees) {
@@ -108,6 +109,61 @@ export default function MenteesPage() {
     }
   };
 
+  const handleUnassignMentor = async (menteePhone: string) => {
+    if (!getAuthHeader || !menteePhone) return;
+
+    setUnassigningMentor(menteePhone);
+    try {
+      await assignMentorToMentee(
+        menteePhone,
+        {
+          mentorUserName: "UNASSIGNED",
+          mentee: {
+            n: allMentees?.find(m => m.phone === menteePhone)?.name || '',
+            p: menteePhone,
+            e: allMentees?.find(m => m.phone === menteePhone)?.email || ''
+          }
+        },
+        getAuthHeader()
+      );
+
+      // Update the mentee in allMentees to remove the mentor
+      if (allMentees) {
+        const updatedMentees = allMentees.map(mentee => 
+          mentee.phone === menteePhone
+            ? { ...mentee, assignedMentor: null }
+            : mentee
+        );
+        setAllMentees(updatedMentees);
+        
+        // Update search results if they exist
+        if (searchResults !== null) {
+          const query = searchQuery.toLowerCase().trim();
+          const updatedResults = updatedMentees.filter(mentee => {
+            const name = mentee.name?.toLowerCase() || '';
+            const email = mentee.email?.toLowerCase() || '';
+            const phone = mentee.phone?.toLowerCase() || '';
+
+            return name.includes(query) ||
+                   email.includes(query) ||
+                   phone.includes(query);
+          });
+          setSearchResults(updatedResults);
+        }
+      }
+
+      toast.success('Mentor unassigned successfully');
+      
+      // Refresh the main mentees list
+      await handleRefresh();
+    } catch (error) {
+      console.error('Failed to unassign mentor:', error);
+      toast.error('Failed to unassign mentor');
+    } finally {
+      setUnassigningMentor(null);
+    }
+  };
+
   if (!adminData) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -151,6 +207,8 @@ export default function MenteesPage() {
         courses={adminData.courses || []} 
         groups={groups} 
         onRefresh={handleRefresh}
+        onUnassignMentor={handleUnassignMentor}
+        unassigningMentor={unassigningMentor}
       />}
 
       <ResetPasswordModal

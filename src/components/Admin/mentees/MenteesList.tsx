@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { MenteesForCsvExport } from '@/types/mentee';
-import { MenteesFilters, assignMentorToMentee, fullMenteesList } from '@/services/admin';
+import { MenteesFilters, assignMentorToMentee, fullMenteesList, editMenteeDetails } from '@/services/admin';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
@@ -8,19 +8,24 @@ import { AssignMentorModal } from './assign-mentor-modal';
 import SearchFilters from './search-filters';
 import MenteeRow from './MenteeRow';
 import MenteeMobileCard from './MenteeMobileCard';
+import EditMenteeModal from './EditMenteeModal';
 
 interface MenteesListProps {
   allMentees: MenteesForCsvExport[];
   courses: { id: string; name: string }[];
   groups: { groupId: string; groupFriendlyName: string; course: string }[];
   onRefresh: () => Promise<void>;
+  onUnassignMentor: (menteePhone: string) => Promise<void>;
+  unassigningMentor: string | null;
 }
 
 export default function MenteesList({
   allMentees,
   courses,
   groups,
-  onRefresh
+  onRefresh,
+  onUnassignMentor,
+  unassigningMentor
 }: MenteesListProps) {
   const [mentees, setMentees] = useState<MenteesForCsvExport[]>([]);
   const [page, setPage] = useState(1);
@@ -32,6 +37,9 @@ export default function MenteesList({
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedMentee, setSelectedMentee] = useState<MenteesForCsvExport | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingMentee, setEditingMentee] = useState<MenteesForCsvExport | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+
   const applyFiltersAndPagination = (menteesList: MenteesForCsvExport[], currentFilters: MenteesFilters) => {
     let filteredMentees = [...menteesList];
 
@@ -145,6 +153,34 @@ export default function MenteesList({
     setMentees(nextPageMentees);
   };
 
+  const handleEditMentee = (mentee: MenteesForCsvExport) => {
+    setEditingMentee(mentee);
+    setIsEditing(true);
+  };
+
+  const handleEditSubmit = async (details: { name: string; email: string }) => {
+    if (!authHeader || !editingMentee) return;
+
+    try {
+      await editMenteeDetails(
+        {
+          n: details.name,
+          p: editingMentee.phone,
+          e: details.email,
+        },
+        authHeader
+      );
+
+      toast.success(`Mentee details updated successfully`);
+      setIsEditing(false);
+      setEditingMentee(null);
+      await onRefresh();
+    } catch (error) {
+      console.error('Failed to update mentee details:', error);
+      toast.error(`Failed to update mentee details`);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -229,6 +265,9 @@ export default function MenteesList({
                       mentee={mentee}
                       assigningMentor={assigningMentor}
                       onAssignMentor={handleAssignMentor}
+                      onUnassignMentor={onUnassignMentor}
+                      unassigningMentor={unassigningMentor}
+                      onEditMentee={handleEditMentee}
                     />
                   ))}
                 </tbody>
@@ -319,6 +358,18 @@ export default function MenteesList({
         mentors={adminData?.mentors || []}
         loading={!!assigningMentor}
       />
+
+      {/* Edit Mentee Modal */}
+      {editingMentee && <EditMenteeModal
+        isOpen={isEditing}
+        onClose={() => {
+          setIsEditing(false);
+          setEditingMentee(null);
+        }}
+        onSubmit={handleEditSubmit}
+        mentee={editingMentee!}
+        loading={isEditing}
+      />}
     </div>
   );
 } 

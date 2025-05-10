@@ -25,7 +25,8 @@ export default function PersonalInfoStep({ formData, regionOptions, handleChange
           onChange={handleChange('name')}
           className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 ${
             errors.name ? 'border-red-300' : ''
-          }`}
+          } text-gray-900 bg-gray-100`}
+          disabled
         />
         {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
       </div>
@@ -41,7 +42,8 @@ export default function PersonalInfoStep({ formData, regionOptions, handleChange
           onChange={handleChange('email')}
           className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 ${
             errors.email ? 'border-red-300' : ''
-          }`}
+          } text-gray-900 bg-gray-100`}
+          disabled
         />
         {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
       </div>
@@ -57,8 +59,9 @@ export default function PersonalInfoStep({ formData, regionOptions, handleChange
           onChange={handleChange('phone')}
           className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 ${
             errors.phone ? 'border-red-300' : ''
-          }`}
+          } text-gray-900 bg-gray-100`}
           placeholder="10-digit number"
+          disabled
         />
         {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
       </div>

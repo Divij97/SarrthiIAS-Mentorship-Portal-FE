@@ -216,7 +216,7 @@ export interface StrippedDownMentee {
   p: string;
   e: string;
   rt?: Set<RecurrenceType>;
-  iu: boolean;
+  iu?: boolean;
 }
 
 export interface MenteesForCsvExport {
@@ -258,6 +258,9 @@ export interface Feedback {
   rating: number;
   additionalComments: string;
   satisfied: boolean;
+  examKnowledge: number;
+  politeness: 'Polite' | 'Not';
+  delayed: boolean;
 }
 
 export interface PastSessionsResponse {
