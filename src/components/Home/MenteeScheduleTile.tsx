@@ -5,7 +5,7 @@ import { RecurrenceType } from '@/types/session';
 
 interface MenteeScheduleTileProps {
   mentee: StrippedDownMentee;
-  onScheduleClick: (menteeId: string) => void;
+  onScheduleClick: () => void;
 }
 
 export const MenteeScheduleTile = ({ mentee, onScheduleClick }: MenteeScheduleTileProps) => {
@@ -25,10 +25,10 @@ export const MenteeScheduleTile = ({ mentee, onScheduleClick }: MenteeScheduleTi
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center text-sm text-gray-600">
+          {/* <div className="flex items-center text-sm text-gray-600">
             <span className="font-medium">Recurrence:</span>
-            <span className="ml-2">{mentee.rt || RecurrenceType.BI_WEEKLY}</span>
-          </div>
+            <span className="ml-2">{Array.from(mentee.rt)[0] || RecurrenceType.BI_WEEKLY}</span>
+          </div> */}
           <div className="flex items-center text-sm text-gray-600">
             <span className="font-medium">Phone:</span>
             <span className="ml-2">{mentee.p}</span>
@@ -37,7 +37,7 @@ export const MenteeScheduleTile = ({ mentee, onScheduleClick }: MenteeScheduleTi
 
         <div className="pt-4">
           <Button
-            onClick={() => onScheduleClick(mentee.p)}
+            onClick={() => onScheduleClick()}
             className="w-full flex items-center justify-center space-x-2"
           >
             <Calendar className="h-4 w-4" />
