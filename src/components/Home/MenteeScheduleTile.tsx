@@ -1,6 +1,7 @@
 import { StrippedDownMentee } from '@/types/mentee';
 import { Button } from '@/components/ui/Button';
 import { Calendar } from 'lucide-react';
+import { RecurrenceType } from '@/types/session';
 
 interface MenteeScheduleTileProps {
   mentee: StrippedDownMentee;
@@ -24,10 +25,10 @@ export const MenteeScheduleTile = ({ mentee, onScheduleClick }: MenteeScheduleTi
         </div>
 
         <div className="space-y-2">
-          {/* <div className="flex items-center text-sm text-gray-600">
-            <span className="font-medium">Preferred Slot:</span>
-            <span className="ml-2">{mentee.preferredSlot}</span>
-          </div> */}
+          <div className="flex items-center text-sm text-gray-600">
+            <span className="font-medium">Recurrence:</span>
+            <span className="ml-2">{mentee.rt || RecurrenceType.BI_WEEKLY}</span>
+          </div>
           <div className="flex items-center text-sm text-gray-600">
             <span className="font-medium">Phone:</span>
             <span className="ml-2">{mentee.p}</span>
