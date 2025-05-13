@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { UserType } from '@/types/auth';
-import { Menu, X, User, Book, Calendar, LogOut, Clock } from 'lucide-react';
+import { Menu, X, User, Book, Calendar, LogOut, Clock, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 interface ResponsiveNavbarProps {
@@ -35,6 +35,7 @@ export default function ResponsiveNavbar({
   const menteeNavigation = [
     { name: 'Profile', section: 'profile', icon: <User className="h-5 w-5" /> },
     { name: 'Courses', section: 'courses', icon: <Book className="h-5 w-5" /> },
+    { name: 'Support Queries', section: 'support-queries', icon: <HelpCircle className="h-5 w-5" /> },
   ];
 
   const mentorNavigation = [

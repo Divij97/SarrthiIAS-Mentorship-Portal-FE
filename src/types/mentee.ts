@@ -266,3 +266,14 @@ export interface Feedback {
 export interface PastSessionsResponse {
   sessionsByDate: { [key: string]: MenteeSession[] };
 }
+
+export interface SupportQueryRequest {
+  name: string;
+  phone: string;
+  email: string;
+  course: string; 
+  category: string;
+  issue: string;
+}
+
+

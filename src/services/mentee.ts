@@ -1,4 +1,4 @@
-import { MenteeResponse, MenteeWithAuth, PastSessionsResponse, SubmitFeedbackRequest } from '@/types/mentee';
+import { MenteeResponse, MenteeWithAuth, PastSessionsResponse, SubmitFeedbackRequest, SupportQueryRequest } from '@/types/mentee';
 import { config } from '@/config/env';
 import { useLoginStore } from '@/stores/auth/store';
 import { MentorshipGroup } from '@/types/session';
@@ -202,3 +202,17 @@ export const getPastSessions = async (authHeader: string): Promise<PastSessionsR
     }
   });
 }
+
+export const submitSupportQuery = async (supportQueryData: SupportQueryRequest, authHeader: string): Promise<void> => {
+  return await fetchSafe<void>(`${config.api.url}/v1/mentees/me/support-queries`, {
+    method: 'POST',
+    headers: {
+      'Authorization': authHeader,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(supportQueryData),
+  });
+}
+
+
