@@ -126,6 +126,7 @@ export default function SupportQueryForm({ mentee, onSuccess }: SupportQueryForm
             value={formData.course}
             onChange={handleChange}
             placeholder="Enter course name"
+            required
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
           />
         </div>
@@ -140,6 +141,7 @@ export default function SupportQueryForm({ mentee, onSuccess }: SupportQueryForm
             id="category"
             value={formData.category}
             onChange={handleChange}
+            required
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
           >
             <option value="General">General</option>

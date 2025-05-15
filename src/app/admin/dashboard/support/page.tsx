@@ -13,7 +13,7 @@ export default function SupportQueriesPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedQuery, setSelectedQuery] = useState<SupportQuery | null>(null);
   const [response, setResponse] = useState('');
-  const [isResolved, setIsResolved] = useState(false);
+  const [isResolved, setIsResolved] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const getAuthHeader = useAdminAuthStore((state) => state.getAuthHeader);
 
@@ -66,7 +66,7 @@ export default function SupportQueriesPage() {
   const handleRespond = (query: SupportQuery) => {
     setSelectedQuery(query);
     setResponse(query.response || '');
-    setIsResolved(query.resolved);
+    setIsResolved(true);
   };
 
   const handleSubmitResponse = async () => {
@@ -92,7 +92,7 @@ export default function SupportQueriesPage() {
       toast.success('Response submitted successfully');
       setSelectedQuery(null);
       setResponse('');
-      setIsResolved(false);
+      setIsResolved(true);
     } catch (error) {
       console.error('Error submitting response:', error);
       toast.error('Failed to submit response');
@@ -248,7 +248,7 @@ export default function SupportQueriesPage() {
                 onClick={() => {
                   setSelectedQuery(null);
                   setResponse('');
-                  setIsResolved(false);
+                  setIsResolved(true);
                 }}
                 className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
               >

@@ -37,14 +37,41 @@ export default function SessionFeedbackPage() {
     sessionDate,
     rating: 0,
     additionalComments: '',
-    satisfied: false,
-    examKnowledge: 0,
+    satisfied: true,
+    examKnowledge: 5,
     politeness: 'Polite',
     delayed: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate all required fields
+    if (formData.rating === 0) {
+      toast.error('Please rate your experience');
+      return;
+    }
+
+    if (formData.examKnowledge === 0) {
+      toast.error('Please rate mentor\'s knowledge of exam pattern');
+      return;
+    }
+
+    if (!formData.politeness) {
+      toast.error('Please select mentor\'s politeness');
+      return;
+    }
+
+    if (formData.delayed === undefined) {
+      toast.error('Please select punctuality status');
+      return;
+    }
+
+    if (formData.satisfied === undefined) {
+      toast.error('Please indicate if you were satisfied with the session');
+      return;
+    }
+
     try {
         const authHeader = getAuthHeader();
         const submitFeedbackRequest: SubmitFeedbackRequest = {
@@ -110,7 +137,7 @@ export default function SessionFeedbackPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Rate your experience
+            Rate your experience <span className="text-red-500">*</span>
           </label>
           <StarRating
             value={formData.rating}
@@ -120,14 +147,14 @@ export default function SessionFeedbackPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Mentor's Knowledge of Exam Pattern
+            Mentor's Knowledge of Exam Pattern <span className="text-red-500">*</span>
           </label>
           <select
             value={formData.examKnowledge}
             onChange={(e) => setFormData({ ...formData, examKnowledge: Number(e.target.value) })}
+            required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value={0}>Select rating</option>
             <option value={1}>1 - Poor</option>
             <option value={2}>2 - Fair</option>
             <option value={3}>3 - Good</option>
@@ -138,14 +165,16 @@ export default function SessionFeedbackPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Mentor's Politeness
+            Mentor's Politeness <span className="text-red-500">*</span>
           </label>
-          <div className="flex gap-4">
+          <div className="flex gap-4" role="radiogroup" aria-required="true">
             <label className="inline-flex items-center">
               <input
                 type="radio"
+                name="politeness"
                 checked={formData.politeness === 'Polite'}
                 onChange={() => setFormData({ ...formData, politeness: 'Polite' })}
+                required
                 className="form-radio h-4 w-4 text-blue-600"
               />
               <span className="ml-2">Polite</span>
@@ -153,8 +182,10 @@ export default function SessionFeedbackPage() {
             <label className="inline-flex items-center">
               <input
                 type="radio"
+                name="politeness"
                 checked={formData.politeness === 'Not'}
                 onChange={() => setFormData({ ...formData, politeness: 'Not' })}
+                required
                 className="form-radio h-4 w-4 text-blue-600"
               />
               <span className="ml-2">Not Polite</span>
@@ -164,14 +195,16 @@ export default function SessionFeedbackPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Punctuality
+            Punctuality <span className="text-red-500">*</span>
           </label>
-          <div className="flex gap-4">
+          <div className="flex gap-4" role="radiogroup" aria-required="true">
             <label className="inline-flex items-center">
               <input
                 type="radio"
+                name="punctuality"
                 checked={!formData.delayed}
                 onChange={() => setFormData({ ...formData, delayed: false })}
+                required
                 className="form-radio h-4 w-4 text-blue-600"
               />
               <span className="ml-2">Session started on time</span>
@@ -179,8 +212,10 @@ export default function SessionFeedbackPage() {
             <label className="inline-flex items-center">
               <input
                 type="radio"
+                name="punctuality"
                 checked={formData.delayed}
                 onChange={() => setFormData({ ...formData, delayed: true })}
+                required
                 className="form-radio h-4 w-4 text-blue-600"
               />
               <span className="ml-2">Delayed</span>
@@ -190,14 +225,16 @@ export default function SessionFeedbackPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Were you satisfied with the session experience?
+            Were you satisfied with the session experience? <span className="text-red-500">*</span>
           </label>
-          <div className="flex gap-4">
+          <div className="flex gap-4" role="radiogroup" aria-required="true">
             <label className="inline-flex items-center">
               <input
                 type="radio"
+                name="satisfaction"
                 checked={formData.satisfied}
                 onChange={() => setFormData({ ...formData, satisfied: true })}
+                required
                 className="form-radio h-4 w-4 text-blue-600"
               />
               <span className="ml-2">Yes</span>
@@ -205,8 +242,10 @@ export default function SessionFeedbackPage() {
             <label className="inline-flex items-center">
               <input
                 type="radio"
+                name="satisfaction"
                 checked={!formData.satisfied}
                 onChange={() => setFormData({ ...formData, satisfied: false })}
+                required
                 className="form-radio h-4 w-4 text-blue-600"
               />
               <span className="ml-2">No</span>
@@ -216,7 +255,7 @@ export default function SessionFeedbackPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Comments (if any)
+            Comments (optional)
           </label>
           <textarea
             value={formData.additionalComments}

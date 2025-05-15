@@ -50,6 +50,9 @@ export default function FeedbackPage() {
       'Mentor Name',
       'Mentor Email',
       'Rating',
+      'Exam Knowledge',
+      'Politeness',
+      'Punctuality',
       'Satisfied',
       'Comments'
     ];
@@ -62,8 +65,11 @@ export default function FeedbackPage() {
       feedback.mentor.name,
       feedback.mentor.email,
       feedback.rating,
+      feedback.examKnowledge !== -1 ? `${feedback.examKnowledge}/5` : 'N/A',
+      feedback.politeness || 'N/A',
+      feedback.delayed !== undefined ? (feedback.delayed ? 'Delayed' : 'On Time') : 'N/A',
       feedback.satisfied ? 'Yes' : 'No',
-      `"${(feedback.additionalComments || '').replace(/"/g, '""')}"` // Add null check with default empty string
+      `"${(feedback.additionalComments || '').replace(/"/g, '""')}"`
     ]);
 
     // Combine headers and rows
