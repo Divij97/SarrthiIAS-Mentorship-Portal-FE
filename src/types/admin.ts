@@ -126,4 +126,5 @@ export interface MentorFeedback {
     examKnowledge: number;
     politeness: 'Polite' | 'Not';
     delayed: boolean;
+    submitTimestamp: string;
 }

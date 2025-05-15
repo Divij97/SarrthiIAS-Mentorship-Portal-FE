@@ -29,7 +29,7 @@ export default function MenteesList({
 }: MenteesListProps) {
   const [mentees, setMentees] = useState<MenteesForCsvExport[]>([]);
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState<MenteesFilters>({ limit: 10, skip: 0 });
+  const [filters, setFilters] = useState<MenteesFilters>({ limit: 10, skip: 0, unassigned: true });
   const [fullMentees, setFullMentees] = useState<MenteesForCsvExport[]>([]);
   const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
   const adminData = useAdminAuthStore((state) => state.adminData);
@@ -63,6 +63,10 @@ export default function MenteesList({
         const phone = mentee.phone || '';
         return name.includes(query) || email.includes(query) || phone.includes(query);
       });
+    }
+
+    if (currentFilters.unassigned) {
+      filteredMentees = filteredMentees.filter(mentee => !mentee.assignedMentor);
     }
 
     if (currentFilters.limit === 99999) {
@@ -181,6 +185,14 @@ export default function MenteesList({
     }
   };
 
+  // Helper function to get course names from course IDs
+  const getCourseNames = (courseIds: string[]) => {
+    return courseIds
+      .map(id => courses.find(course => course.id === id)?.name)
+      .filter(Boolean)
+      .join(', ');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -251,6 +263,9 @@ export default function MenteesList({
                       Phone
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Assigned Courses
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Assigned Mentor
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -268,6 +283,7 @@ export default function MenteesList({
                       onUnassignMentor={onUnassignMentor}
                       unassigningMentor={unassigningMentor}
                       onEditMentee={handleEditMentee}
+                      getCourseNames={getCourseNames}
                     />
                   ))}
                 </tbody>
@@ -282,6 +298,7 @@ export default function MenteesList({
                   mentee={mentee}
                   assigningMentor={assigningMentor}
                   onAssignMentor={handleAssignMentor}
+                  getCourseNames={getCourseNames}
                 />
               ))}
             </div>

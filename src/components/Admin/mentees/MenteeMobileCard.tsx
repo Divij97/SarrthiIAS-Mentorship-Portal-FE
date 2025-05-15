@@ -10,12 +10,14 @@ interface MenteeMobileCardProps {
   mentee: MenteesForCsvExport;
   assigningMentor: string | null;
   onAssignMentor: (mentee: MenteesForCsvExport) => void;
+  getCourseNames: (courseIds: string[]) => string;
 }
 
 export default function MenteeMobileCard({
   mentee,
   assigningMentor,
-  onAssignMentor
+  onAssignMentor,
+  getCourseNames
 }: MenteeMobileCardProps) {
   const authHeader = useAdminAuthStore.getState().getAuthHeader();
   const [sendingEmail, setSendingEmail] = useState<string|null>(null);
@@ -54,6 +56,20 @@ export default function MenteeMobileCard({
         </div>
         <div className="text-sm text-gray-500">
           <p>{mentee.email}</p>
+        </div>
+        <div className="text-sm text-gray-500">
+          <p>Assigned Courses:</p>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {mentee.assignedCourses && mentee.assignedCourses.length > 0 ? (
+              getCourseNames(mentee.assignedCourses).split(', ').map((courseName, index) => (
+                <span key={index} className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
+                  {courseName}
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-500 text-xs">None</span>
+            )}
+          </div>
         </div>
         <div className="text-sm text-gray-500">
           <p>Assigned Mentor: {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}</p>

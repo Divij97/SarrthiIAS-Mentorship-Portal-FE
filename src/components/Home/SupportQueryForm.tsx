@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Mentee } from '@/types/mentee';
-import { useMenteeStore } from '@/stores/mentee/store';
+import { Mentee, SupportQueryRequest, SupportQueryCategory } from '@/types/mentee';
+import { submitSupportQuery } from '@/services/mentee';
+import { useLoginStore } from '@/stores/auth/store';
+import { toast } from 'react-hot-toast';
 
 interface SupportQueryFormProps {
   mentee: Mentee;
+  onSuccess?: () => void;
 }
 
 type QueryCategory = 'General' | 'Tech' | 'Mentor' | 'Other';
@@ -19,21 +22,35 @@ interface SupportQueryFormData {
   issue: string;
 }
 
-export default function SupportQueryForm({ mentee }: SupportQueryFormProps) {
-  const { courses } = useMenteeStore();
+export default function SupportQueryForm({ mentee, onSuccess }: SupportQueryFormProps) {
+  const authHeader = useLoginStore((state) => state.authHeader);
   const [formData, setFormData] = useState<SupportQueryFormData>({
     name: mentee.n,
     mobileNumber: mentee.p,
     email: mentee.e,
-    course: courses[0]?.course?.name || '',
+    course: '',
     category: 'General',
     issue: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement submit functionality
-    console.log('Form submitted:', formData);
+    try {
+      const supportQueryRequest: SupportQueryRequest = {
+        menteeName: mentee.n,
+        phone: mentee.p,
+        email: mentee.e,
+        course: formData.course,
+        category: formData.category as SupportQueryCategory,
+        issue: formData.issue,
+      };
+      await submitSupportQuery(supportQueryRequest, authHeader);
+      toast.success('Support query submitted successfully');
+      onSuccess?.();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast.error('Error submitting form');
+    }
   };
 
   const handleChange = (
@@ -102,19 +119,15 @@ export default function SupportQueryForm({ mentee }: SupportQueryFormProps) {
           <label htmlFor="course" className="block text-sm font-medium text-gray-700">
             Course
           </label>
-          <select
+          <input
+            type="text"
             name="course"
             id="course"
             value={formData.course}
             onChange={handleChange}
+            placeholder="Enter course name"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-          >
-            {courses.map((courseData) => (
-              <option key={courseData.course.id} value={courseData.course.name}>
-                {courseData.course.name}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         {/* Category Field */}

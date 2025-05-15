@@ -267,13 +267,44 @@ export interface PastSessionsResponse {
   sessionsByDate: { [key: string]: MenteeSession[] };
 }
 
+export enum SupportQueryCategory {
+  General = 'General',
+  Tech = 'Tech',
+  Mentor = 'Mentor',
+  Other = 'Other'
+}
+
 export interface SupportQueryRequest {
-  name: string;
+  menteeName: string;
   phone: string;
   email: string;
   course: string; 
-  category: string;
+  category: SupportQueryCategory;
   issue: string;
+}
+
+export interface SupportQueryResponse { 
+  supportRequests: SupportQuery[];
+}
+
+export interface SupportQuery {
+  id: string;
+  menteeName: string;
+  menteePhone: string;
+  menteeEmail: string;
+  course: string;
+  category: SupportQueryCategory;
+  issue: string;
+  resolved: boolean;
+  submitTimestamp: string;
+  updateTimestamp: string;
+  response: string;
+}
+
+export interface UpdateSupportQueryRequest {
+  issue: string;
+  response: string;
+  resolved: boolean;
 }
 
 

@@ -4,7 +4,7 @@ interface SearchFiltersProps {
     courses: { id: string; name: string }[];
     groups: { groupId: string; groupFriendlyName: string; course: string }[];
     filters: MenteesFilters;
-    onFilterChange: (key: keyof MenteesFilters, value: string | number) => void;
+    onFilterChange: (key: keyof MenteesFilters, value: string | number | boolean) => void;
 
 }
 
@@ -73,6 +73,19 @@ export default function SearchFilters({
                     <option value="100">100</option>
                     <option value="99999">Show All</option>
                 </select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+                <input
+                    type="checkbox"
+                    id="unassignedFilter"
+                    checked={filters.unassigned || false}
+                    onChange={(e) => onFilterChange('unassigned', e.target.checked)}
+                    className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                />
+                <label htmlFor="unassignedFilter" className="text-sm font-medium text-gray-700">
+                    Show unassigned mentees
+                </label>
             </div>
         </div>
     );

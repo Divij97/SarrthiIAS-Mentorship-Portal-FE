@@ -88,6 +88,30 @@ export default function FeedbackPage() {
     ? feedbacks.filter(feedback => feedback.mentor.email === selectedMentor)
     : feedbacks;
 
+  // Sort feedbacks by submitTimestamp in descending order
+  const sortedAndFilteredFeedbacks = [...filteredFeedbacks].sort((a, b) => {
+    const parseTimestamp = (timestamp: string) => {
+      const [datePart, timePart] = timestamp.split(' ');
+      const [day, month, year] = datePart.split('/');
+      const [time, period] = timePart.split(' ');
+      const [hours, minutes] = time.split(':');
+      
+      let hour = parseInt(hours);
+      if (period === 'PM' && hour !== 12) hour += 12;
+      if (period === 'AM' && hour === 12) hour = 0;
+      
+      return new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day),
+        hour,
+        parseInt(minutes)
+      );
+    };
+
+    return parseTimestamp(b.submitTimestamp).getTime() - parseTimestamp(a.submitTimestamp).getTime();
+  });
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -160,6 +184,9 @@ export default function FeedbackPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
+                    Submitted on
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]">
                     Session Date
                   </th>
@@ -190,8 +217,11 @@ export default function FeedbackPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredFeedbacks.map((feedback, index) => (
+                {sortedAndFilteredFeedbacks.map((feedback, index) => (
                   <tr key={index}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {feedback.submitTimestamp}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {feedback.sessionDate}
                     </td>
