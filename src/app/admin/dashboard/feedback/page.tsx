@@ -63,7 +63,7 @@ export default function FeedbackPage() {
       feedback.mentor.email,
       feedback.rating,
       feedback.satisfied ? 'Yes' : 'No',
-      `"${feedback.additionalComments.replace(/"/g, '""')}"` // Escape quotes in comments
+      `"${(feedback.additionalComments || '').replace(/"/g, '""')}"` // Add null check with default empty string
     ]);
 
     // Combine headers and rows
