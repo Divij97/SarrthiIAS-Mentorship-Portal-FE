@@ -23,7 +23,7 @@ export default function Sidebar({ activeSection, onSectionChange, onLogout, user
   const menteeNavigation = [
     { name: 'Profile', section: 'profile' },
     { name: 'Courses', section: 'courses' },
-    // Sessions will be accessed through course details
+    { name: 'Support Queries', section: 'support-queries' },
   ];
 
   const mentorNavigation = [

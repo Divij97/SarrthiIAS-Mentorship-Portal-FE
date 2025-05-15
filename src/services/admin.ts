@@ -145,6 +145,7 @@ export interface MenteesFilters {
   limit: number;
   skip?: number;
   searchQuery?: string;
+  unassigned?: boolean;
 }
 
 export const fetchMentees = async (filters: MenteesFilters, authHeader: string): Promise<MenteesResponse> => {
@@ -158,7 +159,7 @@ export const fetchMentees = async (filters: MenteesFilters, authHeader: string):
     if (filters.groupId) queryParams.append('groupId', filters.groupId);
     queryParams.append('limit', filters.limit.toString());
     if (filters.skip !== undefined) queryParams.append('skip', filters.skip.toString());
-
+    if (filters.unassigned) queryParams.append('unassigned', filters.unassigned.toString());
     const response = await fetch(`${apiUrl}/v1/admin/mentees?${queryParams.toString()}`, {
       method: 'GET',
       headers: {
@@ -342,7 +343,7 @@ export const fullMenteesList = async (authHeader: string): Promise<MenteesRespon
       const response = await fetchMentees(
         {
           limit: BATCH_SIZE,
-          skip: currentSkip
+          skip: currentSkip,
         },
         authHeader
       );

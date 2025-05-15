@@ -13,6 +13,7 @@ interface MenteeRowProps {
   onUnassignMentor: (menteePhone: string) => Promise<void>;
   unassigningMentor: string | null;
   onEditMentee: (mentee: MenteesForCsvExport) => void;
+  getCourseNames: (courseIds: string[]) => string;
 }
 
 export default function MenteeRow({
@@ -21,7 +22,8 @@ export default function MenteeRow({
   onAssignMentor,
   onUnassignMentor,
   unassigningMentor,
-  onEditMentee
+  onEditMentee,
+  getCourseNames
 }: MenteeRowProps) {
 
   const authHeader = useAdminAuthStore.getState().getAuthHeader();
@@ -64,6 +66,19 @@ export default function MenteeRow({
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {mentee.phone}
+      </td>
+      <td className="px-6 py-4 text-sm text-gray-500">
+        {mentee.assignedCourses && mentee.assignedCourses.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {getCourseNames(mentee.assignedCourses).split(', ').map((courseName, index) => (
+              <span key={index} className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
+                {courseName}
+              </span>
+            ))}
+          </div>
+        ) : (
+          '-'
+        )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}

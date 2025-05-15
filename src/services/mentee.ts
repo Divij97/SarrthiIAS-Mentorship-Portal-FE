@@ -1,4 +1,4 @@
-import { MenteeResponse, MenteeWithAuth, PastSessionsResponse, SubmitFeedbackRequest } from '@/types/mentee';
+import { MenteeResponse, MenteeWithAuth, PastSessionsResponse, SubmitFeedbackRequest, SupportQueryRequest, SupportQueryResponse, UpdateSupportQueryRequest } from '@/types/mentee';
 import { config } from '@/config/env';
 import { useLoginStore } from '@/stores/auth/store';
 import { MentorshipGroup } from '@/types/session';
@@ -196,6 +196,48 @@ export const submitFeedback = async (feedbackData: SubmitFeedbackRequest, authHe
 
 export const getPastSessions = async (authHeader: string): Promise<PastSessionsResponse> => {
   return await fetchSafe<PastSessionsResponse>(`${config.api.url}/v1/mentees/me/sessions`, {
+    method: 'GET',
+    headers: {
+      'Authorization': authHeader,
+    }
+  });
+}
+
+export const submitSupportQuery = async (supportQueryData: SupportQueryRequest, authHeader: string): Promise<void> => {
+  return await fetchSafe<void>(`${config.api.url}/v1/support-queries`, {
+    method: 'POST',
+    headers: {
+      'Authorization': authHeader,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(supportQueryData),
+  });
+}
+
+export const getSupportQueries = async (authHeader: string): Promise<SupportQueryResponse> => {
+  return await fetchSafe<SupportQueryResponse>(`${config.api.url}/v1/support-queries`, {
+    method: 'GET',
+    headers: {
+      'Authorization': authHeader,
+    }
+  });
+}
+
+export const updateSupportQuery = async (id: string, supportQueryData: UpdateSupportQueryRequest, authHeader: string): Promise<void> => {
+  return await fetchSafe<void>(`${config.api.url}/v1/support-queries/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': authHeader,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(supportQueryData),
+  });
+}
+
+export const getUserSupportQueries = async (authHeader: string, username: string): Promise<SupportQueryResponse> => {
+  return await fetchSafe<SupportQueryResponse>(`${config.api.url}/v1/support-queries/mentees/${username}`, {
     method: 'GET',
     headers: {
       'Authorization': authHeader,
