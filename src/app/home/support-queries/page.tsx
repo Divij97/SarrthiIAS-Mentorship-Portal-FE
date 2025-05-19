@@ -153,6 +153,9 @@ export default function SupportQueriesPage() {
                     Category
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Course
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Issue
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -171,6 +174,9 @@ export default function SupportQueriesPage() {
                   <tr key={query.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {query.category}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {query.course}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 whitespace-pre-wrap">
                       {query.issue}

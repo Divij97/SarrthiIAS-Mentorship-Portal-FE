@@ -15,10 +15,10 @@ export interface AdminResponse {
 }
 
 export enum ResourceType {
-    COURSES = 'COURSES',
-    MENTORS = 'MENTORS',
-    MENTEES = 'MENTEES',
-    GROUPS = 'GROUPS',
+    COURSES = 'courses',
+    MENTORS = 'mentors',
+    MENTEES = 'mentees',
+    GROUPS = 'groups',
 }
 
 export interface CreateMenteeRequest {

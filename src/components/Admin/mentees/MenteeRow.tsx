@@ -1,5 +1,5 @@
 import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
-import { UserPlusIcon, UserMinusIcon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, UserMinusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { useState } from 'react';
 import { sendOnBoardingEmail } from '@/services/mentors';
@@ -13,6 +13,8 @@ interface MenteeRowProps {
   onUnassignMentor: (menteePhone: string) => Promise<void>;
   unassigningMentor: string | null;
   onEditMentee: (mentee: MenteesForCsvExport) => void;
+  onDeleteMentee: (menteePhone: string) => Promise<void>;
+  deletingMentee: string | null;
   getCourseNames: (courseIds: string[]) => string;
 }
 
@@ -23,6 +25,8 @@ export default function MenteeRow({
   onUnassignMentor,
   unassigningMentor,
   onEditMentee,
+  onDeleteMentee,
+  deletingMentee,
   getCourseNames
 }: MenteeRowProps) {
 
@@ -129,6 +133,19 @@ export default function MenteeRow({
             className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
           >
             Edit Details
+          </button>
+
+          <button
+            onClick={() => onDeleteMentee(mentee.phone)}
+            disabled={deletingMentee === mentee.phone}
+            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+              deletingMentee === mentee.phone
+                ? 'bg-red-100 text-red-400 cursor-not-allowed'
+                : 'text-red-700 bg-red-100 hover:bg-red-200'
+            }`}
+          >
+            <TrashIcon className="h-4 w-4 mr-1" />
+            {deletingMentee === mentee.phone ? 'Deleting...' : 'Delete'}
           </button>
         </div>
       </td>

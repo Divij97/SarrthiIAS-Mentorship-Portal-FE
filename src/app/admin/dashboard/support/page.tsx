@@ -15,11 +15,12 @@ export default function SupportQueriesPage() {
   const [response, setResponse] = useState('');
   const [isResolved, setIsResolved] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showResolved, setShowResolved] = useState(false);
   const getAuthHeader = useAdminAuthStore((state) => state.getAuthHeader);
 
   const fetchQueries = async () => {
     try {
-      const data = await getSupportQueries(getAuthHeader());
+      const data = await getSupportQueries(getAuthHeader(), showResolved);
       // Sort queries by submitTimestamp in descending order
       const sortedQueries = [...(data.supportRequests || [])].sort((a, b) => {
         const parseTimestamp = (timestamp: string) => {
@@ -57,6 +58,11 @@ export default function SupportQueriesPage() {
   useEffect(() => {
     fetchQueries();
   }, []);
+
+  // Add new useEffect to watch showResolved state
+  useEffect(() => {
+    fetchQueries();
+  }, [showResolved]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -101,41 +107,26 @@ export default function SupportQueriesPage() {
     }
   };
 
-  if (loading) {
+  // Separate queries into resolved and unresolved
+  const unresolvedQueries = queries.filter(query => !query.resolved);
+  const resolvedQueries = queries.filter(query => query.resolved);
+
+  const renderQueriesTable = (queries: SupportQuery[], title: string) => {
+    if (queries.length === 0) return null;
+
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-gray-500">Loading...</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-gray-900">Support Queries</h2>
-        <button
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
-        >
-          <ArrowPathIcon className={`h-5 w-5 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
-      </div>
-
-      {/* Support Queries List */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-        {queries.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
-            <p>No support queries found.</p>
-          </div>
-        ) : (
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+        <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Mentee
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Course
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Query
@@ -158,6 +149,9 @@ export default function SupportQueriesPage() {
                       <div className="text-sm font-medium text-gray-900">{query.menteeName}</div>
                       <div className="text-sm text-gray-500">{query.menteeEmail}</div>
                       <div className="text-sm text-gray-500">{query.menteePhone}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{query.course}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-900 whitespace-pre-wrap">{query.issue}</div>
@@ -196,6 +190,56 @@ export default function SupportQueriesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-4">
+          <h2 className="text-2xl font-semibold text-gray-900">Support Queries</h2>
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="showResolved"
+              checked={showResolved}
+              onChange={(e) => setShowResolved(e.target.checked)}
+              className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+            />
+            <label htmlFor="showResolved" className="ml-2 block text-sm text-gray-900">
+              Show resolved queries
+            </label>
+          </div>
+        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+        >
+          <ArrowPathIcon className={`h-5 w-5 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
+
+      {/* Support Queries Lists */}
+      <div className="space-y-8">
+        {renderQueriesTable(unresolvedQueries, "Pending Queries")}
+        {showResolved && renderQueriesTable(resolvedQueries, "Resolved Queries")}
+        
+        {queries.length === 0 && (
+          <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-4 text-center text-gray-500">
+            <p>No support queries found.</p>
           </div>
         )}
       </div>

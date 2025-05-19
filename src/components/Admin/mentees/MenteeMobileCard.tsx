@@ -1,5 +1,5 @@
 import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
-import { UserPlusIcon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { useState } from 'react';
 import { sendOnBoardingEmail } from '@/services/mentors';
@@ -10,6 +10,8 @@ interface MenteeMobileCardProps {
   mentee: MenteesForCsvExport;
   assigningMentor: string | null;
   onAssignMentor: (mentee: MenteesForCsvExport) => void;
+  onDeleteMentee: (menteePhone: string) => Promise<void>;
+  deletingMentee: string | null;
   getCourseNames: (courseIds: string[]) => string;
 }
 
@@ -17,6 +19,8 @@ export default function MenteeMobileCard({
   mentee,
   assigningMentor,
   onAssignMentor,
+  onDeleteMentee,
+  deletingMentee,
   getCourseNames
 }: MenteeMobileCardProps) {
   const authHeader = useAdminAuthStore.getState().getAuthHeader();
@@ -100,6 +104,20 @@ export default function MenteeMobileCard({
               {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
             </button>
           }
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            onClick={() => onDeleteMentee(mentee.phone)}
+            disabled={deletingMentee === mentee.phone}
+            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+              deletingMentee === mentee.phone
+                ? 'bg-red-100 text-red-400 cursor-not-allowed'
+                : 'text-red-700 bg-red-100 hover:bg-red-200'
+            }`}
+          >
+            <TrashIcon className="h-4 w-4 mr-1" />
+            {deletingMentee === mentee.phone ? 'Deleting...' : 'Delete'}
+          </button>
         </div>
       </div>
     </div>

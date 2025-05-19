@@ -215,8 +215,8 @@ export const submitSupportQuery = async (supportQueryData: SupportQueryRequest, 
   });
 }
 
-export const getSupportQueries = async (authHeader: string): Promise<SupportQueryResponse> => {
-  return await fetchSafe<SupportQueryResponse>(`${config.api.url}/v1/support-queries`, {
+export const getSupportQueries = async (authHeader: string, includeResolved: boolean = false): Promise<SupportQueryResponse> => {
+  return await fetchSafe<SupportQueryResponse>(`${config.api.url}/v1/support-queries?includeResolved=${includeResolved}`, {
     method: 'GET',
     headers: {
       'Authorization': authHeader,

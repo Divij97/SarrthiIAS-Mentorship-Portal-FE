@@ -4,14 +4,15 @@ import { useState, useEffect } from 'react';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { RegisterMenteeModal } from '@/components/app/admin/mentees/register-mentee-modal';
 import MenteesList from '@/components/Admin/mentees/MenteesList';
-import { fetchMentees, MenteesFilters, fullMenteesList } from '@/services/admin';
+import { fetchMentees, MenteesFilters, fullMenteesList, deleteResource } from '@/services/admin';
 import { toast } from 'react-hot-toast';
 import { MenteesForCsvExport } from '@/types/mentee';
-import { KeyIcon, MagnifyingGlassIcon, PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+import { KeyIcon, MagnifyingGlassIcon, PlusIcon, UserPlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import ResetPasswordModal from '@/components/Admin/ResetPasswordModal';
 import AssignToCourseModal from '@/components/Admin/mentees/AssignToCourseModal';
 import { AssignMentorModal } from '@/components/Admin/mentees/assign-mentor-modal';
 import { assignMentorToMentee } from '@/services/admin'
+import { ResourceType } from '@/types/admin';
 
 export default function MenteesPage() {
   const { adminData, getCourseGroups, getAuthHeader, setAllMentees, allMentees } = useAdminAuthStore();
@@ -28,6 +29,7 @@ export default function MenteesPage() {
   const [selectedMenteeForMentor, setSelectedMenteeForMentor] = useState<MenteesForCsvExport | null>(null);
   const [assigningMentor, setAssigningMentor] = useState<string | null>(null);
   const [unassigningMentor, setUnassigningMentor] = useState<string | null>(null);
+  const [deletingMentee, setDeletingMentee] = useState<string | null>(null);
 
   useEffect(() => {
     if (!allMentees) {
@@ -39,7 +41,7 @@ export default function MenteesPage() {
     try {
       setFetchingAllMentees(true);
       const response = await fullMenteesList(getAuthHeader());
-      setAllMentees(response.mentees);
+      setAllMentees(response.mentees.filter(mentee => !mentee.deleted));
       toast.success('Successfully fetched all mentees');
     } catch (error) {
       console.error('Error fetching all mentees:', error);
@@ -164,6 +166,47 @@ export default function MenteesPage() {
     }
   };
 
+  const handleDeleteMentee = async (menteePhone: string) => {
+    if (!getAuthHeader || !menteePhone) return;
+
+    if (!window.confirm('Are you sure you want to delete this mentee? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeletingMentee(menteePhone);
+    try {
+      await deleteResource(ResourceType.MENTEES, menteePhone, getAuthHeader());
+
+      // Update the mentees list by removing the deleted mentee
+      if (allMentees) {
+        const updatedMentees = allMentees.filter(mentee => mentee.phone !== menteePhone);
+        setAllMentees(updatedMentees);
+        
+        // Update search results if they exist
+        if (searchResults !== null) {
+          const query = searchQuery.toLowerCase().trim();
+          const updatedResults = updatedMentees.filter(mentee => {
+            const name = mentee.name?.toLowerCase() || '';
+            const email = mentee.email?.toLowerCase() || '';
+            const phone = mentee.phone?.toLowerCase() || '';
+
+            return name.includes(query) ||
+                   email.includes(query) ||
+                   phone.includes(query);
+          });
+          setSearchResults(updatedResults);
+        }
+      }
+
+      toast.success('Mentee deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete mentee:', error);
+      toast.error('Failed to delete mentee');
+    } finally {
+      setDeletingMentee(null);
+    }
+  };
+
   if (!adminData) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -209,6 +252,8 @@ export default function MenteesPage() {
         onRefresh={handleRefresh}
         onUnassignMentor={handleUnassignMentor}
         unassigningMentor={unassigningMentor}
+        onDeleteMentee={handleDeleteMentee}
+        deletingMentee={deletingMentee}
       />}
 
       <ResetPasswordModal

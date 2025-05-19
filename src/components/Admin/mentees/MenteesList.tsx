@@ -9,6 +9,7 @@ import SearchFilters from './search-filters';
 import MenteeRow from './MenteeRow';
 import MenteeMobileCard from './MenteeMobileCard';
 import EditMenteeModal from './EditMenteeModal';
+import { ResourceType } from '@/types/admin';
 
 interface MenteesListProps {
   allMentees: MenteesForCsvExport[];
@@ -17,6 +18,8 @@ interface MenteesListProps {
   onRefresh: () => Promise<void>;
   onUnassignMentor: (menteePhone: string) => Promise<void>;
   unassigningMentor: string | null;
+  onDeleteMentee: (menteePhone: string) => Promise<void>;
+  deletingMentee: string | null;
 }
 
 export default function MenteesList({
@@ -25,7 +28,9 @@ export default function MenteesList({
   groups,
   onRefresh,
   onUnassignMentor,
-  unassigningMentor
+  unassigningMentor,
+  onDeleteMentee,
+  deletingMentee
 }: MenteesListProps) {
   const [mentees, setMentees] = useState<MenteesForCsvExport[]>([]);
   const [page, setPage] = useState(1);
@@ -283,6 +288,8 @@ export default function MenteesList({
                       onUnassignMentor={onUnassignMentor}
                       unassigningMentor={unassigningMentor}
                       onEditMentee={handleEditMentee}
+                      onDeleteMentee={onDeleteMentee}
+                      deletingMentee={deletingMentee}
                       getCourseNames={getCourseNames}
                     />
                   ))}
@@ -298,6 +305,8 @@ export default function MenteesList({
                   mentee={mentee}
                   assigningMentor={assigningMentor}
                   onAssignMentor={handleAssignMentor}
+                  onDeleteMentee={onDeleteMentee}
+                  deletingMentee={deletingMentee}
                   getCourseNames={getCourseNames}
                 />
               ))}
