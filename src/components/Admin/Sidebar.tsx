@@ -40,6 +40,7 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
     },
     { name: 'Mentors', path: '/admin/dashboard/mentors' },
     { name: 'Mentees', path: '/admin/dashboard/mentees' },
+    { name: 'Ongoing Sessions', path: '/admin/dashboard/ongoing-sessions' },
     { name: 'Feedback', path: '/admin/dashboard/feedback' },
     { name: 'Support Queries', path: '/admin/dashboard/support' }
   ];

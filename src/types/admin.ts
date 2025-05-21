@@ -1,7 +1,7 @@
 import { Course, CreateDocumentRequest } from "./course";
 import { MenteesForCsvExport, StrippedDownMentee } from "./mentee";
 import { StrippedDownMentor } from "./mentor";
-import { GroupMentorshipSession } from "./session";
+import { GroupMentorshipSession, MentorshipSession } from "./session";
 export interface AdminData {
     username: string;
     courses:  Course[];
@@ -127,4 +127,8 @@ export interface MentorFeedback {
     politeness: 'Polite' | 'Not';
     delayed: boolean;
     submitTimestamp: string;
+}
+
+export interface OngoingSessions {
+    sessionsByDate: { [key: string]: MentorshipSession[] };
 }

@@ -1,4 +1,4 @@
-import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorFeedbackResponse, MentorshipSessionsResponse, PasswordResetRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
+import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorFeedbackResponse, MentorshipSessionsResponse, OngoingSessions, PasswordResetRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
 import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
@@ -419,4 +419,14 @@ export const editMenteeDetails = async (mentee: StrippedDownMentee, authHeader: 
     },
     body: JSON.stringify(mentee)
   })
+}
+
+export const getOngoingSessions = async (authHeader: string): Promise<OngoingSessions> => {
+  return await fetchSafe<OngoingSessions>(`${config.api.url}/v1/admin/mentorship-sessions`, {
+    method: 'GET',
+    headers: {
+      'Authorization': authHeader,
+      'Content-Type': 'application/json',
+    }
+  });
 }
