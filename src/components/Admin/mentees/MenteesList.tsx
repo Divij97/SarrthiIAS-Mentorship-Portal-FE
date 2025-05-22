@@ -33,6 +33,7 @@ export default function MenteesList({
   deletingMentee
 }: MenteesListProps) {
   const [menteesWithIds, setMenteesWithIds] = useState<MenteeWithId[]>([]);
+  const [filteredMenteesWithIds, setFilteredMenteesWithIds] = useState<MenteeWithId[]>([]);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<MenteesFilters>({ limit: 10, skip: 0, unassigned: true });
   const [fullMenteesWithIds, setFullMenteesWithIds] = useState<MenteeWithId[]>([]);
@@ -82,13 +83,15 @@ export default function MenteesList({
       filteredMentees = filteredMentees.filter(menteeWithId => !menteeWithId.mentee.assignedMentor);
     }
 
+    // Store the filtered list
+    setFilteredMenteesWithIds(filteredMentees);
+
     if (currentFilters.limit === 99999) {
       setPage(1);
       setMenteesWithIds(filteredMentees);
     } else {
       const startIndex = (page - 1) * currentFilters.limit;
       const paginatedMentees = filteredMentees.slice(startIndex, startIndex + currentFilters.limit);
-    
       setMenteesWithIds(paginatedMentees);
     }   
   };
@@ -156,23 +159,15 @@ export default function MenteesList({
   const handleLocalPrevPage = () => {
     if (page === 1) return;
     
-    if (!fullMenteesWithIds) {
-      return;
-    }
-
     setPage(prev => prev - 1);
     const prevPageEnd = (page - 1) * filters.limit;
-    const prevPageMentees = fullMenteesWithIds.slice(prevPageEnd - filters.limit, prevPageEnd);
+    const prevPageMentees = filteredMenteesWithIds.slice(prevPageEnd - filters.limit, prevPageEnd);
     setMenteesWithIds(prevPageMentees);
   };
 
   const handleLocalNextPage = () => {
-    if (!fullMenteesWithIds) {
-      return;
-    }
-
     const nextPageStart = page * filters.limit;
-    const nextPageMentees = fullMenteesWithIds.slice(nextPageStart, nextPageStart + filters.limit);
+    const nextPageMentees = filteredMenteesWithIds.slice(nextPageStart, nextPageStart + filters.limit);
     
     if (nextPageMentees.length === 0) {
       return;
