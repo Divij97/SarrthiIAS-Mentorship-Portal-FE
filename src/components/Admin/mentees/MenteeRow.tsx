@@ -33,10 +33,17 @@ export default function MenteeRow({
   const authHeader = useAdminAuthStore.getState().getAuthHeader();
   const [sendingEmail, setSendingEmail] = useState<string|null>(null);
 
+  // Get the mentee's ID from the parent component
+  const menteeId = (mentee as any).id;  // Type assertion since we know the parent is passing MenteeWithId
+  const isUnassigning = unassigningMentor === menteeId;
+  const isAssigning = assigningMentor === menteeId;
+  const isDeleting = deletingMentee === menteeId;
+  const isSendingEmail = sendingEmail === menteeId;
+
   const handleSendOnboardingEmail = async (mentee: MenteesForCsvExport) => {
     if (!authHeader || sendingEmail) return;
 
-    setSendingEmail(mentee.phone);
+    setSendingEmail(menteeId);
 
     try {
       const strippedMentee: StrippedDownMentee = {
@@ -61,7 +68,7 @@ export default function MenteeRow({
 
 
   return (
-    <tr key={mentee.phone}>
+    <tr key={menteeId}>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
         {mentee.name}
       </td>
@@ -91,40 +98,40 @@ export default function MenteeRow({
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => handleSendOnboardingEmail(mentee)}
-            disabled={sendingEmail === mentee.phone}
+            disabled={isSendingEmail}
             className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-              sendingEmail === mentee.phone
+              isSendingEmail
                 ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
                 : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
             }`}
           >
-            {mentee.phone !== null && sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
+            {isSendingEmail ? 'Sending...' : 'Send Onboarding Email'}
           </button>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => onAssignMentor(mentee)}
-              disabled={assigningMentor === mentee.phone}
+              disabled={isAssigning}
               className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                assigningMentor === mentee.phone
+                isAssigning
                   ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
                   : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
               }`}
             >
               <UserPlusIcon className="h-4 w-4 mr-1" />
-              {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
+              {isAssigning ? 'Assigning...' : 'Assign Mentor'}
             </button>
             <button
               onClick={() => onUnassignMentor(mentee.phone)}
-              disabled={unassigningMentor === mentee.phone}
+              disabled={isUnassigning}
               className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                unassigningMentor === mentee.phone
+                isUnassigning
                   ? 'bg-red-100 text-red-400 cursor-not-allowed'
                   : 'text-red-700 bg-red-100 hover:bg-red-200'
               }`}
             >
               <UserMinusIcon className="h-4 w-4 mr-1" />
-              {unassigningMentor === mentee.phone ? 'Unassigning...' : 'Unassign Mentor'}
+              {isUnassigning ? 'Unassigning...' : 'Unassign Mentor'}
             </button>
           </div>
 
@@ -137,15 +144,15 @@ export default function MenteeRow({
 
           <button
             onClick={() => onDeleteMentee(mentee.phone)}
-            disabled={deletingMentee === mentee.phone}
+            disabled={isDeleting}
             className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-              deletingMentee === mentee.phone
+              isDeleting
                 ? 'bg-red-100 text-red-400 cursor-not-allowed'
                 : 'text-red-700 bg-red-100 hover:bg-red-200'
             }`}
           >
             <TrashIcon className="h-4 w-4 mr-1" />
-            {deletingMentee === mentee.phone ? 'Deleting...' : 'Delete'}
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </button>
         </div>
       </td>

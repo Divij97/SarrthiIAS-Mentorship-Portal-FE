@@ -41,7 +41,7 @@ export default function MenteesPage() {
     try {
       setFetchingAllMentees(true);
       const response = await fullMenteesList(getAuthHeader());
-      setAllMentees(response.mentees.filter(mentee => !mentee.deleted));
+      setAllMentees(response.mentees.filter(mentee => !mentee.deleted && mentee.phone));
       toast.success('Successfully fetched all mentees');
     } catch (error) {
       console.error('Error fetching all mentees:', error);

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { MenteesForCsvExport } from '@/types/mentee';
+import { MenteesForCsvExport, MenteeWithId } from '@/types/mentee';
 import { MenteesFilters, assignMentorToMentee, fullMenteesList, editMenteeDetails } from '@/services/admin';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { ArrowPathIcon, ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
@@ -32,94 +32,114 @@ export default function MenteesList({
   onDeleteMentee,
   deletingMentee
 }: MenteesListProps) {
-  const [mentees, setMentees] = useState<MenteesForCsvExport[]>([]);
+  const [menteesWithIds, setMenteesWithIds] = useState<MenteeWithId[]>([]);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<MenteesFilters>({ limit: 10, skip: 0, unassigned: true });
-  const [fullMentees, setFullMentees] = useState<MenteesForCsvExport[]>([]);
+  const [fullMenteesWithIds, setFullMenteesWithIds] = useState<MenteeWithId[]>([]);
   const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
   const adminData = useAdminAuthStore((state) => state.adminData);
   const [assigningMentor, setAssigningMentor] = useState<string | null>(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [selectedMentee, setSelectedMentee] = useState<MenteesForCsvExport | null>(null);
+  const [selectedMentee, setSelectedMentee] = useState<MenteeWithId | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [editingMentee, setEditingMentee] = useState<MenteesForCsvExport | null>(null);
+  const [editingMentee, setEditingMentee] = useState<MenteeWithId | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  const applyFiltersAndPagination = (menteesList: MenteesForCsvExport[], currentFilters: MenteesFilters) => {
+  // Generate unique IDs for mentees
+  const generateMenteeIds = (mentees: MenteesForCsvExport[]): MenteeWithId[] => {
+    return mentees.map((mentee, index) => ({
+      id: `mentee-${Date.now()}-${index}`,  // Using timestamp + index for uniqueness
+      mentee
+    }));
+  };
+
+  const applyFiltersAndPagination = (menteesList: MenteeWithId[], currentFilters: MenteesFilters) => {
     let filteredMentees = [...menteesList];
 
     if (currentFilters.courseId) {
-      filteredMentees = filteredMentees.filter(mentee => 
-        mentee.assignedCourses?.some(courseId => courseId === currentFilters.courseId)
+      filteredMentees = filteredMentees.filter(menteeWithId => 
+        menteeWithId.mentee.assignedCourses?.some(courseId => courseId === currentFilters.courseId)
       );
     }
 
     if (currentFilters.groupId) {
-      filteredMentees = filteredMentees.filter(mentee => 
-        mentee.assignedGroupName === currentFilters.groupId
+      filteredMentees = filteredMentees.filter(menteeWithId => 
+        menteeWithId.mentee.assignedGroupName === currentFilters.groupId
       );
     }
 
     if (currentFilters.searchQuery && currentFilters.searchQuery.trim()) {
       const query = currentFilters.searchQuery.toLowerCase().trim();
-      filteredMentees = filteredMentees.filter(mentee => {
-        const name = mentee.name?.toLowerCase() || '';
-        const email = mentee.email?.toLowerCase() || '';
-        const phone = mentee.phone || '';
+      filteredMentees = filteredMentees.filter(menteeWithId => {
+        const name = menteeWithId.mentee.name?.toLowerCase() || '';
+        const email = menteeWithId.mentee.email?.toLowerCase() || '';
+        const phone = menteeWithId.mentee.phone || '';
         return name.includes(query) || email.includes(query) || phone.includes(query);
       });
     }
 
     if (currentFilters.unassigned) {
-      filteredMentees = filteredMentees.filter(mentee => !mentee.assignedMentor);
+      filteredMentees = filteredMentees.filter(menteeWithId => !menteeWithId.mentee.assignedMentor);
     }
 
     if (currentFilters.limit === 99999) {
       setPage(1);
-      setMentees(filteredMentees);
+      setMenteesWithIds(filteredMentees);
     } else {
       const startIndex = (page - 1) * currentFilters.limit;
       const paginatedMentees = filteredMentees.slice(startIndex, startIndex + currentFilters.limit);
     
-      setMentees(paginatedMentees);
+      setMenteesWithIds(paginatedMentees);
     }   
   };
     
   useMemo(() => {
     if (!allMentees) {
-      setMentees([]);
+      setMenteesWithIds([]);
       return;
     }
-    setFullMentees(allMentees); 
-    applyFiltersAndPagination(allMentees, filters);
+    const menteesWithGeneratedIds = generateMenteeIds(allMentees);
+    setFullMenteesWithIds(menteesWithGeneratedIds); 
+    applyFiltersAndPagination(menteesWithGeneratedIds, filters);
   }, [allMentees]);
 
-  const handleAssignMentor = (mentee: MenteesForCsvExport) => {
-    setSelectedMentee(mentee);
+  const handleAssignMentor = (menteeWithId: MenteeWithId) => {
+    setSelectedMentee(menteeWithId);
     setShowAssignModal(true);
   };
 
   const handleAssignSubmit = async (mentorPhone: string) => {
     if (!authHeader || !selectedMentee || !mentorPhone) return;
 
-    setAssigningMentor(selectedMentee.phone);
+    setAssigningMentor(selectedMentee.id);
     try {
-      await assignMentorToMentee(selectedMentee.phone, { mentorUserName: mentorPhone, mentee: { n: selectedMentee.name, p: selectedMentee.phone, e: selectedMentee.email } }, authHeader);
+      await assignMentorToMentee(
+        selectedMentee.mentee.phone, 
+        { 
+          mentorUserName: mentorPhone, 
+          mentee: { 
+            n: selectedMentee.mentee.name, 
+            p: selectedMentee.mentee.phone, 
+            e: selectedMentee.mentee.email 
+          } 
+        }, 
+        authHeader
+      );
 
-      toast.success(`Mentor assigned successfully to ${selectedMentee.name}`);
+      toast.success(`Mentor assigned successfully to ${selectedMentee.mentee.name}`);
       setShowAssignModal(false);
       setSelectedMentee(null);
       await onRefresh();
     } catch (error) {
       console.error('Failed to assign mentor:', error);
-      toast.error(`Failed to assign mentor to ${selectedMentee.name}`);
+      toast.error(`Failed to assign mentor to ${selectedMentee.mentee.name}`);
     } finally {
       setAssigningMentor(null);
     }
   };
 
   const handleFilterChange = (key: keyof MenteesFilters, value: string | number) => {
-    if (!fullMentees) {
+    if (!fullMenteesWithIds) {
       return;
     }
 
@@ -130,40 +150,40 @@ export default function MenteesList({
 
     setFilters(newFilters);
     setPage(1); // Reset to first page when filters change
-    applyFiltersAndPagination(fullMentees, newFilters);
+    applyFiltersAndPagination(fullMenteesWithIds, newFilters);
   };
 
   const handleLocalPrevPage = () => {
     if (page === 1) return;
     
-    if (!fullMentees) {
+    if (!fullMenteesWithIds) {
       return;
     }
 
     setPage(prev => prev - 1);
     const prevPageEnd = (page - 1) * filters.limit;
-    const prevPageMentees = fullMentees.slice(prevPageEnd - filters.limit, prevPageEnd);
-    setMentees(prevPageMentees);
+    const prevPageMentees = fullMenteesWithIds.slice(prevPageEnd - filters.limit, prevPageEnd);
+    setMenteesWithIds(prevPageMentees);
   };
 
   const handleLocalNextPage = () => {
-    if (!fullMentees) {
+    if (!fullMenteesWithIds) {
       return;
     }
 
     const nextPageStart = page * filters.limit;
-    const nextPageMentees = fullMentees.slice(nextPageStart, nextPageStart + filters.limit);
+    const nextPageMentees = fullMenteesWithIds.slice(nextPageStart, nextPageStart + filters.limit);
     
     if (nextPageMentees.length === 0) {
       return;
     }
 
     setPage(prev => prev + 1);
-    setMentees(nextPageMentees);
+    setMenteesWithIds(nextPageMentees);
   };
 
-  const handleEditMentee = (mentee: MenteesForCsvExport) => {
-    setEditingMentee(mentee);
+  const handleEditMentee = (menteeWithId: MenteeWithId) => {
+    setEditingMentee(menteeWithId);
     setIsEditing(true);
   };
 
@@ -174,7 +194,7 @@ export default function MenteesList({
       await editMenteeDetails(
         {
           n: details.name,
-          p: editingMentee.phone,
+          p: editingMentee.mentee.phone,
           e: details.email,
         },
         authHeader
@@ -247,7 +267,7 @@ export default function MenteesList({
 
       {/* Mentees List */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        {mentees.length === 0 ? (
+        {menteesWithIds.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
             <p>No mentees found matching the selected filters.</p>
           </div>
@@ -279,15 +299,15 @@ export default function MenteesList({
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {mentees.map((mentee) => (
+                  {menteesWithIds.map((menteeWithId) => (
                     <MenteeRow
-                      key={mentee.phone}
-                      mentee={mentee}
+                      key={menteeWithId.id}
+                      mentee={menteeWithId.mentee}
                       assigningMentor={assigningMentor}
-                      onAssignMentor={handleAssignMentor}
+                      onAssignMentor={() => handleAssignMentor(menteeWithId)}
                       onUnassignMentor={onUnassignMentor}
                       unassigningMentor={unassigningMentor}
-                      onEditMentee={handleEditMentee}
+                      onEditMentee={() => handleEditMentee(menteeWithId)}
                       onDeleteMentee={onDeleteMentee}
                       deletingMentee={deletingMentee}
                       getCourseNames={getCourseNames}
@@ -299,12 +319,12 @@ export default function MenteesList({
 
             {/* Mobile Cards */}
             <div className="md:hidden divide-y divide-gray-200">
-              {mentees.map((mentee) => (
+              {menteesWithIds.map((menteeWithId) => (
                 <MenteeMobileCard
-                  key={mentee.phone}
-                  mentee={mentee}
+                  key={menteeWithId.id}
+                  mentee={menteeWithId.mentee}
                   assigningMentor={assigningMentor}
-                  onAssignMentor={handleAssignMentor}
+                  onAssignMentor={() => handleAssignMentor(menteeWithId)}
                   onDeleteMentee={onDeleteMentee}
                   deletingMentee={deletingMentee}
                   getCourseNames={getCourseNames}
@@ -386,16 +406,18 @@ export default function MenteesList({
       />
 
       {/* Edit Mentee Modal */}
-      {editingMentee && <EditMenteeModal
-        isOpen={isEditing}
-        onClose={() => {
-          setIsEditing(false);
-          setEditingMentee(null);
-        }}
-        onSubmit={handleEditSubmit}
-        mentee={editingMentee!}
-        loading={isEditing}
-      />}
+      {editingMentee && (
+        <EditMenteeModal
+          isOpen={isEditing}
+          onClose={() => {
+            setIsEditing(false);
+            setEditingMentee(null);
+          }}
+          onSubmit={handleEditSubmit}
+          mentee={editingMentee.mentee}
+          loading={isEditing}
+        />
+      )}
     </div>
   );
 } 

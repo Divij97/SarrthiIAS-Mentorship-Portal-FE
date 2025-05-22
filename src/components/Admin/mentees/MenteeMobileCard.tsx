@@ -26,10 +26,16 @@ export default function MenteeMobileCard({
   const authHeader = useAdminAuthStore.getState().getAuthHeader();
   const [sendingEmail, setSendingEmail] = useState<string|null>(null);
 
+  // Get the mentee's ID from the parent component
+  const menteeId = (mentee as any).id;  // Type assertion since we know the parent is passing MenteeWithId
+  const isAssigning = assigningMentor === menteeId;
+  const isDeleting = deletingMentee === menteeId;
+  const isSendingEmail = sendingEmail === menteeId;
+
   const handleSendOnboardingEmail = async (mentee: MenteesForCsvExport) => {
     if (!authHeader || sendingEmail) return;
 
-    setSendingEmail(mentee.phone);
+    setSendingEmail(menteeId);
 
     try {
       const strippedMentee: StrippedDownMentee = {
@@ -51,8 +57,9 @@ export default function MenteeMobileCard({
       setSendingEmail(null);
     }
   };
+
   return (
-    <div key={mentee.phone} className="p-4">
+    <div key={menteeId} className="p-4">
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-medium text-gray-900">{mentee.name}</h4>
@@ -81,42 +88,42 @@ export default function MenteeMobileCard({
         <div className="pt-2 space-y-2">
           <button
             onClick={() => handleSendOnboardingEmail(mentee)}
-            disabled={sendingEmail === mentee.phone}
+            disabled={isSendingEmail}
             className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-              sendingEmail === mentee.phone
+              isSendingEmail
                 ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
                 : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
             }`}
           >
-            {sendingEmail === mentee.phone ? 'Sending...' : 'Send Onboarding Email'}
+            {isSendingEmail ? 'Sending...' : 'Send Onboarding Email'}
           </button>
           {
             <button
               onClick={() => onAssignMentor(mentee)}
-              disabled={assigningMentor === mentee.phone}
+              disabled={isAssigning}
               className={`w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                assigningMentor === mentee.phone
+                isAssigning
                   ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
                   : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
               }`}
             >
               <UserPlusIcon className="h-4 w-4 mr-1" />
-              {assigningMentor === mentee.phone ? 'Assigning...' : 'Assign Mentor'}
+              {isAssigning ? 'Assigning...' : 'Assign Mentor'}
             </button>
           }
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             onClick={() => onDeleteMentee(mentee.phone)}
-            disabled={deletingMentee === mentee.phone}
+            disabled={isDeleting}
             className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-              deletingMentee === mentee.phone
+              isDeleting
                 ? 'bg-red-100 text-red-400 cursor-not-allowed'
                 : 'text-red-700 bg-red-100 hover:bg-red-200'
             }`}
           >
             <TrashIcon className="h-4 w-4 mr-1" />
-            {deletingMentee === mentee.phone ? 'Deleting...' : 'Delete'}
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </button>
         </div>
       </div>

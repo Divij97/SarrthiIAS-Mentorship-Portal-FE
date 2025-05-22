@@ -233,6 +233,11 @@ export interface MenteesForCsvExport {
   assignedMentor?: StrippedDownMentor;
 }
 
+// New interface to wrap mentee data with a unique ID
+export interface MenteeWithId {
+  id: string;  // Using string to allow for UUID if needed
+  mentee: MenteesForCsvExport;
+}
 
 export interface MenteeSession {
   id: string;
