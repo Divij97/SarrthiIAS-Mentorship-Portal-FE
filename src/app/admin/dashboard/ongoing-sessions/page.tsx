@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getOngoingSessions } from '@/services/admin';
 import { MentorshipSession } from '@/types/session';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/Button';
+import { Select } from '@/components/ui/Select';
 
 // Extend MentorshipSession to include the sessionDate property
 interface SessionWithDate extends MentorshipSession {
@@ -19,14 +20,39 @@ export default function OngoingSessionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedMentor, setSelectedMentor] = useState<string>('all');
   const sessionsPerPage = 10;
   const authHeader = useAdminAuthStore((state) => state._authHeader);
 
-  // Calculate pagination values
-  const totalPages = Math.ceil(sessions.length / sessionsPerPage);
+  // Get unique mentors from sessions and format them for the Select component
+  const mentorOptions = useMemo(() => {
+    const uniqueMentors = new Set(sessions.map(session => session.m));
+    return [
+      { value: 'all', label: 'All Mentors' },
+      ...Array.from(uniqueMentors)
+        .sort()
+        .map(mentor => ({ value: mentor, label: mentor }))
+    ];
+  }, [sessions]);
+
+  // Filter sessions based on selected mentor
+  const filteredSessions = useMemo(() => {
+    if (selectedMentor === 'all') {
+      return sessions;
+    }
+    return sessions.filter(session => session.m === selectedMentor);
+  }, [sessions, selectedMentor]);
+
+  // Calculate pagination values using filtered sessions
+  const totalPages = Math.ceil(filteredSessions.length / sessionsPerPage);
   const startIndex = (currentPage - 1) * sessionsPerPage;
   const endIndex = startIndex + sessionsPerPage;
-  const currentSessions = sessions.slice(startIndex, endIndex);
+  const currentSessions = filteredSessions.slice(startIndex, endIndex);
+
+  // Reset to first page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedMentor]);
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -122,7 +148,18 @@ export default function OngoingSessionsPage() {
     <div className="container mx-auto py-6">
       <Card>
         <CardHeader>
-          <CardTitle>All Sessions</CardTitle>
+          <div className="flex justify-between items-center gap-4">
+            <CardTitle>All Sessions</CardTitle>
+            <div className="min-w-[250px] max-w-[300px] flex-1">
+              <Select
+                value={selectedMentor}
+                onChange={(value) => setSelectedMentor(value)}
+                options={mentorOptions}
+                label="Filter by mentor"
+                className="pr-8"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {sessions.length === 0 ? (
@@ -172,7 +209,7 @@ export default function OngoingSessionsPage() {
               {/* Pagination Controls */}
               <div className="mt-4 flex items-center justify-between">
                 <div className="text-sm text-gray-500">
-                  Showing {startIndex + 1} to {Math.min(endIndex, sessions.length)} of {sessions.length} sessions
+                  Showing {startIndex + 1} to {Math.min(endIndex, filteredSessions.length)} of {filteredSessions.length} sessions
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
