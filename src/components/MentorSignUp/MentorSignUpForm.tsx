@@ -209,9 +209,9 @@ export default function MentorSignUpForm() {
         
         // This is a mentor signup with password update
         const mentorObj: Mentor = {
-          name: formData.name,
-          email: formData.email,
-          phone: tempMentorData.phone,
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: tempMentorData.phone.trim(),
           region: formData.region as Region,
           gender: formData.gender as Gender,
           optionalSubject: formData.optionalSubject as OptionalSubject,

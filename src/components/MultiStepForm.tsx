@@ -164,9 +164,9 @@ const MultiStepForm = () => {
       
       // This is a mentee signup with password update
       const menteeObj: Mentee = {
-        n: formData.name,
-        e: formData.email,
-        p: tempMenteeData.phone,
+        n: formData.name.trim(),
+        e: formData.email.trim(),
+        p: tempMenteeData.phone.trim(),
         region: formData.region as Region,
         gender: formData.gender as Gender,
         category: formData.reservationCategory as ReservationCategory,
