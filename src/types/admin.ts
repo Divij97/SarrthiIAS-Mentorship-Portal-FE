@@ -132,3 +132,12 @@ export interface MentorFeedback {
 export interface OngoingSessions {
     sessionsByDate: { [key: string]: MentorshipSession[] };
 }
+
+export interface PasswordResetRequest {
+    newPassword: string;
+    authOtp: string;
+}
+
+export interface ResetPasswordResponse {
+    success: boolean;
+}

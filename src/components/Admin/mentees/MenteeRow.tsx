@@ -1,10 +1,13 @@
 import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
-import { UserPlusIcon, UserMinusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, UserMinusIcon, TrashIcon, KeyIcon } from '@heroicons/react/24/outline';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
 import { useState } from 'react';
 import { sendOnBoardingEmail } from '@/services/mentors';
+import { updateMenteeWithNewPassword } from '@/services/admin';
 import { toast } from 'react-hot-toast';
 import { BackendError, FetchError } from '@/types/error';
+import { ResetPasswordModal } from './reset-password-modal';
+import { PasswordResetRequest } from '@/types/admin';
 
 interface MenteeRowProps {
   mentee: MenteesForCsvExport;
@@ -32,6 +35,8 @@ export default function MenteeRow({
 
   const authHeader = useAdminAuthStore.getState().getAuthHeader();
   const [sendingEmail, setSendingEmail] = useState<string|null>(null);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [resettingPassword, setResettingPassword] = useState(false);
 
   // Get the mentee's ID from the parent component
   const menteeId = (mentee as any).id;  // Type assertion since we know the parent is passing MenteeWithId
@@ -66,96 +71,128 @@ export default function MenteeRow({
     }
   };
 
+  const handleResetPassword = async (request: PasswordResetRequest) => {
+    if (!authHeader) return;
+
+    setResettingPassword(true);
+    try {
+      await updateMenteeWithNewPassword(mentee.phone, request, authHeader);
+      toast.success(`Password reset successfully for ${mentee.name}`);
+      setShowResetPasswordModal(false);
+    } catch (error) {
+      console.error('Failed to reset password:', error);
+      toast.error(`Failed to reset password for ${mentee.name}`);
+    } finally {
+      setResettingPassword(false);
+    }
+  };
 
   return (
-    <tr key={menteeId}>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        {mentee.name}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {mentee.email}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {mentee.phone}
-      </td>
-      <td className="px-6 py-4 text-sm text-gray-500">
-        {mentee.assignedCourses && mentee.assignedCourses.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {getCourseNames(mentee.assignedCourses).split(', ').map((courseName, index) => (
-              <span key={index} className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
-                {courseName}
-              </span>
-            ))}
-          </div>
-        ) : (
-          '-'
-        )}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => handleSendOnboardingEmail(mentee)}
-            disabled={isSendingEmail}
-            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-              isSendingEmail
-                ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
-                : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
-            }`}
-          >
-            {isSendingEmail ? 'Sending...' : 'Send Onboarding Email'}
-          </button>
-
-          <div className="flex items-center gap-2">
+    <>
+      <tr key={menteeId}>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          {mentee.name}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          {mentee.email}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          {mentee.phone}
+        </td>
+        <td className="px-6 py-4 text-sm text-gray-500">
+          {mentee.assignedCourses && mentee.assignedCourses.length > 0 ? (
+            <div className="flex flex-wrap gap-1">
+              {getCourseNames(mentee.assignedCourses).split(', ').map((courseName, index) => (
+                <span key={index} className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
+                  {courseName}
+                </span>
+              ))}
+            </div>
+          ) : (
+            '-'
+          )}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => onAssignMentor(mentee)}
-              disabled={isAssigning}
+              onClick={() => handleSendOnboardingEmail(mentee)}
+              disabled={isSendingEmail}
               className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                isAssigning
-                  ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
-                  : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                isSendingEmail
+                  ? 'bg-orange-100 text-orange-400 cursor-not-allowed'
+                  : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
               }`}
             >
-              <UserPlusIcon className="h-4 w-4 mr-1" />
-              {isAssigning ? 'Assigning...' : 'Assign Mentor'}
+              {isSendingEmail ? 'Sending...' : 'Send Onboarding Email'}
             </button>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onAssignMentor(mentee)}
+                disabled={isAssigning}
+                className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                  isAssigning
+                    ? 'bg-blue-100 text-blue-400 cursor-not-allowed'
+                    : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                }`}
+              >
+                <UserPlusIcon className="h-4 w-4 mr-1" />
+                {isAssigning ? 'Assigning...' : 'Assign Mentor'}
+              </button>
+              <button
+                onClick={() => onUnassignMentor(mentee.phone)}
+                disabled={isUnassigning}
+                className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
+                  isUnassigning
+                    ? 'bg-red-100 text-red-400 cursor-not-allowed'
+                    : 'text-red-700 bg-red-100 hover:bg-red-200'
+                }`}
+              >
+                <UserMinusIcon className="h-4 w-4 mr-1" />
+                {isUnassigning ? 'Unassigning...' : 'Unassign Mentor'}
+              </button>
+            </div>
+
             <button
-              onClick={() => onUnassignMentor(mentee.phone)}
-              disabled={isUnassigning}
+              onClick={() => onEditMentee(mentee)}
+              className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
+            >
+              Edit Details
+            </button>
+
+            <button
+              onClick={() => onDeleteMentee(mentee.phone)}
+              disabled={isDeleting}
               className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-                isUnassigning
+                isDeleting
                   ? 'bg-red-100 text-red-400 cursor-not-allowed'
                   : 'text-red-700 bg-red-100 hover:bg-red-200'
               }`}
             >
-              <UserMinusIcon className="h-4 w-4 mr-1" />
-              {isUnassigning ? 'Unassigning...' : 'Unassign Mentor'}
+              <TrashIcon className="h-4 w-4 mr-1" />
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+
+            <button
+              onClick={() => setShowResetPasswordModal(true)}
+              className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200"
+            >
+              <KeyIcon className="h-4 w-4 mr-1" />
+              Reset Password
             </button>
           </div>
+        </td>
+      </tr>
 
-          <button
-            onClick={() => onEditMentee(mentee)}
-            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200"
-          >
-            Edit Details
-          </button>
-
-          <button
-            onClick={() => onDeleteMentee(mentee.phone)}
-            disabled={isDeleting}
-            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md ${
-              isDeleting
-                ? 'bg-red-100 text-red-400 cursor-not-allowed'
-                : 'text-red-700 bg-red-100 hover:bg-red-200'
-            }`}
-          >
-            <TrashIcon className="h-4 w-4 mr-1" />
-            {isDeleting ? 'Deleting...' : 'Delete'}
-          </button>
-        </div>
-      </td>
-    </tr>
+      <ResetPasswordModal
+        isOpen={showResetPasswordModal}
+        onClose={() => setShowResetPasswordModal(false)}
+        onSubmit={handleResetPassword}
+        loading={resettingPassword}
+      />
+    </>
   );
 } 

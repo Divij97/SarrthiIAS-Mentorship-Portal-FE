@@ -1,7 +1,7 @@
-import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorFeedbackResponse, MentorshipSessionsResponse, OngoingSessions, PasswordResetRequest, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
+import { AddDocumentsRequest, AdminData, BulkMentorshipGroupCreateOrUpdateRequest, CreateMenteeRequest, CreateMentorRequest, DeleteGroupSessionsRequest, MentorAssignmentRequest, MentorFeedbackResponse, MentorshipSessionsResponse, OngoingSessions, PasswordResetRequest, ResetPasswordResponse, ResourceType, UpdateMenteeCourseRequest } from '@/types/admin';
 import { config } from '@/config/env';
 import { MenteesResponse } from '@/types/admin';
-import { MenteesForCsvExport, StrippedDownMentee } from '@/types/mentee';
+import { MenteesForCsvExport, MenteeWithAuth, StrippedDownMentee } from '@/types/mentee';
 import { fetchSafe } from '@/utils/api';
 import { SHA256 } from 'crypto-js';
 import { useAdminAuthStore } from '@/stores/auth/admin-auth-store';
@@ -428,5 +428,16 @@ export const getOngoingSessions = async (authHeader: string): Promise<OngoingSes
       'Authorization': authHeader,
       'Content-Type': 'application/json',
     }
+  });
+}
+
+export const updateMenteeWithNewPassword = async (username: string, request: PasswordResetRequest, authHeader: string): Promise<ResetPasswordResponse> => {
+  return await fetchSafe<ResetPasswordResponse>(`${config.api.url}/v1/admin/users/${username}/resetPassword`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    },
+    body: JSON.stringify(request)
   });
 }
