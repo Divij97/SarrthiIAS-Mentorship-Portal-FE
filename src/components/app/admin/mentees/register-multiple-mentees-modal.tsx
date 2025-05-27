@@ -37,14 +37,27 @@ export function RegisterMenteesToCourse({ courseId, groups = [], onSuccess }: Re
         throw new Error('No auth header found');
       }
 
-      // Split the text by newline and filter out empty lines
+      // Split the text by newline, trim each line, and filter out empty lines
       const phoneNumbers = phoneNumbersText
         .split('\n')
-        .map(number => number.trim())
-        .filter(number => number !== '');
+        .map(number => {
+          // Trim whitespace from both ends
+          const trimmed = number.trim();
+          // Remove any spaces within the phone number
+          return trimmed.replace(/\s+/g, '');
+        })
+        .filter(number => {
+          // Filter out empty lines and validate phone number format
+          if (!number) return false;
+          // Basic validation - should only contain digits and optional + at start
+          if (!/^\+?\d+$/.test(number)) {
+            throw new Error(`Invalid phone number format: ${number}. Phone numbers should only contain digits and an optional + at the start.`);
+          }
+          return true;
+        });
 
       if (phoneNumbers.length === 0) {
-        throw new Error('Please add at least one phone number');
+        throw new Error('Please add at least one valid phone number');
       }
 
       const requestBody: UpdateMenteeCourseRequest = {
@@ -176,13 +189,13 @@ export function RegisterMenteesToCourse({ courseId, groups = [], onSuccess }: Re
               id="phone-numbers"
               value={phoneNumbersText}
               onChange={(e) => setPhoneNumbersText(e.target.value)}
-              placeholder="Enter phone numbers (one per line)"
+              placeholder="Enter phone numbers (one per line). Example: +1234567890"
               required
               rows={6}
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm resize-y"
             />
             <p className="text-xs text-gray-500">
-              Enter each phone number on a new line
+              Enter each phone number on a new line. Phone numbers should only contain digits and an optional + at the start.
             </p>
           </div>
 
