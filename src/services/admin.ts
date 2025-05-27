@@ -441,3 +441,13 @@ export const updateMenteeWithNewPassword = async (username: string, request: Pas
     body: JSON.stringify(request)
   });
 }
+
+export const removeMenteeFromCourse = async (courseId: string,request: UpdateMenteeCourseRequest, authHeader: string): Promise<void> => {
+  return await fetchSafe<void>(`${config.api.url}/v1/admin/courses/${courseId}/mentees`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': authHeader
+    },
+    body: JSON.stringify(request)
+  });
+}

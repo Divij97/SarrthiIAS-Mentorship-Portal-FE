@@ -25,6 +25,7 @@ export function RegisterMenteesToCourse({ courseId, groups = [], onSuccess }: Re
   const { getAuthHeader } = useAdminAuthStore();
   const [phoneNumbersText, setPhoneNumbersText] = useState('');
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
+  const [isRemovingMentees, setIsRemovingMentees] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,8 +48,8 @@ export function RegisterMenteesToCourse({ courseId, groups = [], onSuccess }: Re
       }
 
       const requestBody: UpdateMenteeCourseRequest = {
-        menteesToAdd: phoneNumbers,
-        menteesToRemove: [],
+        menteesToAdd: isRemovingMentees ? [] : phoneNumbers,
+        menteesToRemove: isRemovingMentees ? phoneNumbers : [],
       };
 
       try {
@@ -58,16 +59,17 @@ export function RegisterMenteesToCourse({ courseId, groups = [], onSuccess }: Re
           await updateMenteesEnrolledInCourse(courseId, requestBody, authHeader);
         }
 
-        toast.success('Mentees registered successfully');
+        toast.success(`Mentees ${isRemovingMentees ? 'removed from' : 'added to'} course successfully`);
         setIsOpen(false);
         onSuccess?.();
         setPhoneNumbersText(''); // Reset to initial state
         setSelectedGroupId(''); // Reset selected group
+        setIsRemovingMentees(false); // Reset checkbox state
       } catch(error) {
-        throw new Error(`Failed to register mentees, errorCode: ${(error as BackendError)?.errorCode || 'UNKNOWN'}`);
+        throw new Error(`Failed to ${isRemovingMentees ? 'remove' : 'add'} mentees, errorCode: ${(error as BackendError)?.errorCode || 'UNKNOWN'}`);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to register mentees. Please try again.');
+      toast.error(error instanceof Error ? error.message : `Failed to ${isRemovingMentees ? 'remove' : 'add'} mentees. Please try again.`);
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +108,10 @@ export function RegisterMenteesToCourse({ courseId, groups = [], onSuccess }: Re
       <Button onClick={() => setIsOpen(true)}>Manage Mentees</Button>
       <Dialog
         isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={() => {
+          setIsOpen(false);
+          setIsRemovingMentees(false); // Reset checkbox state when closing
+        }}
         title="Manage Course Mentees"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -122,6 +127,20 @@ export function RegisterMenteesToCourse({ courseId, groups = [], onSuccess }: Re
               <ArrowDownTrayIcon className="w-4 h-4" />
               <span>{isDownloading ? 'Downloading...' : 'Download All Mentees (CSV)'}</span>
             </Button>
+          </div>
+
+          {/* Remove Mentees Checkbox */}
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="remove-mentees"
+              checked={isRemovingMentees}
+              onChange={(e) => setIsRemovingMentees(e.target.checked)}
+              className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+            />
+            <label htmlFor="remove-mentees" className="ml-2 block text-sm text-gray-900">
+              Remove mentees from course
+            </label>
           </div>
 
           {/* Group Selection Dropdown */}

@@ -1,4 +1,3 @@
-import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
