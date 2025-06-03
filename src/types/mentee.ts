@@ -1,7 +1,7 @@
 import { Course } from "./course";
 import { ZoomMeetingInfo } from "./meeting";
 import { DayOfWeek, StrippedDownMentor } from "./mentor";
-import { RecurrenceType, SessionType, SuggestedInterval } from "./session";
+import { MentorshipSession, RecurrenceType, SessionType, SuggestedInterval } from "./session";
 
 export enum Region {
   NORTH = 'NORTH',
@@ -267,6 +267,7 @@ export interface Feedback {
   examKnowledge: number;
   politeness: 'Polite' | 'Not';
   delayed: boolean;
+  attended?: boolean;
 }
 
 export interface PastSessionsResponse {
@@ -311,6 +312,14 @@ export interface UpdateSupportQueryRequest {
   issue: string;
   response: string;
   resolved: boolean;
+}
+
+export interface FeedbackAction {
+  sessions: MentorshipSession[]
+}
+
+export interface RequiredActionsResponse {
+  feedbackAction: FeedbackAction
 }
 
 

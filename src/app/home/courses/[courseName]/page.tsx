@@ -4,14 +4,15 @@ import { use, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMenteeStore } from '@/stores/mentee/store';
 import { useLoginStore } from '@/stores/auth/store';
-import { getGroupById, bookOnDemandSession, getPastSessions } from '@/services/mentee';
-import { GroupMentorshipSession, RecurrenceType } from '@/types/session';
+import { getGroupById, bookOnDemandSession, getPastSessions, getRequiredActionsForMentee } from '@/services/mentee';
+import { GroupMentorshipSession, RecurrenceType, MentorshipSession } from '@/types/session';
 import { VideoCameraIcon, ClockIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import MenteeSessions from '@/components/Courses/MenteeSessions';
 import { toast } from 'react-hot-toast';
 import CourseDocuments from '@/components/Courses/CourseDocuments';
 import { Tab } from '@headlessui/react';
 import PastSessions from '@/components/Home/PastSessions';
+import PendingFeedbackModal from '@/components/Courses/PendingFeedbackModal';
 
 export default function CourseDetailsPage({
   params,
@@ -21,13 +22,22 @@ export default function CourseDetailsPage({
   const router = useRouter();
   const { courseName } = use(params);
   const courseId = decodeURIComponent(courseName);
-  const { getGroupIdByCourseName, refreshSessions, setPastSessions, pastSessions } = useMenteeStore();
+  const { 
+    getGroupIdByCourseName, 
+    refreshSessions, 
+    setPastSessions, 
+    pastSessions,
+    clearDismissedSessions 
+  } = useMenteeStore();
   const authHeader = useLoginStore((state) => state.getAuthHeader());
   const [groupSessions, setGroupSessions] = useState<GroupMentorshipSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState(0);
   const [showFeedbackTooltip, setShowFeedbackTooltip] = useState(false);
+  const [pendingFeedbacks, setPendingFeedbacks] = useState<MentorshipSession[]>([]);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const dismissedSessions = useMenteeStore((state) => state.dismissedSessions);
   
   // First get the raw courses data from the store
   const rawCourses = useMenteeStore((state) => state.courses);
@@ -101,6 +111,61 @@ export default function CourseDetailsPage({
     fetchGroupSessions();
   }, [courseId, course, authHeader, getGroupIdByCourseName]);
 
+  useEffect(() => {
+    const checkPendingFeedbacks = async () => {
+      if (!authHeader) return;
+
+      try {
+        const actions = await getRequiredActionsForMentee(authHeader);
+        const feedbackActions = actions.feedbackAction?.sessions || [];
+        
+        // Filter out dismissed sessions
+        const nonDismissedFeedbacks = feedbackActions.filter(
+          session => !dismissedSessions.has(session.id)
+        );
+        
+        setPendingFeedbacks(nonDismissedFeedbacks);
+        setShowFeedbackModal(nonDismissedFeedbacks.length > 0);
+      } catch (error) {
+        console.error('Error checking pending feedbacks:', error);
+      }
+    };
+
+    checkPendingFeedbacks();
+  }, [authHeader, dismissedSessions]);
+
+  useEffect(() => {
+    const handleRouteChange = () => {
+      if (authHeader) {
+        getRequiredActionsForMentee(authHeader)
+          .then(actions => {
+            const feedbackActions = actions.feedbackAction?.sessions || [];
+            // Filter out dismissed sessions
+            const nonDismissedFeedbacks = feedbackActions.filter(
+              session => !dismissedSessions.has(session.id)
+            );
+            
+            setPendingFeedbacks(nonDismissedFeedbacks);
+            setShowFeedbackModal(nonDismissedFeedbacks.length > 0);
+          })
+          .catch(error => {
+            console.error('Error checking pending feedbacks:', error);
+          });
+      }
+    };
+
+    handleRouteChange();
+    window.addEventListener('popstate', handleRouteChange);
+    return () => window.removeEventListener('popstate', handleRouteChange);
+  }, [authHeader, dismissedSessions]);
+
+  // Clear dismissed sessions when component unmounts or course changes
+  useEffect(() => {
+    return () => {
+      clearDismissedSessions();
+    };
+  }, [courseId, clearDismissedSessions]);
+
   if (!course) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -172,6 +237,11 @@ export default function CourseDetailsPage({
 
   return (
     <div className="space-y-8">
+      <PendingFeedbackModal
+        isOpen={showFeedbackModal}
+        pendingFeedbacks={pendingFeedbacks}
+        courseName={courseId}
+      />
       <div className="bg-white rounded-lg shadow-lg p-8">
         <button
           onClick={handleBackToCourses}
