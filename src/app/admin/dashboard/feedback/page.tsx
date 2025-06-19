@@ -6,12 +6,16 @@ import { ArrowPathIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { StrippedDownMentor } from '@/types/mentor';
 import { getAllMentorsFeedback } from '@/services/admin';
 import { MentorFeedback } from '@/types/admin';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 
 export default function FeedbackPage() {
   const [feedbacks, setFeedbacks] = useState<MentorFeedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMentor, setSelectedMentor] = useState<string>('');
+  const [sessionDate, setSessionDate] = useState<string>('');
+  const [satisfied, setSatisfied] = useState<string>('');
   const authHeader = useAdminAuthStore((state) => state.getAuthHeader)();
   const adminData = useAdminAuthStore((state) => state.adminData);
 
@@ -39,6 +43,14 @@ export default function FeedbackPage() {
 
   const handleMentorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedMentor(e.target.value);
+  };
+
+  const handleSessionDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSessionDate(e.target.value);
+  };
+
+  const handleSatisfiedChange = (value: string) => {
+    setSatisfied(value);
   };
 
   const handleDownloadCSV = () => {
@@ -90,9 +102,21 @@ export default function FeedbackPage() {
     document.body.removeChild(link);
   };
 
-  const filteredFeedbacks = selectedMentor
-    ? feedbacks.filter(feedback => feedback.mentor.email === selectedMentor)
-    : feedbacks;
+  const filteredFeedbacks = feedbacks
+    .filter(feedback => {
+      // Convert sessionDate input (yyyy-mm-dd) to dd/mm/yyyy for comparison
+      let sessionDateMatch = true;
+      if (sessionDate) {
+        const [year, month, day] = sessionDate.split('-');
+        const formattedSessionDate = `${day}/${month}/${year}`;
+        sessionDateMatch = feedback.sessionDate === formattedSessionDate;
+      }
+      return (
+        (!selectedMentor || feedback.mentor.email === selectedMentor) &&
+        sessionDateMatch &&
+        (!satisfied || (satisfied === 'yes' ? feedback.satisfied : !feedback.satisfied))
+      );
+    });
 
   // Sort feedbacks by submitTimestamp in descending order
   const sortedAndFilteredFeedbacks = [...filteredFeedbacks].sort((a, b) => {
@@ -138,19 +162,49 @@ export default function FeedbackPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">Session Feedbacks</h2>
-        <div className="flex items-center gap-4">
-          <select
-            value={selectedMentor}
-            onChange={handleMentorChange}
-            className="block w-64 rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-          >
-            <option value="">All Mentors</option>
-            {adminData?.mentors.map((mentor: StrippedDownMentor) => (
-              <option key={mentor.phone} value={mentor.email}>
-                {mentor.name} ({mentor.email})
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-wrap gap-3 items-end">
+          <div className="flex flex-col">
+            <label htmlFor="session-date" className="text-xs font-medium text-gray-700 mb-1">Session Date</label>
+            <Input
+              id="session-date"
+              type="date"
+              value={sessionDate}
+              onChange={handleSessionDateChange}
+              className="w-44 h-10"
+              label={undefined}
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="satisfied-select" className="text-xs font-medium text-gray-700 mb-1">Satisfied</label>
+            <Select
+              id="satisfied-select"
+              value={satisfied}
+              onChange={handleSatisfiedChange}
+              options={[
+                { value: '', label: 'All' },
+                { value: 'yes', label: 'Satisfied' },
+                { value: 'no', label: 'Not Satisfied' },
+              ]}
+              className="w-44 h-10"
+              label={undefined}
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="mentor-select" className="text-xs font-medium text-gray-700 mb-1">Mentor</label>
+            <select
+              id="mentor-select"
+              value={selectedMentor}
+              onChange={handleMentorChange}
+              className="w-64 h-10 rounded-md border border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm px-3"
+            >
+              <option value="">All Mentors</option>
+              {adminData?.mentors.map((mentor: StrippedDownMentor) => (
+                <option key={mentor.phone} value={mentor.email}>
+                  {mentor.name} ({mentor.email})
+                </option>
+              ))}
+            </select>
+          </div>
           <button
             onClick={handleDownloadCSV}
             disabled={filteredFeedbacks.length === 0}
@@ -159,6 +213,7 @@ export default function FeedbackPage() {
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                 : 'bg-green-100 text-green-700 hover:bg-green-200'
             }`}
+            style={{ height: '40px', marginTop: '18px' }}
           >
             <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
             Download CSV
@@ -166,6 +221,7 @@ export default function FeedbackPage() {
           <button
             onClick={handleRefresh}
             className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
+            style={{ height: '40px', marginTop: '18px' }}
           >
             <ArrowPathIcon className="h-4 w-4 mr-2" />
             Refresh
