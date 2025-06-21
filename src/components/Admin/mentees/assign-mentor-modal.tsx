@@ -1,3 +1,4 @@
+import { StrippedDownMentor } from "@/types/mentor";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
@@ -7,7 +8,7 @@ interface AssignMentorModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (mentorPhone: string) => void;
-    mentors: { phone: string; name: string }[];
+    mentors: StrippedDownMentor[];
     loading: boolean;
 }
 
@@ -43,7 +44,7 @@ export function AssignMentorModal({ isOpen, onClose, onSubmit, mentors, loading 
                             <option value="">Select a mentor</option>
                             {mentors.map(mentor => (
                                 <option key={mentor.phone} value={mentor.phone}>
-                                    {mentor.name} ({mentor.phone})
+                                    {mentor.displayName} ({mentor.phone})
                                 </option>
                             ))}
                         </select>

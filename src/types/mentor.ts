@@ -27,6 +27,8 @@ export interface Mentor {
   numberOfAttemptsInUpsc: number;
   numberOfMainsAttempts: number;
   offDaysOfWeek: DayOfWeek[];
+  displayName: string;
+  displayEmail: string;
 }
 
 export interface MentorResponse {
@@ -54,8 +56,16 @@ export interface StrippedDownMentor {
   name: string;
   email: string;
   phone: string;
+  displayName: string;
+  displayEmail: string;
 }
 
 export interface MentorGroupsBulkResponse {
   groupSessions: GroupMentorshipSession[];
+}
+
+export interface MentorUpdateRequest {
+  displayName: string;
+  displayEmail: string;
+  phone: string;
 }

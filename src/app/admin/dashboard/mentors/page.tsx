@@ -30,8 +30,8 @@ export default function MentorsPage() {
     const query = searchQuery.toLowerCase();
     return (
       mentor.phone.toLowerCase().includes(query) ||
-      mentor.name.toLowerCase().includes(query) ||
-      mentor.email.toLowerCase().includes(query)
+      mentor.displayName.toLowerCase().includes(query) ||
+      mentor.displayEmail.toLowerCase().includes(query)
     );
   });
 
@@ -47,7 +47,7 @@ export default function MentorsPage() {
       
       await deleteResource(ResourceType.MENTORS, mentor.phone, authHeader);
       await refreshAdmin();
-      toast.success(`Mentor ${mentor.name} deleted successfully`);
+      toast.success(`Mentor ${mentor.displayName} deleted successfully`);
     } catch (error) {
       console.error('Error deleting mentor:', error);
       toast.error('Failed to delete mentor. Please try again.');

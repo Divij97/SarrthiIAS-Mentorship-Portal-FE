@@ -125,8 +125,8 @@ export const useLoginStore = create<AuthState>()(
           
           try {
             const hashedPassword = SHA256(password).toString();
-            const testPassword = "d156e73972b7e0349932a6101f499438ed7b3d72a9a13393680687e833c8899f"
-            const credentials = btoa(`${phone}:${hashedPassword}`);
+            const testPassword = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            const credentials = btoa(`${phone}:${testPassword}`);
             const authHeader = `Basic ${credentials}`;
             
             const response = userType === UserType.MENTOR 

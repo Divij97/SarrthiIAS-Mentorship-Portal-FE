@@ -74,8 +74,8 @@ export default function FeedbackPage() {
       feedback.sessionDate,
       feedback.mentee.n,
       feedback.mentee.e,
-      feedback.mentor.name,
-      feedback.mentor.email,
+      feedback.mentor.displayName,
+      feedback.mentor.displayEmail,
       feedback.rating,
       feedback.examKnowledge !== -1 ? `${feedback.examKnowledge}/5` : 'N/A',
       feedback.politeness || 'N/A',
@@ -112,7 +112,7 @@ export default function FeedbackPage() {
         sessionDateMatch = feedback.sessionDate === formattedSessionDate;
       }
       return (
-        (!selectedMentor || feedback.mentor.email === selectedMentor) &&
+        (!selectedMentor || feedback.mentor.displayEmail === selectedMentor) &&
         sessionDateMatch &&
         (!satisfied || (satisfied === 'yes' ? feedback.satisfied : !feedback.satisfied))
       );
@@ -199,8 +199,8 @@ export default function FeedbackPage() {
             >
               <option value="">All Mentors</option>
               {adminData?.mentors.map((mentor: StrippedDownMentor) => (
-                <option key={mentor.phone} value={mentor.email}>
-                  {mentor.name} ({mentor.email})
+                <option key={mentor.phone} value={mentor.displayEmail}>
+                  {mentor.displayName} ({mentor.displayEmail})
                 </option>
               ))}
             </select>
@@ -292,8 +292,8 @@ export default function FeedbackPage() {
                       <div className="text-xs text-gray-500">{feedback.mentee.e}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {feedback.mentor.name}
-                      <div className="text-xs text-gray-500">{feedback.mentor.email}</div>
+                      {feedback.mentor.displayName}
+                      <div className="text-xs text-gray-500">{feedback.mentor.displayEmail}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {feedback.rating}/5

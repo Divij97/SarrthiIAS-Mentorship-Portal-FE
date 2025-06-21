@@ -105,7 +105,7 @@ export default function MenteeMobileCard({
             </div>
           </div>
           <div className="text-sm text-gray-500">
-            <p>Assigned Mentor: {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}</p>
+            <p>Assigned Mentor: {mentee.assignedMentor ? mentee.assignedMentor.displayName : '-'}</p>
           </div>
           <div className="pt-2 space-y-2">
             <button

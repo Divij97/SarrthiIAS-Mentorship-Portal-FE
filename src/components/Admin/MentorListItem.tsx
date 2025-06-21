@@ -11,9 +11,9 @@ export default function MentorListItem({ mentor }: MentorListItemProps) {
     <div className="flex flex-col">
       <div>
         <h3 className="text-lg font-semibold text-gray-900">
-          {mentor.name}
+          {mentor.displayName || mentor.name}
         </h3>
-        <p className="text-sm text-gray-500">{mentor.email}</p>
+        <p className="text-sm text-gray-500">{mentor.displayEmail || mentor.email}</p>
       </div>
       
       <div className="mt-2">

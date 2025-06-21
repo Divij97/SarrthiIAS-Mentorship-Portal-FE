@@ -1,4 +1,4 @@
-import { MentorGroupsBulkResponse, MentorResponse, MentorWithAuth } from '@/types/mentor';
+import { MentorGroupsBulkResponse, MentorResponse, MentorUpdateRequest, MentorWithAuth } from '@/types/mentor';
 import { config } from '@/config/env';
 import { useLoginStore } from '@/stores/auth/store';
 import { DeleteRecurringSessionRequest, SessionUpdate } from '@/types/session';
@@ -266,5 +266,16 @@ export const sendOnBoardingEmail = async (mentee: StrippedDownMentee, authHeader
       'Authorization': authHeader
     },
     body: JSON.stringify(mentee)
+  });
+};
+
+export const updateMentor = async (mentorData: MentorUpdateRequest, authHeader: string) => {
+  return await fetchSafe<void>(`${config.api.url}/v1/internal/mentors/${mentorData.phone}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': authHeader
+    },
+    body: JSON.stringify(mentorData)
   });
 };

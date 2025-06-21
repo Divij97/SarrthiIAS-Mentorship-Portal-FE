@@ -219,6 +219,8 @@ export default function MentorSignUpForm() {
           numberOfAttemptsInUpsc: formData.numberOfAttemptsInUpsc,
           numberOfMainsAttempts: formData.numberOfMainsAttempts,
           offDaysOfWeek: formData.offDaysOfWeek as DayOfWeek[],
+          displayName: formData.name.trim(),
+          displayEmail: formData.email.trim(),
         };
 
         console.log(mentorObj);

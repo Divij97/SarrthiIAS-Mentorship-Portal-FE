@@ -51,7 +51,7 @@ export default function ScheduleEmailModal({
 
 🎉 Congratulations! You've just stepped into one of the most prestigious and life-changing journeys—the UPSC Civil Services Examination. Yes, it's one of the toughest exams out there, and yes, the road ahead will have its ups and downs. But guess what? You're not alone in this!
 
-I'm ${mentor.name}, your mentor, guide, friend, and biggest cheerleader on this adventure. My job? To help you cut through the noise, stay on track, and master UPSC preparation with the right strategy, motivation, and resources.
+I'm ${mentor.displayName}, your mentor, guide, friend, and biggest cheerleader on this adventure. My job? To help you cut through the noise, stay on track, and master UPSC preparation with the right strategy, motivation, and resources.
 
 Here are the details of our first session:
 📅 Date: ${formatDate(scheduleDetails.firstSessionDate)}
@@ -65,8 +65,8 @@ Here are the details of our first session:
 Looking forward to catching up!
 
 Best regards,
-${mentor.name}
-📧 ${mentor.email}`;
+${mentor.displayName}
+📧 ${mentor.displayEmail}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(emailBody);

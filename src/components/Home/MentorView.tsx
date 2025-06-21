@@ -1,18 +1,43 @@
 import { useMentorStore } from '@/stores/mentor/store';
 import { Mentor } from '@/types/mentor';
+import { useState } from 'react';
+import EditMentorModal from './EditMentorModal';
+import { Button } from '../ui/Button';
+import toast from 'react-hot-toast';
 
 interface MentorViewProps {
   mentor: Mentor;
 }
 
 export default function MentorView({ mentor }: MentorViewProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const updateMentor = useMentorStore(state => state.updateMentor);
+
   if (!mentor) {
     return <div className="min-h-screen flex items-center justify-center">Loading mentor data...</div>;
   }
 
+  const handleUpdate = async (data: { displayName: string; displayEmail: string }) => {
+    try {
+      setError(null);
+      await updateMentor(data);
+      setIsModalOpen(false);
+      toast.success('Profile updated successfully!');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    }
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome, {mentor.name}!</h1>
+      <div className="flex justify-between items-start">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome, {mentor.displayName || mentor.name}!</h1>
+        <Button onClick={() => setIsModalOpen(true)}>Edit Profile</Button>
+      </div>
+      {error && <p className="text-red-500">{error}</p>}
       <div className="bg-white shadow rounded-lg p-4 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div>
@@ -20,7 +45,7 @@ export default function MentorView({ mentor }: MentorViewProps) {
             <div className="space-y-3">
               <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs sm:text-sm font-medium text-gray-500">Email</p>
-                <p className="text-sm sm:text-base text-gray-900 break-words">{mentor.email}</p>
+                <p className="text-sm sm:text-base text-gray-900 break-words">{mentor.displayEmail || mentor.email}</p>
               </div>
               <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs sm:text-sm font-medium text-gray-500">Phone</p>
@@ -57,6 +82,12 @@ export default function MentorView({ mentor }: MentorViewProps) {
           </div>
         </div>
       </div>
+      <EditMentorModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        mentor={mentor}
+        onUpdate={handleUpdate}
+      />
     </div>
   );
 } 

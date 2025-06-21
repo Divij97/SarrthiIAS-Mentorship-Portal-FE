@@ -113,7 +113,7 @@ export default function MenteeRow({
           )}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-          {mentee.assignedMentor ? mentee.assignedMentor.name : '-'}
+          {mentee.assignedMentor ? mentee.assignedMentor.displayName || mentee.assignedMentor.name : '-'}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
           <div className="flex flex-wrap gap-2">

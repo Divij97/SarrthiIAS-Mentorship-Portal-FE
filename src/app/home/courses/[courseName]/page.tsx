@@ -256,7 +256,7 @@ export default function CourseDetailsPage({
             Course Type: {course.isOneOnOneMentorshipCourse ? 'One-on-One Mentorship' : 'Group Mentorship'} {course.recurrenceType ? `(Sessions held: ${formatRecurrenceType(course.recurrenceType)})` : ''}
             {course.isOneOnOneMentorshipCourse && (
               <span className="block mt-1">
-                {mentor != null && (mentor.name !== undefined || mentor.email !== undefined)? `Your Mentor: ${mentor.name} (${mentor.email})` : `You'll be assigned a mentor shortly.`}
+                {mentor != null && (mentor.displayName !== undefined || mentor.displayEmail !== undefined)? `Your Mentor: ${mentor.displayName || mentor.name} (${mentor.displayEmail || mentor.email})` : `You'll be assigned a mentor shortly.`}
               </span>
             )}
           </p>

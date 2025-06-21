@@ -159,7 +159,7 @@ export default function SessionForm({ isOpen, onClose, onSubmit }: SessionFormPr
               <option value="">Select a mentor</option>
               {mentors?.map((mentor) => (
                 <option key={mentor.phone} value={mentor.phone}>
-                  {mentor.name}
+                  {mentor.displayName}
                 </option>
               ))}
             </select>

@@ -3,6 +3,8 @@ import { persist } from 'zustand/middleware';
 import { DayOfWeek, Mentor, MentorResponse } from '@/types/mentor';
 import { MentorshipSession } from '@/types/session';
 import { DateFormatDDMMYYYY } from '@/types/session';
+import { useLoginStore } from '../auth/store';
+import { updateMentor as updateMentorAPI } from '@/services/mentors';
 
 interface MentorStore {
   mentor: Mentor | null;
@@ -17,6 +19,7 @@ interface MentorStore {
   removeFromSessionsByDayOfWeek: (dayOfWeek: DayOfWeek, scheduleId: string) => void;
   onMenteeScheduled: (menteeUserName: string) => void;
   getUnscheduledMenteeEmail: (menteeUserName: string) => string | null;
+  updateMentor: (data: { displayName: string; displayEmail: string }) => Promise<void>;
 }
 
 export const useMentorStore = create<MentorStore>()(
@@ -114,7 +117,32 @@ export const useMentorStore = create<MentorStore>()(
         if (current) {
           return current.am.find(m => m.p === menteeUserName)?.e || null;
         }
-      }
+      },
+      updateMentor: async (data: { displayName: string; displayEmail: string }) => {
+        const { mentor } = get();
+        const { authHeader, phone } = useLoginStore.getState();
+
+        if (!mentor || !authHeader || !phone) {
+          throw new Error("Mentor not found or not authenticated.");
+        }
+
+        await updateMentorAPI(
+          {
+            displayName: data.displayName,
+            displayEmail: data.displayEmail,
+            phone: phone,
+          },
+          authHeader
+        );
+
+        set({
+          mentor: {
+            ...mentor,
+            displayName: data.displayName,
+            displayEmail: data.displayEmail,
+          },
+        });
+      },
     }),
     {
       name: 'mentor-storage', // unique name for localStorage key
