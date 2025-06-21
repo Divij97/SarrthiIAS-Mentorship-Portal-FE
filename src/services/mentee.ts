@@ -1,4 +1,4 @@
-import { MenteeResponse, MenteeWithAuth, PastSessionsResponse, RequiredActionsResponse, SubmitFeedbackRequest, SupportQueryRequest, SupportQueryResponse, UpdateSupportQueryRequest } from '@/types/mentee';
+import { Mentee, MenteeResponse, MenteeWithAuth, PastSessionsResponse, RequiredActionsResponse, SubmitFeedbackRequest, SupportQueryRequest, SupportQueryResponse, UpdateSupportQueryRequest } from '@/types/mentee';
 import { config } from '@/config/env';
 import { useLoginStore } from '@/stores/auth/store';
 import { MentorshipGroup } from '@/types/session';
@@ -251,5 +251,17 @@ export const getRequiredActionsForMentee = async (authHeader: string): Promise<R
     headers: {
       'Authorization': authHeader
     }
+  });
+}
+
+export const updateMentee = async (menteeData: MenteeWithAuth, authHeader: string): Promise<void> => {
+  return fetchSafe<void>(`${config.api.url}/v1/mentees`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': authHeader,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(menteeData),
   });
 }
