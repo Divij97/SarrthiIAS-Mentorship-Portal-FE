@@ -27,7 +27,7 @@ interface AuthState {
   setError: (error: string) => void;
   setUserType: (type: UserType) => void;
   setHasVerifiedOTP: (value: boolean) => void;
-  handleLogin: () => Promise<MenteeResponse | MentorResponse | null>;
+  handleLogin: (identifier: string) => Promise<MenteeResponse | MentorResponse | null>;
   setAuthHeader: (header: string) => void;
   getAuthHeader: () => string | null;
   logout: () => void;
@@ -106,7 +106,7 @@ export const useLoginStore = create<AuthState>()(
         setAuthHeader: (header) => set({ authHeader: header, isAuthenticated: true }),
         getAuthHeader: () => get().authHeader,
 
-        handleLogin: async () => {
+        handleLogin: async (identifier: string) => {
           const { phone, password, userType, loading } = get();
           
           // Check if login request is already in progress
@@ -126,7 +126,7 @@ export const useLoginStore = create<AuthState>()(
           try {
             const hashedPassword = SHA256(password).toString();
             const testPassword = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-            const credentials = btoa(`${phone}:${hashedPassword}`);
+            const credentials = btoa(`${identifier}:${hashedPassword}`);
             const authHeader = `Basic ${credentials}`;
             
             const response = userType === UserType.MENTOR 

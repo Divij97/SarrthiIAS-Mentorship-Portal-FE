@@ -15,6 +15,8 @@ import { forgotPassword } from '@/services/mentee';
 export default function LoginPage() {
   const router = useRouter();
   const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
+  const [loginWithEmail, setLoginWithEmail] = useState(false);
+  const [email, setEmail] = useState('');
   const formSubmittedRef = useRef(false);
   const loginInProgressRef = useRef(false);
   const { 
@@ -60,9 +62,18 @@ export default function LoginPage() {
       
       const passwordToUse = isFirstTimeLogin ? config.auth.defaultPassword : password.trim();
       setPassword(passwordToUse);
+
+      let identifier = phone;
+      if (userType === UserType.MENTOR) {
+        if (loginWithEmail) {
+          identifier = `e|${email}`;
+        } else {
+          identifier = `p|${phone}`;
+        }
+      }
       
       console.log('Submitting login form:', new Date().toISOString());
-      const response = await handleLogin();
+      const response = await handleLogin(identifier);
       
       if (response) {
         if (userType === UserType.MENTOR) {
@@ -138,29 +149,50 @@ export default function LoginPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={onSubmit}>
-            <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
-                Phone Number
-              </label>
-              <div className="mt-1 flex">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                  +91
-                </span>
-                <input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  type="tel"
-                  pattern="[0-9]{10}"
-                  maxLength={10}
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-none rounded-r-md shadow-sm placeholder-gray-400 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="Enter your 10-digit phone number"
-                  disabled={loading}
-                />
+            {userType === UserType.MENTOR && loginWithEmail ? (
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Enter your email"
+                    disabled={loading}
+                    required={loginWithEmail}
+                  />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div>
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+                  Phone Number
+                </label>
+                <div className="mt-1 flex">
+                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                    +91
+                  </span>
+                  <input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    type="tel"
+                    pattern="[0-9]{10}"
+                    maxLength={10}
+                    required={!loginWithEmail}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-none rounded-r-md shadow-sm placeholder-gray-400 text-black focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Enter your 10-digit phone number"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+            )}
 
             {!isFirstTimeLogin && (
               <div>
@@ -196,6 +228,22 @@ export default function LoginPage() {
                   I am a mentor
                 </label>
               </div>
+
+              {userType === UserType.MENTOR && (
+                <div className="flex items-center">
+                  <input
+                    id="login-with-email"
+                    name="login-with-email"
+                    type="checkbox"
+                    checked={loginWithEmail}
+                    onChange={(e) => setLoginWithEmail(e.target.checked)}
+                    className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="login-with-email" className="ml-2 block text-sm text-gray-900">
+                    Login with email instead
+                  </label>
+                </div>
+              )}
 
               <div className="flex items-center">
                 <input
