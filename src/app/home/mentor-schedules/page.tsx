@@ -318,7 +318,7 @@ export default function MentorSchedulesPage() {
           }}
           onSubmit={handleScheduleSubmit}
           mentee={selectedMentee}
-          mentor={{name: mentorResponse?.m?.name, phone: mentorResponse?.u, email: mentorResponse?.m?.email}}
+          mentor={{name: mentorResponse?.m?.name, phone: mentorResponse?.u, email: mentorResponse?.m?.email, displayEmail: mentorResponse?.m?.displayEmail, displayName: mentorResponse?.m?.displayName}}
         />
       )}
     </div>

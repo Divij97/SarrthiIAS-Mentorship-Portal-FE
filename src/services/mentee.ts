@@ -112,9 +112,9 @@ export const bookOnDemandSession = async (mentor: StrippedDownMentor|null, authH
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        mentorName: mentor?.name,
+        mentorName: mentor?.displayName || mentor?.name,
         mentorPhone: mentor?.phone,
-        mentorEmail: mentor?.email,
+        mentorEmail: mentor?.displayEmail || mentor?.email,
       }),
     });
 

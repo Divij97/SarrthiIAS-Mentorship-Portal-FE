@@ -184,7 +184,7 @@ export default function MentorSessionsPage() {
           updateType: UpdateType.ADD,
           isPermanentUpdate: true,
           sessionType: SessionType.AD_HOC,
-          mentorEmail: mentorResponse.m?.email
+          mentorEmail: mentorResponse.m?.displayEmail || mentorResponse?.m?.email
         },
         authHeader
       );
@@ -193,7 +193,7 @@ export default function MentorSessionsPage() {
         mu: addFormData.menteeUsername,
         mn: addFormData.menteeFullName,
         u: mentorResponse.u,
-        m: mentorResponse.m?.name || 'Mentor',
+        m: mentorResponse.m?.displayName || mentorResponse.m?.name || 'Mentor',
         st: addFormData.startTime,
         et: addFormData.endTime,
         s: SessionType.AD_HOC,

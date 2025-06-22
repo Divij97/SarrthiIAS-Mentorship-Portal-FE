@@ -97,7 +97,7 @@ export default function CancellationRequestModal({
     const selectedSession = eligibleSessions.find(session => session.id === sessionId);
     if (!selectedSession) return;
     
-    const emailBody = `Dear ${mentor?.name || 'Mentor'},
+    const emailBody = `Dear ${mentor?.displayName || mentor?.name || 'Mentor'},
 
 I hope this email finds you well. Due to some personal commitments, I regret to inform you that I will not be able to attend our scheduled mentorship session on ${selectedSession.dateFormatted} from ${selectedSession.startTime} to ${selectedSession.endTime}. 
 
