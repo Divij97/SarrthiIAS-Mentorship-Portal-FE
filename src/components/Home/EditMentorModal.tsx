@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Mentor } from '@/types/mentor';
+import { StrippedDownMentor } from '@/types/mentor';
 import { Dialog } from '@/components/ui/Dialog';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 interface EditMentorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mentor: Mentor;
+  mentor: StrippedDownMentor;
   onUpdate: (data: { displayName: string; displayEmail: string }) => void;
 }
 
