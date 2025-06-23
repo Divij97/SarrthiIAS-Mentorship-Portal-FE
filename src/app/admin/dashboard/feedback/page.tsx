@@ -292,8 +292,8 @@ export default function FeedbackPage() {
                       <div className="text-xs text-gray-500">{feedback.mentee.e}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {feedback.mentor.displayName}
-                      <div className="text-xs text-gray-500">{feedback.mentor.displayEmail}</div>
+                      {feedback.mentor.displayName || feedback.mentor.name}
+                      <div className="text-xs text-gray-500">{feedback.mentor.displayEmail || feedback.mentor.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {feedback.rating}/5

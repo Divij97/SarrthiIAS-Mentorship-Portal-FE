@@ -58,6 +58,7 @@ export interface StrippedDownMentor {
   phone: string;
   displayName: string;
   displayEmail: string;
+  countOfAssignedMentees: number
 }
 
 export interface MentorGroupsBulkResponse {

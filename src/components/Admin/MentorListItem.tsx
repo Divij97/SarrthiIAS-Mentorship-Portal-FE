@@ -20,6 +20,10 @@ export default function MentorListItem({ mentor }: MentorListItemProps) {
         <p className="text-sm font-medium text-gray-500">Phone</p>
         <p className="text-sm text-gray-900">{mentor.phone}</p>
       </div>
+      <div className="mt-2">
+        <p className="text-sm font-medium text-gray-500">Assigned Mentees</p>
+        <p className="text-sm text-gray-900">{mentor.countOfAssignedMentees}</p>
+      </div>
     </div>
   );
 } 
