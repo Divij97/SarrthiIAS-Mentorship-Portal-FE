@@ -116,6 +116,9 @@ export default function MenteeRow({
           {mentee.assignedMentor ? mentee.assignedMentor.displayName || mentee.assignedMentor.name : '-'}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          {mentee.enrolledDate || '-'}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleSendOnboardingEmail(mentee)}

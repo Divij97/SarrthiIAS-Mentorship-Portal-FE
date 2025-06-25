@@ -231,6 +231,7 @@ export interface MenteesForCsvExport {
   givenMains: boolean;
   menteeUpscExperience: MenteeUpscExperience;
   assignedMentor?: StrippedDownMentor;
+  enrolledDate?: string;
 }
 
 // New interface to wrap mentee data with a unique ID

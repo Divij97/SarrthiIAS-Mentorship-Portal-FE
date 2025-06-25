@@ -91,6 +91,9 @@ export default function MenteeMobileCard({
             <p>{mentee.email}</p>
           </div>
           <div className="text-sm text-gray-500">
+            <p>Enrolled Date: {mentee.enrolledDate || '-'}</p>
+          </div>
+          <div className="text-sm text-gray-500">
             <p>Assigned Courses:</p>
             <div className="flex flex-wrap gap-1 mt-1">
               {mentee.assignedCourses && mentee.assignedCourses.length > 0 ? (
